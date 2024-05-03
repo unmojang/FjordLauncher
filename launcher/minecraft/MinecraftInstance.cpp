@@ -574,7 +574,7 @@ QStringList MinecraftInstance::processAuthArgs(AuthSessionPtr session) const
         }
     }
     // https://github.com/FabricMC/fabric-loom/issues/915#issuecomment-1609154390
-    if (!session->wants_online && (v == "1.16.4" || v == "1.16.5")) {
+    if ((session->user_type == "offline" || !session->wants_online) && (v == "1.16.4" || v == "1.16.5")) {
         QString invalid_url{ "https://invalid.invalid" };
         args << "-Dminecraft.api.env=custom";
         args << "-Dminecraft.api.auth.host=" + invalid_url;
