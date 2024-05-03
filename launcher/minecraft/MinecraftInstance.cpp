@@ -569,6 +569,14 @@ QStringList MinecraftInstance::processAuthArgs(AuthSessionPtr session) const
                 break;
             }
         }
+    } else if (session->wants_online && (v == "1.16.4" || v == "1.16.5")) {
+        // https://github.com/FabricMC/fabric-loom/issues/915#issuecomment-1609154390
+        QString invalid_url{ "https://invalid.invalid" };
+        args << "-Dminecraft.api.env=custom";
+        args << "-Dminecraft.api.auth.host=" + invalid_url;
+        args << "-Dminecraft.api.account.host=" + invalid_url;
+        args << "-Dminecraft.api.session.host=" + invalid_url;
+        args << "-Dminecraft.api.services.host=" + invalid_url;
     }
     return args;
 }
