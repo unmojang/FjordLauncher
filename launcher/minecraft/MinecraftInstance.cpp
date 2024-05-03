@@ -546,13 +546,7 @@ QStringList MinecraftInstance::processAuthArgs(AuthSessionPtr session) const
     QString v = m_components->getProfile()->getMinecraftVersion();
 
     if (session->uses_custom_api_servers) {
-        if (v != "1.16.4" && v != "1.16.5") {
-            args << "-Dminecraft.api.env=custom";
-            args << "-Dminecraft.api.auth.host=" + session->auth_server_url;
-            args << "-Dminecraft.api.account.host=" + session->account_server_url;
-            args << "-Dminecraft.api.session.host=" + session->session_server_url;
-            args << "-Dminecraft.api.services.host=" + session->services_server_url;
-        }
+        bool using_authlib_injector = false;
         auto agents = m_components->getProfile()->getAgents();
         for (auto agent : agents) {
             if (agent->library()->artifactPrefix() == "moe.yushi:authlibinjector") {
@@ -566,11 +560,21 @@ QStringList MinecraftInstance::processAuthArgs(AuthSessionPtr session) const
                 if (session->authlib_injector_metadata != "") {
                     args << "-Dauthlibinjector.yggdrasil.prefetched=" + session->authlib_injector_metadata;
                 }
+                using_authlib_injector = true;
                 break;
             }
         }
-    } else if (session->wants_online && (v == "1.16.4" || v == "1.16.5")) {
-        // https://github.com/FabricMC/fabric-loom/issues/915#issuecomment-1609154390
+        if (!using_authlib_injector) {
+            qDebug() << "authlib-injector not found, setting -Dminecraft.api.*.host system properties.";
+            args << "-Dminecraft.api.env=custom";
+            args << "-Dminecraft.api.auth.host=" + session->auth_server_url;
+            args << "-Dminecraft.api.account.host=" + session->account_server_url;
+            args << "-Dminecraft.api.session.host=" + session->session_server_url;
+            args << "-Dminecraft.api.services.host=" + session->services_server_url;
+        }
+    }
+    // https://github.com/FabricMC/fabric-loom/issues/915#issuecomment-1609154390
+    if (!session->wants_online && (v == "1.16.4" || v == "1.16.5")) {
         QString invalid_url{ "https://invalid.invalid" };
         args << "-Dminecraft.api.env=custom";
         args << "-Dminecraft.api.auth.host=" + invalid_url;
