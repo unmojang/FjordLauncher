@@ -1,12 +1,12 @@
 [Desktop Entry]
 Version=1.0
-Name=PollyMC
+Name=Fjord Launcher
 Comment=A custom launcher for Minecraft that allows you to easily manage multiple installations of Minecraft at once.
 Type=Application
 Terminal=false
 Exec=@Launcher_APP_BINARY_NAME@ %U
 StartupNotify=true
-Icon=org.fn2006.PollyMC
+Icon=org.unmojang.FjordLauncher
 Categories=Game;ActionGame;AdventureGame;Simulation;
 Keywords=game;minecraft;mc;
 StartupWMClass=PrismLauncher

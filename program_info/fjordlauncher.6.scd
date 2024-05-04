@@ -1,27 +1,27 @@
-pollymc(6)
+fjordlauncher(6)
 
 
 # NAME
 
-pollymc - a launcher and instance manager for Minecraft.
+fjordlauncher - a launcher and instance manager for Minecraft.
 
 
 # SYNOPSIS
 
-*pollymc* [OPTIONS...]
+*fjordlauncher* [OPTIONS...]
 
 
 # DESCRIPTION
 
-PollyMC is a custom launcher for Minecraft that allows you to easily manage
+Fjord Launcher is a custom launcher for Minecraft that allows you to easily manage
 multiple installations of Minecraft at once. It also allows you to easily
 install and remove mods by simply dragging and dropping.
-Here are the current features of PollyMC.
+Here are the current features of Fjord Launcher.
 
 # OPTIONS
 
 *-d, --dir*=DIRECTORY
-	Use DIRECTORY as the PollyMC root.
+	Use DIRECTORY as the Fjord Launcher root.
 
 *-l, --launch*=INSTANCE_ID
 	Launch the instance specified by INSTANCE_ID.
@@ -30,7 +30,7 @@ Here are the current features of PollyMC.
 	Show the configuration window of the instance specified by INSTANCE_ID.
 
 *--alive*
-	Write a small 'live.check' file after PollyMC starts.
+	Write a small 'live.check' file after Fjord Launcher starts.
 
 *-h, --help*
 	Display help text and exit.
@@ -69,15 +69,15 @@ variables, besides other common Qt variables:
 
 # BUGS
 
-https://github.com/fn2006/PollyMC/issues
+https://github.com/unmojang/FjordLauncher/issues
 
 # RESOURCES
 
-GitHub: https://github.com/fn2006/PollyMC
+GitHub: https://github.com/unmojang/FjordLauncher
 
 # AUTHORS
 
 Prism Launcher Contributors
 
-PollyMC Contributors
+Fjord Launcher Contributors
 

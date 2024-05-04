@@ -22,7 +22,7 @@
 }:
 assert lib.assertMsg (stdenv.isLinux || !gamemodeSupport) "gamemodeSupport is only available on Linux";
   stdenv.mkDerivation rec {
-    pname = "pollymc-unwrapped";
+    pname = "fjordlauncher-unwrapped";
     inherit version;
 
     src = lib.cleanSource self;
@@ -58,8 +58,8 @@ assert lib.assertMsg (stdenv.isLinux || !gamemodeSupport) "gamemodeSupport is on
     dontWrapQtApps = true;
 
     meta = with lib; {
-      mainProgram = "pollymc";
-      homepage = "https://github.com/fn2006/PollyMC/";
+      mainProgram = "fjordlauncher";
+      homepage = "https://github.com/unmojang/FjordLauncher/";
       description = "A free, open source launcher for Minecraft";
       longDescription = ''
         Allows you to have multiple, separate instances of Minecraft (each with
@@ -67,7 +67,7 @@ assert lib.assertMsg (stdenv.isLinux || !gamemodeSupport) "gamemodeSupport is on
         their associated options with a simple interface.
       '';
       platforms = with platforms; linux ++ darwin;
-      changelog = "https://github.com/fn2006/PollyMC/releases/tag/${version}";
+      changelog = "https://github.com/unmojang/FjordLauncher/releases/tag/${version}";
       license = licenses.gpl3Only;
       maintainers = with maintainers; [fn2006];
     };

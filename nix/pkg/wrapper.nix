@@ -2,7 +2,7 @@
   lib,
   stdenv,
   symlinkJoin,
-  pollymc-unwrapped,
+  fjordlauncher-unwrapped,
   wrapQtAppsHook,
   addOpenGLRunpath,
   qtbase, # needed for wrapQtAppsHook
@@ -29,14 +29,14 @@
   additionalLibs ? [],
   additionalPrograms ? [],
 }: let
-  pollymcFinal = pollymc-unwrapped.override {
+  fjordlauncherFinal = fjordlauncher-unwrapped.override {
     inherit msaClientID gamemodeSupport;
   };
 in
   symlinkJoin {
-    name = "pollymc-${pollymcFinal.version}";
+    name = "fjordlauncher-${fjordlauncherFinal.version}";
 
-    paths = [pollymcFinal];
+    paths = [fjordlauncherFinal];
 
     nativeBuildInputs = [
       wrapQtAppsHook
@@ -92,5 +92,5 @@ in
         "--prefix PATH : ${lib.makeBinPath runtimePrograms}"
       ];
 
-    inherit (pollymcFinal) meta;
+    inherit (fjordlauncherFinal) meta;
   }

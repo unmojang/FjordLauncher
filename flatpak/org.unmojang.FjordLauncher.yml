@@ -1,4 +1,4 @@
-id: org.fn2006.PollyMC
+id: org.unmojang.FjordLauncher
 runtime: org.kde.Platform
 runtime-version: 5.15-23.08
 sdk: org.kde.Sdk
@@ -13,7 +13,7 @@ add-extensions:
     autodelete: false
     directory: utils/gamescope
 
-command: pollymc
+command: fjordlauncher
 finish-args:
   - --share=ipc
   - --socket=x11
@@ -36,7 +36,7 @@ modules:
   # Needed for proper Wayland support
   - libdecor.json
 
-  - name: pollymc
+  - name: fjordlauncher
     buildsystem: cmake-ninja
     builddir: true
     config-opts:
@@ -154,10 +154,10 @@ modules:
     buildsystem: simple
     build-commands:
       - install -Dm755 prime-run /app/bin/prime-run
-      - mv /app/bin/pollymc /app/bin/pollyrun
-      - install -Dm755 pollymc /app/bin/pollymc
+      - mv /app/bin/fjordlauncher /app/bin/fjordrun
+      - install -Dm755 fjordlauncher /app/bin/fjordlauncher
     sources:
       - type: file
         path: prime-run
       - type: file
-        path: pollymc
+        path: fjordlauncher

@@ -13,12 +13,12 @@
     in {
       inherit
         (ourPackages)
-        pollymc-qt5-unwrapped
-        pollymc-qt5
-        pollymc-unwrapped
-        pollymc
+        fjordlauncher-qt5-unwrapped
+        fjordlauncher-qt5
+        fjordlauncher-unwrapped
+        fjordlauncher
         ;
-      default = ourPackages.pollymc;
+      default = ourPackages.fjordlauncher;
     };
   };
 
@@ -49,16 +49,16 @@
         inherit version;
       };
     in {
-      pollymc-qt5-unwrapped = prev.libsForQt5.callPackage ./pkg unwrappedArgs;
+      fjordlauncher-qt5-unwrapped = prev.libsForQt5.callPackage ./pkg unwrappedArgs;
 
-      pollymc-qt5 = prev.libsForQt5.callPackage ./pkg/wrapper.nix {
-        pollymc-unwrapped = final.pollymc-qt5-unwrapped;
+      fjordlauncher-qt5 = prev.libsForQt5.callPackage ./pkg/wrapper.nix {
+        fjordlauncher-unwrapped = final.fjordlauncher-qt5-unwrapped;
       };
 
-      pollymc-unwrapped = prev.qt6Packages.callPackage ./pkg unwrappedArgs;
+      fjordlauncher-unwrapped = prev.qt6Packages.callPackage ./pkg unwrappedArgs;
 
-      pollymc = prev.qt6Packages.callPackage ./pkg/wrapper.nix {
-        inherit (final) pollymc-unwrapped;
+      fjordlauncher = prev.qt6Packages.callPackage ./pkg/wrapper.nix {
+        inherit (final) fjordlauncher-unwrapped;
       };
     };
   };

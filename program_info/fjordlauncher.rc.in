@@ -3,8 +3,8 @@
 #endif
 #include <windows.h>
 
-IDI_ICON1               ICON    DISCARDABLE     "pollymc.ico"
-1 RT_MANIFEST "pollymc.manifest"
+IDI_ICON1               ICON    DISCARDABLE     "fjordlauncher.ico"
+1 RT_MANIFEST "fjordlauncher.manifest"
 
 VS_VERSION_INFO VERSIONINFO
 FILEVERSION     @Launcher_VERSION_NAME4_COMMA@
@@ -15,10 +15,10 @@ BEGIN
         BEGIN
                 BLOCK "000004b0"
                 BEGIN
-                        VALUE "CompanyName", "MultiMC & Prism Launcher & PollyMC Contributors"
-                        VALUE "FileDescription", "PollyMC"
+                        VALUE "CompanyName", "MultiMC & Prism Launcher & Fjord Launcher Contributors"
+                        VALUE "FileDescription", "Fjord Launcher"
                         VALUE "FileVersion", "@Launcher_VERSION_NAME4@"
-                        VALUE "ProductName", "PollyMC"
+                        VALUE "ProductName", "Fjord Launcher"
                         VALUE "ProductVersion", "@Launcher_VERSION_NAME4@"
                 END
         END

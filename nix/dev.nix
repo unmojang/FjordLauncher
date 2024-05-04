@@ -27,7 +27,7 @@
         ${config.pre-commit.installationScript}
       '';
 
-      inputsFrom = [config.packages.pollymc-unwrapped];
+      inputsFrom = [config.packages.fjordlauncher-unwrapped];
       buildInputs = with pkgs; [ccache ninja];
     };
 

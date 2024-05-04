@@ -908,7 +908,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
 
     // check update locks
     {
-        auto update_log_path = FS::PathCombine(m_dataPath, "logs", "pollymc_update.log");
+        auto update_log_path = FS::PathCombine(m_dataPath, "logs", "fjordlauncher_update.log");
 
         auto update_lock = QFileInfo(FS::PathCombine(m_dataPath, ".prism_launcher_update.lock"));
         if (update_lock.exists()) {
@@ -922,7 +922,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
                               "\n"
                               "This likely means that a update attempt failed. Please ensure your installation is in working order before "
                               "proceeding.\n"
-                              "Check the PollyMC updater log at: \n"
+                              "Check the Fjord Launcher updater log at: \n"
                               "%7\n"
                               "for details on the last update attempt.\n"
                               "\n"
@@ -959,7 +959,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
                               "\n"
                               "Please ensure your installation is in working order before "
                               "proceeding.\n"
-                              "Check the PollyMC updater log at: \n"
+                              "Check the Fjord Launcher updater log at: \n"
                               "%1\n"
                               "for details on the last update attempt.")
                                .arg(update_log_path);
@@ -991,7 +991,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
             auto infoMsg = tr("Update succeeded\n"
                               "\n"
                               "You are now running %1 .\n"
-                              "Check the PollyMC updater log at: \n"
+                              "Check the Fjord Launcher updater log at: \n"
                               "%1\n"
                               "for details.")
                                .arg(BuildConfig.printableVersionString())
