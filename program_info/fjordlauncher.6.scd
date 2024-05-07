@@ -77,7 +77,12 @@ GitHub: https://github.com/unmojang/FjordLauncher
 
 # AUTHORS
 
+MultiMC Contributors
+
+PolyMC Contributors
+
+PollyMC Contributors
+
 Prism Launcher Contributors
 
 Fjord Launcher Contributors
-
