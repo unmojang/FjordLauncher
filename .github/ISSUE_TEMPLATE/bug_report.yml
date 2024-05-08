@@ -23,15 +23,15 @@ body:
     - Other
 - type: textarea
   attributes:
-    label: Version of PollyMC
-    description: The version of PollyMC used in the bug report.
-    placeholder: PollyMC 5.1
+    label: Version of Fjord Launcher
+    description: The version of Fjord Launcher used in the bug report.
+    placeholder: Fjord Launcher 5.1
   validations:
     required: true
 - type: textarea
   attributes:
     label: Version of Qt
-    description: The version of Qt used in the bug report. You can find it in Help -> About PollyMC -> About Qt.
+    description: The version of Qt used in the bug report. You can find it in Help -> About Fjord Launcher -> About Qt.
     placeholder: Qt 6.3.0
   validations:
     required: true

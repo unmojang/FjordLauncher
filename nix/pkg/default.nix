@@ -69,6 +69,6 @@ assert lib.assertMsg (stdenv.isLinux || !gamemodeSupport) "gamemodeSupport is on
       platforms = with platforms; linux ++ darwin;
       changelog = "https://github.com/unmojang/FjordLauncher/releases/tag/${version}";
       license = licenses.gpl3Only;
-      maintainers = with maintainers; [fn2006];
+      maintainers = with maintainers; [evan-goode];
     };
   }

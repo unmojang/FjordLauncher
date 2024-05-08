@@ -35,7 +35,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: "true"
-          path: "PollyMC-source"
+          path: "FjordLauncher-source"
       - name: Download artifacts
         uses: actions/download-artifact@v3
       - name: Grab and store version
@@ -44,40 +44,40 @@ jobs:
           echo "VERSION=$tag_name" >> $GITHUB_ENV
       - name: Package artifacts properly
         run: |
-          mv ${{ github.workspace }}/PollyMC-source PollyMC-${{ env.VERSION }}
-          mv PollyMC-Linux-Qt6-Portable*/PollyMC-portable.tar.gz PollyMC-Linux-Qt6-Portable-${{ env.VERSION }}.tar.gz
-          mv PollyMC-Linux-Qt6*/PollyMC.tar.gz PollyMC-Linux-Qt6-${{ env.VERSION }}.tar.gz
-          mv PollyMC-Linux-Qt5-Portable*/PollyMC-portable.tar.gz PollyMC-Linux-Qt5-Portable-${{ env.VERSION }}.tar.gz
-          mv PollyMC-Linux-Qt5*/PollyMC.tar.gz PollyMC-Linux-Qt5-${{ env.VERSION }}.tar.gz
-          mv PollyMC-*.AppImage/PollyMC-*.AppImage PollyMC-Linux-x86_64.AppImage
-          mv PollyMC-*.AppImage.zsync/PollyMC-*.AppImage.zsync PollyMC-Linux-x86_64.AppImage.zsync
-          mv PollyMC-macOS-Legacy*/PollyMC.zip PollyMC-macOS-Legacy-${{ env.VERSION }}.zip
-          mv PollyMC-macOS*/PollyMC.zip PollyMC-macOS-${{ env.VERSION }}.zip
+          mv ${{ github.workspace }}/FjordLauncher-source FjordLauncher-${{ env.VERSION }}
+          mv FjordLauncher-Linux-Qt6-Portable*/FjordLauncher-portable.tar.gz FjordLauncher-Linux-Qt6-Portable-${{ env.VERSION }}.tar.gz
+          mv FjordLauncher-Linux-Qt6*/FjordLauncher.tar.gz FjordLauncher-Linux-Qt6-${{ env.VERSION }}.tar.gz
+          mv FjordLauncher-Linux-Qt5-Portable*/FjordLauncher-portable.tar.gz FjordLauncher-Linux-Qt5-Portable-${{ env.VERSION }}.tar.gz
+          mv FjordLauncher-Linux-Qt5*/FjordLauncher.tar.gz FjordLauncher-Linux-Qt5-${{ env.VERSION }}.tar.gz
+          mv FjordLauncher-*.AppImage/FjordLauncher-*.AppImage FjordLauncher-Linux-x86_64.AppImage
+          mv FjordLauncher-*.AppImage.zsync/FjordLauncher-*.AppImage.zsync FjordLauncher-Linux-x86_64.AppImage.zsync
+          mv FjordLauncher-macOS-Legacy*/FjordLauncher.zip FjordLauncher-macOS-Legacy-${{ env.VERSION }}.zip
+          mv FjordLauncher-macOS*/FjordLauncher.zip FjordLauncher-macOS-${{ env.VERSION }}.zip
 
-          tar --exclude='.git' -czf PollyMC-${{ env.VERSION }}.tar.gz PollyMC-${{ env.VERSION }}
+          tar --exclude='.git' -czf FjordLauncher-${{ env.VERSION }}.tar.gz FjordLauncher-${{ env.VERSION }}
 
-          for d in PollyMC-Windows-MSVC*; do
+          for d in FjordLauncher-Windows-MSVC*; do
             cd "${d}" || continue
             LEGACY="$(echo -n ${d} | grep -o Legacy || true)"
             ARM64="$(echo -n ${d} | grep -o arm64 || true)"
             INST="$(echo -n ${d} | grep -o Setup || true)"
             PORT="$(echo -n ${d} | grep -o Portable || true)"
-            NAME="PollyMC-Windows-MSVC"
+            NAME="FjordLauncher-Windows-MSVC"
             test -z "${LEGACY}" || NAME="${NAME}-Legacy"
             test -z "${ARM64}" || NAME="${NAME}-arm64"
             test -z "${PORT}" || NAME="${NAME}-Portable"
-            test -z "${INST}" || mv PollyMC-*.exe ../${NAME}-Setup-${{ env.VERSION }}.exe
+            test -z "${INST}" || mv FjordLauncher-*.exe ../${NAME}-Setup-${{ env.VERSION }}.exe
             test -n "${INST}" || zip -r -9 "../${NAME}-${{ env.VERSION }}.zip" *
             cd ..
           done
 
-          for d in PollyMC-Windows-MinGW-w64*; do
+          for d in FjordLauncher-Windows-MinGW-w64*; do
             cd "${d}" || continue
             INST="$(echo -n ${d} | grep -o Setup || true)"
             PORT="$(echo -n ${d} | grep -o Portable || true)"
-            NAME="PollyMC-Windows-MinGW-w64"
+            NAME="FjordLauncher-Windows-MinGW-w64"
             test -z "${PORT}" || NAME="${NAME}-Portable"
-            test -z "${INST}" || mv PollyMC-*.exe ../${NAME}-Setup-${{ env.VERSION }}.exe
+            test -z "${INST}" || mv FjordLauncher-*.exe ../${NAME}-Setup-${{ env.VERSION }}.exe
             test -n "${INST}" || zip -r -9 "../${NAME}-${{ env.VERSION }}.zip" *
             cd ..
           done
@@ -88,25 +88,25 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ github.ref }}
-          name: PollyMC ${{ env.VERSION }}
+          name: Fjord Launcher ${{ env.VERSION }}
           draft: true
           prerelease: false
           files: |
-            PollyMC-Linux-Qt5-${{ env.VERSION }}.tar.gz
-            PollyMC-Linux-Qt5-Portable-${{ env.VERSION }}.tar.gz
-            PollyMC-Linux-x86_64.AppImage
-            PollyMC-Linux-x86_64.AppImage.zsync
-            PollyMC-Linux-Qt6-${{ env.VERSION }}.tar.gz
-            PollyMC-Linux-Qt6-Portable-${{ env.VERSION }}.tar.gz
-            PollyMC-Windows-MinGW-w64-${{ env.VERSION }}.zip
-            PollyMC-Windows-MinGW-w64-Portable-${{ env.VERSION }}.zip
-            PollyMC-Windows-MinGW-w64-Setup-${{ env.VERSION }}.exe
-            PollyMC-Windows-MSVC-arm64-${{ env.VERSION }}.zip
-            PollyMC-Windows-MSVC-arm64-Portable-${{ env.VERSION }}.zip
-            PollyMC-Windows-MSVC-arm64-Setup-${{ env.VERSION }}.exe
-            PollyMC-Windows-MSVC-${{ env.VERSION }}.zip
-            PollyMC-Windows-MSVC-Portable-${{ env.VERSION }}.zip
-            PollyMC-Windows-MSVC-Setup-${{ env.VERSION }}.exe
-            PollyMC-macOS-${{ env.VERSION }}.zip
-            PollyMC-macOS-Legacy-${{ env.VERSION }}.zip
-            PollyMC-${{ env.VERSION }}.tar.gz
+            FjordLauncher-Linux-Qt5-${{ env.VERSION }}.tar.gz
+            FjordLauncher-Linux-Qt5-Portable-${{ env.VERSION }}.tar.gz
+            FjordLauncher-Linux-x86_64.AppImage
+            FjordLauncher-Linux-x86_64.AppImage.zsync
+            FjordLauncher-Linux-Qt6-${{ env.VERSION }}.tar.gz
+            FjordLauncher-Linux-Qt6-Portable-${{ env.VERSION }}.tar.gz
+            FjordLauncher-Windows-MinGW-w64-${{ env.VERSION }}.zip
+            FjordLauncher-Windows-MinGW-w64-Portable-${{ env.VERSION }}.zip
+            FjordLauncher-Windows-MinGW-w64-Setup-${{ env.VERSION }}.exe
+            FjordLauncher-Windows-MSVC-arm64-${{ env.VERSION }}.zip
+            FjordLauncher-Windows-MSVC-arm64-Portable-${{ env.VERSION }}.zip
+            FjordLauncher-Windows-MSVC-arm64-Setup-${{ env.VERSION }}.exe
+            FjordLauncher-Windows-MSVC-${{ env.VERSION }}.zip
+            FjordLauncher-Windows-MSVC-Portable-${{ env.VERSION }}.zip
+            FjordLauncher-Windows-MSVC-Setup-${{ env.VERSION }}.exe
+            FjordLauncher-macOS-${{ env.VERSION }}.zip
+            FjordLauncher-macOS-Legacy-${{ env.VERSION }}.zip
+            FjordLauncher-${{ env.VERSION }}.tar.gz
