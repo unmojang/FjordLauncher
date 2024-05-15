@@ -90,6 +90,7 @@ class AccountListPage : public QMainWindow, public BasePage {
     void ShowContextMenu(const QPoint& pos);
 
    private:
+    void showLegalNotice();
     void changeEvent(QEvent* event) override;
     QMenu* createPopupMenu() override;
     shared_qobject_ptr<AccountList> m_accounts;

@@ -137,6 +137,15 @@ void AccountListPage::listChanged()
     updateButtonStates();
 }
 
+void AccountListPage::showLegalNotice()
+{
+    QMessageBox::warning(this, tr("Notice"),
+                         tr("Depending on the laws in your area, accessing Minecraft may require purchasing the game from Mojang."
+                            "<br><br>"
+                            "In order to limit dependence on nonfree network services, this Minecraft Launcher does not include DRM, "
+                            "but its developers do not condone the violation of any law. "));
+}
+
 void AccountListPage::on_actionAddMojang_triggered()
 {
     MinecraftAccountPtr account =
@@ -152,6 +161,10 @@ void AccountListPage::on_actionAddMojang_triggered()
 
 void AccountListPage::on_actionAddAuthlibInjector_triggered()
 {
+    if (m_accounts->count() == 0) {
+        showLegalNotice();
+    }
+
     MinecraftAccountPtr account = AuthlibInjectorLoginDialog::newAccount(
         this, tr("Please enter your username (sometimes an email address), password, and the URL of your API server."
                  "<br>"
@@ -184,6 +197,10 @@ void AccountListPage::on_actionAddMicrosoft_triggered()
 
 void AccountListPage::on_actionAddOffline_triggered()
 {
+    if (m_accounts->count() == 0) {
+        showLegalNotice();
+    }
+
     MinecraftAccountPtr account =
         OfflineLoginDialog::newAccount(this, tr("Please enter your desired username to add your offline account."));
 
