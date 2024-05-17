@@ -1,23 +1,31 @@
 id: org.unmojang.FjordLauncher
 runtime: org.kde.Platform
-runtime-version: 5.15-23.08
+runtime-version: "5.15-23.08"
 sdk: org.kde.Sdk
 sdk-extensions:
-  - org.freedesktop.Sdk.Extension.openjdk17
   - org.freedesktop.Sdk.Extension.openjdk8
+  - org.freedesktop.Sdk.Extension.openjdk17
+  - org.freedesktop.Sdk.Extension.openjdk21
 add-extensions:
-  com.valvesoftware.Steam.Utility.gamescope:
-    version: stable
-    add-ld-path: lib
+  org.freedesktop.Platform.VulkanLayer.gamescope:
+    version: "23.08"
     no-autodownload: true
     autodelete: false
+    add-ld-path: lib
     directory: utils/gamescope
 
-command: fjordlauncher
+  org.freedesktop.Platform.VulkanLayer.MangoHud:
+    version: "23.08"
+    no-autodownload: true
+    autodelete: false
+    add-ld-path: lib
+    directory: utils/mangohud
+
+command: fjordrun
 finish-args:
   - --share=ipc
-  - --socket=x11
   - --socket=wayland
+  - --socket=fallback-x11
   - --device=all
   - --share=network
   - --socket=pulseaudio
@@ -25,6 +33,8 @@ finish-args:
   - --filesystem=xdg-run/app/com.discordapp.Discord:create
     # Mod drag&drop
   - --filesystem=xdg-download:ro
+  - --env=PATH=/app/bin:/usr/bin:/app/utils/gamescope/bin:/app/utils/mangohud/bin
+  - --env=VK_LAYER_PATH=/usr/lib/extensions/vulkan/share/vulkan/implicit_layer.d
 
 cleanup:
   - /lib/libGLU*
@@ -55,12 +65,13 @@ modules:
     buildsystem: simple
     build-commands:
       - mkdir -p /app/jdk/
+      - /usr/lib/sdk/openjdk21/install.sh
+      - mv /app/jre /app/jdk/21
       - /usr/lib/sdk/openjdk17/install.sh
       - mv /app/jre /app/jdk/17
       - /usr/lib/sdk/openjdk8/install.sh
       - mv /app/jre /app/jdk/8
-    cleanup:
-      - /jre
+      - rm -rf /app/jdk/8/bin
 
   - name: glfw
     buildsystem: cmake-ninja
@@ -108,16 +119,10 @@ modules:
       # post-install is running inside the build dir, we need it from the source though
       - install -Dm755 ../data/gamemoderun -t /app/bin
     sources:
-      - type: archive
-        dest-filename: gamemode.tar.gz
-        url: https://api.github.com/repos/FeralInteractive/gamemode/tarball/1.8.1
-        sha256: 969cf85b5ca3944f3e315cd73a0ee9bea4f9c968cd7d485e9f4745bc1e679c4e
-        x-checker-data:
-          type: json
-          url: https://api.github.com/repos/FeralInteractive/gamemode/releases/latest
-          version-query: .tag_name
-          url-query: .tarball_url
-          timestamp-query: .published_at
+      - type: git
+        url: https://github.com/FeralInteractive/gamemode.git
+        tag: 1.8.1
+        commit: 5180d89e66830d87f69687b95fb86f622552b94b
     cleanup:
       - /include
       - /lib/pkgconfig
@@ -153,11 +158,15 @@ modules:
   - name: enhance
     buildsystem: simple
     build-commands:
-      - install -Dm755 prime-run /app/bin/prime-run
-      - mv /app/bin/fjordlauncher /app/bin/fjordrun
-      - install -Dm755 fjordlauncher /app/bin/fjordlauncher
+      - install -Dm755 prime-run -t /app/bin
+      - install -Dm755 fjordrun -t /app/bin
     sources:
       - type: file
         path: prime-run
       - type: file
-        path: fjordlauncher
+        path: fjordrun
+
+  - name: extensions
+    buildsystem: simple
+    build-commands:
+      - mkdir -p ${FLATPAK_DEST}/utils/{gamescope,mangohud}
