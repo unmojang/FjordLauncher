@@ -155,7 +155,7 @@ JavaInstallPtr JavaUtils::GetDefaultJava()
 
 QStringList addJavasFromEnv(QList<QString> javas)
 {
-    auto env = qEnvironmentVariable("POLLYMC_JAVA_PATHS");  // FIXME: use launcher name from buildconfig
+    auto env = qEnvironmentVariable("FJORDLAUNCHER_JAVA_PATHS");  // FIXME: use launcher name from buildconfig
 #if defined(Q_OS_WIN32)
     QList<QString> javaPaths = env.replace("\\", "/").split(QLatin1String(";"));
 
