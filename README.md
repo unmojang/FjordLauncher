@@ -6,8 +6,6 @@ Fjord Launcher is a **fork** of Prism Launcher. It is **not** endorsed by or aff
 
 - [Support for alternative auth servers](doc/alternative-auth-servers.md)
 
-- Offline mode doesn't require a Microsoft account
-
 - Ability to download FTB modpacks from within the launcher
 
 ## Having a problem with the launcher?
