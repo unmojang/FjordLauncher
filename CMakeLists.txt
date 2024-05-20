@@ -232,15 +232,8 @@ elseif(WIN32)
 endif()
 
 # API Keys
-# NOTE: These API keys are here for convenience. If you rebrand this software or intend to break the terms of service
-# of these platforms, please change these API keys beforehand.
-# Be aware that if you were to use these API keys for malicious purposes they might get revoked, which might cause
-# breakage to thousands of users.
-# If you don't plan to use these features of this software, you can just remove these values.
-
-# By using this key in your builds you accept the terms of use laid down in
-# https://docs.microsoft.com/en-us/legal/microsoft-identity-platform/terms-of-use
-set(Launcher_MSA_CLIENT_ID "" CACHE STRING "Client ID you can get from Microsoft Identity Platform when you register an application")
+# Nintendo Switch Client ID, used by prismarine-auth and azalea-auth.
+set(Launcher_MSA_CLIENT_ID "00000000441cc96b" CACHE STRING "Microsoft auth title. Not compatible with Prism Launcher (Azure) client IDs.")
 
 # By using this key in your builds you accept the terms and conditions laid down in
 # https://support.curseforge.com/en/support/solutions/articles/9000207405-curse-forge-3rd-party-api-terms-and-conditions
