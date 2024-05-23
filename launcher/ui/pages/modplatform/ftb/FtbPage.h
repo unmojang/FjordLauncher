@@ -41,59 +41,45 @@
 #include <QWidget>
 
 #include "Application.h"
-#include "ui/pages/BasePage.h"
 #include "tasks/Task.h"
+#include "ui/pages/BasePage.h"
 
-namespace Ui
-{
-    class FtbPage;
+namespace Ui {
+class FtbPage;
 }
 
 class NewInstanceDialog;
 
-class FtbPage : public QWidget, public BasePage
-{
-Q_OBJECT
+class FtbPage : public QWidget, public BasePage {
+    Q_OBJECT
 
-public:
-    explicit FtbPage(NewInstanceDialog* dialog, QWidget *parent = 0);
+   public:
+    explicit FtbPage(NewInstanceDialog* dialog, QWidget* parent = 0);
     virtual ~FtbPage();
-    virtual QString displayName() const override
-    {
-        return "FTB";
-    }
-    virtual QIcon icon() const override
-    {
-        return APPLICATION->getThemedIcon("ftb_logo");
-    }
-    virtual QString id() const override
-    {
-        return "ftb";
-    }
-    virtual QString helpPage() const override
-    {
-        return "FTB-platform";
-    }
+    virtual QString displayName() const override { return "FTB"; }
+    virtual QIcon icon() const override { return APPLICATION->getThemedIcon("ftb_logo"); }
+    virtual QString id() const override { return "ftb"; }
+    virtual QString helpPage() const override { return "FTB-platform"; }
     virtual bool shouldDisplay() const override;
     void retranslate() override;
 
     void openedImpl() override;
     void closedImpl() override;
 
-    bool eventFilter(QObject * watched, QEvent * event) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
-private:
+   private:
     void suggestCurrent();
 
-private slots:
+   private slots:
     void triggerSearch();
 
     void onSortingSelectionChanged(QString data);
     void onSelectionChanged(QModelIndex first, QModelIndex second);
     void onVersionSelectionChanged(QString data);
 
-private:
-    Ui::FtbPage *ui = nullptr;
+   private:
+    Ui::FtbPage* ui = nullptr;
     NewInstanceDialog* dialog = nullptr;
     Ftb::ListModel* listModel = nullptr;
     Ftb::FilterModel* filterModel = nullptr;
@@ -101,5 +87,5 @@ private:
     ModpacksCH::Modpack selected;
     QString selectedVersion;
 
-    bool initialised { false };
+    bool initialised{ false };
 };

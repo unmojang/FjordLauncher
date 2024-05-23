@@ -52,7 +52,7 @@
 #include <settings/SettingsObject.h>
 #include "Application.h"
 
-QString GuiUtil::fetchFlameKey(QWidget *parentWidget)
+QString GuiUtil::fetchFlameKey(QWidget* parentWidget)
 {
     if (BuildConfig.FLAME_API_KEY_API_URL.isEmpty())
         return "";
@@ -61,17 +61,16 @@ QString GuiUtil::fetchFlameKey(QWidget *parentWidget)
     auto flameKeyTask = std::make_unique<FetchFlameAPIKey>();
     prog.execWithTask(flameKeyTask.get());
 
-    if (!flameKeyTask->wasSuccessful())
-    {
+    if (!flameKeyTask->wasSuccessful()) {
         auto message = QObject::tr("Fetching the Curseforge API key failed. Reason: %1").arg(flameKeyTask->failReason());
-        if (!(APPLICATION->capabilities() & Application::SupportsFlame))
-        {
-            message += "\n\n" + QObject::tr("Downloading Curseforge modpacks will not work unless you manually set a valid Curseforge Core API key in the settings.");
+        if (!(APPLICATION->capabilities() & Application::SupportsFlame)) {
+            message += "\n\n" + QObject::tr(
+                                    "Downloading Curseforge modpacks will not work unless you manually set a valid Curseforge Core API key "
+                                    "in the settings.");
         }
 
-        CustomMessageBox::selectable(parentWidget,
-                                     QObject::tr("Failed to fetch Curseforge API key."),
-                                     message, QMessageBox::Critical)->exec();
+        CustomMessageBox::selectable(parentWidget, QObject::tr("Failed to fetch Curseforge API key."), message, QMessageBox::Critical)
+            ->exec();
     }
 
     return flameKeyTask->m_result;

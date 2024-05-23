@@ -24,7 +24,7 @@
 
 namespace Ftb {
 
-FilterModel::FilterModel(QObject *parent) : QSortFilterProxyModel(parent)
+FilterModel::FilterModel(QObject* parent) : QSortFilterProxyModel(parent)
 {
     currentSorting = Sorting::ByPlays;
     sortings.insert(tr("Sort by Plays"), Sorting::ByPlays);
@@ -59,7 +59,7 @@ void FilterModel::setSearchTerm(const QString& term)
     invalidate();
 }
 
-bool FilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
+bool FilterModel::filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const
 {
     if (searchTerm.isEmpty()) {
         return true;
@@ -70,18 +70,16 @@ bool FilterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParen
     return pack.name.contains(searchTerm, Qt::CaseInsensitive);
 }
 
-bool FilterModel::lessThan(const QModelIndex &left, const QModelIndex &right) const
+bool FilterModel::lessThan(const QModelIndex& left, const QModelIndex& right) const
 {
     ModpacksCH::Modpack leftPack = sourceModel()->data(left, Qt::UserRole).value<ModpacksCH::Modpack>();
     ModpacksCH::Modpack rightPack = sourceModel()->data(right, Qt::UserRole).value<ModpacksCH::Modpack>();
 
     if (currentSorting == ByPlays) {
         return leftPack.plays < rightPack.plays;
-    }
-    else if (currentSorting == ByInstalls) {
+    } else if (currentSorting == ByInstalls) {
         return leftPack.installs < rightPack.installs;
-    }
-    else if (currentSorting == ByName) {
+    } else if (currentSorting == ByName) {
         return StringUtils::naturalCompare(leftPack.name, rightPack.name, Qt::CaseSensitive) >= 0;
     }
 
@@ -90,4 +88,4 @@ bool FilterModel::lessThan(const QModelIndex &left, const QModelIndex &right) co
     return true;
 }
 
-}
+}  // namespace Ftb

@@ -53,16 +53,16 @@ namespace ModpacksCH {
 class PackInstallTask final : public InstanceTask {
     Q_OBJECT
 
-public:
+   public:
     explicit PackInstallTask(Modpack pack, QString version, QWidget* parent = nullptr);
     ~PackInstallTask() override = default;
 
     bool abort() override;
 
-protected:
+   protected:
     void executeTask() override;
 
-private slots:
+   private slots:
     void onManifestDownloadSucceeded();
     void onResolveModsSucceeded();
     void onCreateInstanceSucceeded();
@@ -73,13 +73,13 @@ private slots:
     void onCreateInstanceFailed(QString reason);
     void onModDownloadFailed(QString reason);
 
-private:
+   private:
     void resolveMods();
     void createInstance();
     void downloadPack();
     void copyBlockedMods();
 
-private:
+   private:
     NetJob::Ptr m_net_job = nullptr;
     shared_qobject_ptr<Flame::FileResolvingTask> m_mod_id_resolver_task = nullptr;
 
@@ -94,8 +94,8 @@ private:
     QMap<QString, QString> m_files_to_copy;
     QList<BlockedMod> m_blocked_mods;
 
-    //FIXME: nuke
+    // FIXME: nuke
     QWidget* m_parent;
 };
 
-}
+}  // namespace ModpacksCH

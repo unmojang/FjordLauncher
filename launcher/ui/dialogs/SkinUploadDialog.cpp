@@ -128,7 +128,8 @@ void SkinUploadDialog::on_skinBrowseBtn_clicked()
     ui->skinPathTextBox->setText(cooked_path);
 }
 
-SkinUploadDialog::SkinUploadDialog(MinecraftAccountPtr account, QWidget* parent) : QDialog(parent), m_account(account), ui(new Ui::SkinUploadDialog)
+SkinUploadDialog::SkinUploadDialog(MinecraftAccountPtr account, QWidget* parent)
+    : QDialog(parent), m_account(account), ui(new Ui::SkinUploadDialog)
 {
     ui->setupUi(this);
 

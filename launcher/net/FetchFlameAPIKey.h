@@ -19,15 +19,14 @@
 #ifndef FETCHFLAMEAPIKEY_H
 #define FETCHFLAMEAPIKEY_H
 
-#include <QObject>
-#include <QNetworkReply>
 #include <tasks/Task.h>
+#include <QNetworkReply>
+#include <QObject>
 
-class FetchFlameAPIKey : public Task
-{
+class FetchFlameAPIKey : public Task {
     Q_OBJECT
    public:
-    explicit FetchFlameAPIKey(QObject *parent = nullptr);
+    explicit FetchFlameAPIKey(QObject* parent = nullptr);
 
     QString m_result;
 
@@ -37,8 +36,7 @@ class FetchFlameAPIKey : public Task
    protected:
     virtual void executeTask();
 
-
     std::shared_ptr<QNetworkReply> m_reply;
 };
 
-#endif // FETCHFLAMEAPIKEY_H
+#endif  // FETCHFLAMEAPIKEY_H
