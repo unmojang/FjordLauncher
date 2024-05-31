@@ -22,70 +22,7 @@ You **will** open an issue [here](https://github.com/unmojang/FjordLauncher/issu
 
 ## Installation
 
-### Windows
-
-#### [Scoop](https://scoop.sh) (recommended)
-
-```PowerShell
-scoop bucket add unmojang https://github.com/unmojang/scoop-unmojang
-scoop install unmojang/fjordlauncher
-```
-
-#### Windows (Manual)
-
-You can get installers or portable builds from the [releases section](https://github.com/unmojang/FjordLauncher/releases/latest), MSVC builds are recommended over MinGW builds, but there's no real difference.
-
-### macOS
-
-#### [Homebrew](https://brew.sh) (recommended)
-
-```Shell
-brew tap unmojang/homebrew-unmojang
-brew install --cask fjordlauncher
-```
-
-#### macOS (Manual)
-
-There are builds for macOS in the [releases section](https://github.com/unmojang/FjordLauncher/releases/latest).
-
-### Flatpak
-
-```Shell
-flatpak remote-add --user --if-not-exists unmojang https://unmojang.github.io/unmojang-flatpak/index.flatpakrepo
-flatpak install org.unmojang.FjordLauncher
-```
-
-### Arch Linux
-
-Fjord Launcher is [available](https://aur.archlinux.org/packages?O=0&K=fjordlauncher) from the AUR:
-
-```Shell
-paru -S fjordlauncher-bin # binary package, recommended
-paru -S fjordlauncher-git # or, build from source from latest commit
-```
-
-### Debian/Ubuntu
-
-Install from the MPR with [Mist](https://docs.makedeb.org/using-the-mpr/mist-the-mpr-cli/#installing-mist):
-
-```Shell
-mist install fjordlauncher-bin # Binary package, recommended
-mist install fjordlauncher-git # or, build from source from latest commit
-```
-
-### Nix
-
-This repository contains a Nix flake:
-
-```Shell
-nix run github:unmojang/FjordLauncher
-```
-
-See [nix/README.md](nix/README.md) for details.
-
-### Other Linux
-
-AppImages are available in the [releases section](https://github.com/unmojang/FjordLauncher/releases/latest).
+#TODO
 
 ## Building
 
