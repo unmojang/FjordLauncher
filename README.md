@@ -1,8 +1,5 @@
 # <img src="./program_info/org.unmojang.FjordLauncher.svg" alt="Fjord Launcher logo" width="96"/> Fjord Launcher
 
-> [!WARNING]
-> Fjord Launcher is currently under development and is not yet in an easy-to-use state.
-
 Fjord Launcher is a **fork** of [Prism Launcher](https://github.com/PrismLauncher/PrismLauncher). It was based on [PollyMC](https://github.com/fn2006/PollyMC), which is now unmaintained. It is **not** endorsed by or affiliated with Prism Launcher or PollyMC.
 
 ## Advantages of this fork over Prism Launcher
