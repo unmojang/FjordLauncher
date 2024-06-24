@@ -51,10 +51,11 @@ MSAStep::MSAStep(AccountData* data, Action action) : AuthStep(data), m_action(ac
 {
     m_clientId = APPLICATION->getMSAClientID();
     OAuth2::Options opts;
-    opts.scope = "XboxLive.signin offline_access";
+    opts.scope = "service::user.auth.xboxlive.com::MBI_SSL";
     opts.clientIdentifier = m_clientId;
-    opts.authorizationUrl = "https://login.microsoftonline.com/consumers/oauth2/v2.0/devicecode";
-    opts.accessTokenUrl = "https://login.microsoftonline.com/consumers/oauth2/v2.0/token";
+    opts.authorizationUrl = "https://login.live.com/oauth20_connect.srf";
+    opts.accessTokenUrl = "https://login.live.com/oauth20_token.srf";
+    opts.responseType = "device_code";
 
     // FIXME: OAuth2 is not aware of our fancy shared pointers
     m_oauth2 = new OAuth2(opts, m_data->msaToken, this, APPLICATION->network().get());

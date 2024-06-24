@@ -61,8 +61,7 @@ APIPage::APIPage(QWidget* parent) : QWidget(parent), ui(new Ui::APIPage)
                               PasteUpload::PasteType::Hastebin };
 
     static QRegularExpression validUrlRegExp("https?://.+");
-    static QRegularExpression validMSAClientID(
-        QRegularExpression::anchoredPattern("[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"));
+    static QRegularExpression validMSAClientID(QRegularExpression::anchoredPattern(".+"));
     static QRegularExpression validFlameKey(QRegularExpression::anchoredPattern("\\$2[ayb]\\$.{56}"));
 
     ui->setupUi(this);

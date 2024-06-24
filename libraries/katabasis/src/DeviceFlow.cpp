@@ -177,6 +177,7 @@ void DeviceFlow::login()
     QList<RequestParameter> parameters;
     parameters.append(RequestParameter(OAUTH2_CLIENT_ID, options_.clientIdentifier.toUtf8()));
     parameters.append(RequestParameter(OAUTH2_SCOPE, options_.scope.toUtf8()));
+    parameters.append(RequestParameter(OAUTH2_RESPONSE_TYPE, options_.responseType.toUtf8()));
     QByteArray payload = createQueryParameters(parameters);
 
     QUrl url(options_.authorizationUrl);
@@ -261,8 +262,10 @@ void DeviceFlow::startPollServer(const QVariantMap& params, int expiresIn)
     if (!options_.clientSecret.isEmpty()) {
         parameters.append(RequestParameter(OAUTH2_CLIENT_SECRET, options_.clientSecret.toUtf8()));
     }
-    parameters.append(RequestParameter(OAUTH2_CODE, deviceCode.toUtf8()));
+    parameters.append(RequestParameter(OAUTH2_DEVICE_CODE, deviceCode.toUtf8()));
     parameters.append(RequestParameter(OAUTH2_GRANT_TYPE, grantType.toUtf8()));
+    parameters.append(RequestParameter(OAUTH2_RESPONSE_TYPE, options_.responseType.toUtf8()));
+
     QByteArray payload = createQueryParameters(parameters);
 
     PollServer* pollServer = new PollServer(manager_, authRequest, payload, expiresIn, this);
@@ -395,6 +398,7 @@ bool DeviceFlow::refresh()
     if (!options_.clientSecret.isEmpty()) {
         parameters.insert(OAUTH2_CLIENT_SECRET, options_.clientSecret);
     }
+    parameters.insert(OAUTH2_SCOPE, options_.scope.toUtf8());
     parameters.insert(OAUTH2_REFRESH_TOKEN, refreshToken());
     parameters.insert(OAUTH2_GRANT_TYPE, OAUTH2_REFRESH_TOKEN);
 

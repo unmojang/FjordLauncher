@@ -27,7 +27,7 @@ void XboxUserStep::perform()
     "Properties": {
         "AuthMethod": "RPS",
         "SiteName": "user.auth.xboxlive.com",
-        "RpsTicket": "d=%1"
+        "RpsTicket": "%1"
     },
     "RelyingParty": "http://auth.xboxlive.com",
     "TokenType": "JWT"
