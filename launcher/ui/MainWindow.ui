@@ -59,33 +59,6 @@
    <addaction name="actionCAT"/>
    <addaction name="actionAccountsButton"/>
   </widget>
-  <widget class="QToolBar" name="newsToolBar">
-   <property name="windowTitle">
-    <string>News Toolbar</string>
-   </property>
-   <property name="allowedAreas">
-    <set>Qt::BottomToolBarArea|Qt::TopToolBarArea</set>
-   </property>
-   <property name="iconSize">
-    <size>
-     <width>16</width>
-     <height>16</height>
-    </size>
-   </property>
-   <property name="toolButtonStyle">
-    <enum>Qt::ToolButtonTextBesideIcon</enum>
-   </property>
-   <property name="floatable">
-    <bool>false</bool>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>BottomToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
-   <addaction name="actionMoreNews"/>
-  </widget>
   <widget class="WideBar" name="instanceToolBar">
    <property name="windowTitle">
     <string>Instance Toolbar</string>
