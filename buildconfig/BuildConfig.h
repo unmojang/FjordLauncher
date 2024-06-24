@@ -149,11 +149,6 @@ class Config {
     QString FLAME_API_KEY;
 
     /**
-     * URL to fetch the Client API key for CurseForge from
-     */
-    QString FLAME_API_KEY_API_URL;
-
-    /**
      * Metadata repository URL prefix
      */
     QString META_URL;

@@ -84,6 +84,7 @@
 #include <mutex>
 
 #include <QAccessible>
+#include <QCheckBox>
 #include <QCommandLineParser>
 #include <QDebug>
 #include <QDir>
@@ -1204,12 +1205,25 @@ void Application::performMainStartupAction()
     }
     {
         bool shouldFetch = m_settings->get("FlameKeyShouldBeFetchedOnStartup").toBool();
-        if (!BuildConfig.FLAME_API_KEY_API_URL.isEmpty() && shouldFetch && !(capabilities() & Capability::SupportsFlame)) {
-            // don't ask, just fetch
-            QString apiKey = GuiUtil::fetchFlameKey();
-            if (!apiKey.isEmpty()) {
-                m_settings->set("FlameKeyOverride", apiKey);
-                updateCapabilities();
+        if (shouldFetch && !(capabilities() & Capability::SupportsFlame)) {
+            QMessageBox msgBox{ m_mainWindow };
+            msgBox.setWindowTitle(tr("Fetch CurseForge Core API key?"));
+            msgBox.setText(tr("Would you like to fetch the official CurseForge app's API key now?"));
+            msgBox.setInformativeText(
+                tr("Using the official CurseForge app's API key may break CurseForge's terms of service but should allow Fjord Launcher "
+                   "to download all mods in a modpack without you needing to download any of them manually."));
+            msgBox.setStandardButtons(QMessageBox::No | QMessageBox::Yes);
+            msgBox.setDefaultButton(QMessageBox::Yes);
+            msgBox.setModal(true);
+
+            const auto& result = msgBox.exec();
+
+            if (result == QMessageBox::Yes) {
+                const auto& apiKey = GuiUtil::fetchFlameKey();
+                if (!apiKey.isEmpty()) {
+                    m_settings->set("FlameKeyOverride", apiKey);
+                    updateCapabilities();
+                }
             }
             m_settings->set("FlameKeyShouldBeFetchedOnStartup", false);
         }
