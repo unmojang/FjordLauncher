@@ -117,7 +117,6 @@ Config::Config()
     IMGUR_CLIENT_ID = "@Launcher_IMGUR_CLIENT_ID@";
     MSA_CLIENT_ID = "@Launcher_MSA_CLIENT_ID@";
     FLAME_API_KEY = "@Launcher_CURSEFORGE_API_KEY@";
-    FLAME_API_KEY_API_URL = "@Launcher_CURSEFORGE_API_KEY_API_URL@";
     META_URL = "@Launcher_META_URL@";
 
     GLFW_LIBRARY_NAME = "@Launcher_GLFW_LIBRARY_NAME@";
