@@ -51,7 +51,6 @@
 #include "net/NetJob.h"
 
 class LaunchController;
-class NewsChecker;
 class QToolButton;
 class InstanceProxyModel;
 class LabeledToolButton;
@@ -140,10 +139,6 @@ class MainWindow : public QMainWindow {
 
     void on_actionOpenWiki_triggered();
 
-    void on_actionMoreNews_triggered();
-
-    void newsButtonClicked();
-
     void on_actionLaunchInstance_triggered();
 
     void on_actionKillInstance_triggered();
@@ -199,8 +194,6 @@ class MainWindow : public QMainWindow {
 
     void repopulateAccountsMenu();
 
-    void updateNewsLabel();
-
     void konamiTriggered();
 
     void globalSettingsClosed();
@@ -233,7 +226,6 @@ class MainWindow : public QMainWindow {
     // these are managed by Qt's memory management model!
     InstanceView* view = nullptr;
     InstanceProxyModel* proxymodel = nullptr;
-    QToolButton* newsLabel = nullptr;
     QLabel* m_statusLeft = nullptr;
     QLabel* m_statusCenter = nullptr;
     LabeledToolButton* changeIconButton = nullptr;
@@ -242,8 +234,6 @@ class MainWindow : public QMainWindow {
     KonamiCode* secretEventFilter = nullptr;
 
     std::shared_ptr<Setting> instanceToolbarSetting = nullptr;
-
-    unique_qobject_ptr<NewsChecker> m_newsChecker;
 
     InstancePtr m_selectedInstance;
     QString m_currentInstIcon;
