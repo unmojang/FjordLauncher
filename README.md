@@ -81,6 +81,16 @@ nix run github:unmojang/FjordLauncher
 
 See [nix/README.md](nix/README.md) for details.
 
+### Gentoo
+
+Install from the [unmojang overlay](https://github.com/unmojang/unmojang-overlay):
+
+```Shell
+eselect repository add unmojang-overlay git https://github.com/unmojang/unmojang-overlay
+emerge --sync unmojang-overlay
+emerge -av games-action/fjordlauncher
+```
+
 ### Other Linux
 
 AppImages are available in the [releases section](https://github.com/unmojang/FjordLauncher/releases/latest).
