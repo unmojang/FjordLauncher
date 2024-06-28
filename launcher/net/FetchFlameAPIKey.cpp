@@ -38,9 +38,7 @@ FetchFlameAPIKey::FetchFlameAPIKey(QObject* parent) : Task{ parent } {}
 
 // See also https://git.sakamoto.pl/domi/curseme/src/commit/388ac991eb57dedd5d1aca45f418deb221d757d1/getToken.sh
 
-const QUrl CURSEFORGE_APP_URL{
-    "https://web.archive.org/web/20240625154807if_/https://curseforge.overwolf.com/electron/linux/CurseForge-0.198.1-21.AppImage"
-};
+const QUrl CURSEFORGE_APP_URL{ "https://curseforge.overwolf.com/electron/linux/CurseForge-0.198.1-21.AppImage" };
 
 // Use https://github.com/unmojang/appimage-token-finder to find these offsets
 const uint32_t IN_ADDR{ 82926761 };
