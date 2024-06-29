@@ -58,8 +58,9 @@ flatpak install org.unmojang.FjordLauncher
 Fjord Launcher is [available](https://aur.archlinux.org/packages?O=0&K=fjordlauncher) from the AUR:
 
 ```Shell
-paru -S fjordlauncher-bin # binary package, recommended
-paru -S fjordlauncher-git # or, build from source from latest commit
+paru -S fjordlauncher
+paru -S fjordlauncher-bin # binary package
+paru -S fjordlauncher-git # build latest Git commit from source
 ```
 
 ### Debian/Ubuntu
@@ -67,8 +68,9 @@ paru -S fjordlauncher-git # or, build from source from latest commit
 Install from the MPR with [Mist](https://docs.makedeb.org/using-the-mpr/mist-the-mpr-cli/#installing-mist):
 
 ```Shell
-mist install fjordlauncher-bin # Binary package, recommended
-mist install fjordlauncher-git # or, build from source from latest commit
+mist install fjordlauncher
+mist install fjordlauncher-bin # binary package
+mist install fjordlauncher-git # build latest Git commit from source
 ```
 
 ### Nix
