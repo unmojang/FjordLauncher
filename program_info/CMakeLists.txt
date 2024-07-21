@@ -28,11 +28,11 @@ set(Launcher_Desktop "program_info/org.unmojang.FjordLauncher.desktop" PARENT_SC
 set(Launcher_mrpack_MIMEInfo "program_info/modrinth-mrpack-mime.xml" PARENT_SCOPE)
 set(Launcher_MetaInfo "program_info/org.unmojang.FjordLauncher.metainfo.xml" PARENT_SCOPE)
 set(Launcher_SVG "program_info/org.unmojang.FjordLauncher.svg" PARENT_SCOPE)
-set(Launcher_Branding_ICNS "program_info/prismlauncher.icns" PARENT_SCOPE)
+set(Launcher_Branding_ICNS "program_info/fjordlauncher.icns" PARENT_SCOPE)
 set(Launcher_Branding_ICO "program_info/fjordlauncher.ico")
 set(Launcher_Branding_ICO "${Launcher_Branding_ICO}" PARENT_SCOPE)
 set(Launcher_Branding_WindowsRC "program_info/fjordlauncher.rc" PARENT_SCOPE)
-set(Launcher_Branding_LogoQRC "program_info/prismlauncher.qrc" PARENT_SCOPE)
+set(Launcher_Branding_LogoQRC "program_info/fjordlauncher.qrc" PARENT_SCOPE)
 
 set(Launcher_Portable_File "program_info/portable.txt" PARENT_SCOPE)
 
