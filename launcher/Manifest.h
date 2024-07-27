@@ -20,26 +20,48 @@
 #include <optional>
 #include <string>
 
-constexpr const int MAX_LINE_LENGTH = 512;
-using lbuf_t = char[MAX_LINE_LENGTH];
+constexpr const int MANIFEST_MAX_LINE_LENGTH = 512;
+using lbuf_t = char[MANIFEST_MAX_LINE_LENGTH];
 
-using section_t = std::map<std::string, std::string>;
-using sections_t = std::map<std::string, section_t>;
-using manifest_t = std::pair<section_t, sections_t>;
+using manifest_section_t = std::map<std::string, std::string>;
+using manifest_sections_t = std::map<std::string, manifest_section_t>;
 
 class Manifest {
    public:
     Manifest(std::istream& is);
-    section_t& getMainAttributes() { return m_main_section; }
-    sections_t& getEntries() { return m_individual_sections; }
-    section_t& getAttributes(std::string& name) { return m_individual_sections.at(name); }
+    Manifest(std::istream& is, const std::string& jar_filename);
+    Manifest(const Manifest& other)
+    {
+        m_main_section = other.m_main_section;
+        m_individual_sections = other.m_individual_sections;
+    }
+    manifest_section_t& getMainAttributes() { return m_main_section; }
+    manifest_sections_t& getEntries() { return m_individual_sections; }
+    manifest_section_t& getAttributes(const std::string& name) { return m_individual_sections.at(name); }
+    Manifest& operator=(const Manifest& other)
+    {
+        if (this == &other) {
+            return *this;
+        }
+        m_main_section = other.m_main_section;
+        m_individual_sections = other.m_individual_sections;
+        return *this;
+    }
+    bool operator==(const Manifest& other) const
+    {
+        return m_main_section == other.m_main_section && m_individual_sections == other.m_individual_sections;
+    }
 
    private:
     static std::string getErrorPosition(const std::optional<std::string>& filename, int line_number);
     static std::optional<std::string> parseName(lbuf_t lbuf, std::size_t len);
     static bool isValidName(const std::string& name);
-    int readAttributes(section_t& section, std::istream& is, lbuf_t lbuf, const std::optional<std::string>& jar_filename, int line_number);
+    int readAttributes(manifest_section_t& section,
+                       std::istream& is,
+                       lbuf_t lbuf,
+                       const std::optional<std::string>& jar_filename,
+                       int line_number);
     void read(std::istream& is, const std::optional<std::string>& jar_filename);
-    section_t m_main_section;
-    sections_t m_individual_sections;
+    manifest_section_t m_main_section;
+    manifest_sections_t m_individual_sections;
 };

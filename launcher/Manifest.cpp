@@ -60,6 +60,11 @@ Manifest::Manifest(std::istream& is)
     read(is, std::nullopt);
 }
 
+Manifest::Manifest(std::istream& is, const std::string& jar_filename)
+{
+    read(is, jar_filename);
+}
+
 bool Manifest::isValidName(const std::string& name)
 {
     const auto len = name.length();
@@ -74,21 +79,22 @@ std::string Manifest::getErrorPosition(const std::optional<std::string>& filenam
     return "manifest of " + *filename + ":" + std::to_string(line_number);
 }
 
-int Manifest::readAttributes(section_t& section, std::istream& is, lbuf_t lbuf, const std::optional<std::string>& filename, int line_number)
+int Manifest::readAttributes(manifest_section_t& section,
+                             std::istream& is,
+                             lbuf_t lbuf,
+                             const std::optional<std::string>& filename,
+                             int line_number)
 {
     std::optional<std::string> name;
     std::string value;
 
     std::string full_line;
 
-    while (!is.eof() && is.getline(lbuf, MAX_LINE_LENGTH)) {
+    while (!is.eof() && is.getline(lbuf, MANIFEST_MAX_LINE_LENGTH)) {
         std::size_t len = strlen(lbuf);
 
         line_number += 1;
 
-        if (is.fail()) {
-            throw std::length_error("line too long (" + getErrorPosition(filename, line_number) + ")");
-        }
         if (len > 0 && lbuf[len - 1] == '\r') {
             len -= 1;
         }
@@ -130,6 +136,9 @@ int Manifest::readAttributes(section_t& section, std::istream& is, lbuf_t lbuf, 
         }
         section[*name] = value;
     }
+    if (!is.eof() && is.fail()) {
+        throw std::length_error("line too long (" + getErrorPosition(filename, line_number) + ")");
+    }
     return line_number;
 }
 
@@ -144,7 +153,7 @@ std::optional<std::string> Manifest::parseName(lbuf_t lbuf, std::size_t len)
 void Manifest::read(std::istream& is, const std::optional<std::string>& jar_filename)
 {
     // Line buffer
-    char lbuf[MAX_LINE_LENGTH];
+    char lbuf[MANIFEST_MAX_LINE_LENGTH];
     // Read the main attributes for the manifest
     int line_number = readAttributes(m_main_section, is, lbuf, jar_filename, 0);
 
@@ -153,14 +162,11 @@ void Manifest::read(std::istream& is, const std::optional<std::string>& jar_file
     bool skip_empty_lines = true;
     std::optional<std::string> lastline;
 
-    while (!is.eof() && is.getline(lbuf, MAX_LINE_LENGTH)) {
+    while (!is.eof() && is.getline(lbuf, MANIFEST_MAX_LINE_LENGTH)) {
         std::size_t len = strlen(lbuf);
 
         line_number += 1;
 
-        if (is.fail()) {
-            throw std::length_error("manifest line too long (" + getErrorPosition(jar_filename, line_number) + ")");
-        }
         if (len > 0 && lbuf[len - 1] == '\r') {
             len -= 1;
         }
@@ -192,10 +198,13 @@ void Manifest::read(std::istream& is, const std::optional<std::string>& jar_file
             lastline = std::nullopt;
         }
 
-        section_t& attr = m_individual_sections[*name];
+        manifest_section_t& attr = m_individual_sections[*name];
         line_number = readAttributes(attr, is, lbuf, jar_filename, line_number);
 
         name = std::nullopt;
         skip_empty_lines = true;
+    }
+    if (!is.eof() && is.fail()) {
+        throw std::length_error("manifest line too long (" + getErrorPosition(jar_filename, line_number) + ")");
     }
 }
