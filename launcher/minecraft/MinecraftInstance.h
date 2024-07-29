@@ -38,12 +38,9 @@
 #include <java/JavaVersion.h>
 #include <QDir>
 #include <QProcess>
-#include <unordered_set>
 #include "BaseInstance.h"
 #include "minecraft/launch/MinecraftServerTarget.h"
 #include "minecraft/mod/Mod.h"
-
-const std::unordered_set<std::string> MANAGED_AGENTS = { "moe.yushi:authlibinjector" };
 
 class ModFolderModel;
 class ResourceFolderModel;

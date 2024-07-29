@@ -40,6 +40,9 @@
 #include "Application.h"
 
 #include <Version.h>
+#include <quazip/quazip.h>
+#include <quazip/quazipdir.h>
+#include <quazip/quazipfile.h>
 #include <QCryptographicHash>
 #include <QDebug>
 #include <QDir>
@@ -49,10 +52,12 @@
 #include <QSaveFile>
 #include <QTimer>
 #include <QUuid>
+#include <sstream>
 
 #include "Exception.h"
 #include "FileSystem.h"
 #include "Json.h"
+#include "Manifest.h"
 #include "minecraft/MinecraftInstance.h"
 #include "minecraft/OneSixVersionFormat.h"
 #include "minecraft/ProfileUtils.h"
@@ -874,6 +879,30 @@ bool PackProfile::installCustomJar_internal(QString filepath)
     return true;
 }
 
+std::optional<Manifest> getJarManifest(const QFileInfo& fileinfo)
+{
+    QuaZip zip(fileinfo.filePath());
+    if (!zip.open(QuaZip::mdUnzip)) {
+        return std::nullopt;
+    }
+
+    std::optional<Manifest> manifest;
+    QuaZipFile file(&zip);
+    if (zip.setCurrentFile("META-INF/MANIFEST.MF") && file.open(QIODevice::ReadOnly)) {
+        try {
+            const auto& file_bytes = file.readAll();
+            std::string file_contents(file_bytes.constData(), file_bytes.size());
+            std::istringstream iss{ file_contents };
+            manifest = Manifest(iss, fileinfo.fileName().toStdString());
+        } catch (std::exception& ex) {
+            qDebug() << "Error parsing META/MANIFEST.MF inside " << fileinfo.path() << ":" << ex.what();
+        }
+        file.close();
+    }
+    zip.close();
+    return manifest;
+}
+
 bool PackProfile::installAgents_internal(QStringList filepaths)
 {
     // FIXME code duplication
@@ -903,7 +932,26 @@ bool PackProfile::installAgents_internal(QStringList filepaths)
 
         auto agent = std::make_shared<Library>();
 
-        agent->setRawName("custom.agents:" + id + ":1");
+        QString rawName = "custom.agents:" + id + ":1";
+
+        auto manifest = getJarManifest(sourceInfo);
+        if (manifest.has_value()) {
+            const auto& attrs = manifest->getMainAttributes();
+
+            if (auto ac = attrs.find("Agent-Class"); ac != attrs.end()) {
+                const auto& agentClass = ac->second;
+                if (auto ma = AGENT_CLASS_TO_MANAGED_AGENT.find(agentClass); ma != AGENT_CLASS_TO_MANAGED_AGENT.end()) {
+                    const auto& artifactPrefix = QString::fromStdString(ma->second);
+                    QString version = "1";
+                    if (auto iv = attrs.find("Implementation-Version"); iv != attrs.end()) {
+                        version = QString::fromStdString(iv->second);
+                    }
+                    rawName = artifactPrefix + ":" + version;
+                }
+            }
+        }
+
+        agent->setRawName(rawName);
         agent->setFilename(targetBaseName);
         agent->setDisplayName(sourceInfo.completeBaseName());
         agent->setHint("local");
