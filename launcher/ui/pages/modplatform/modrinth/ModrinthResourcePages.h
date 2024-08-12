@@ -93,8 +93,9 @@ class ModrinthModPage : public ModPage {
 
     [[nodiscard]] inline auto helpPage() const -> QString override { return "Mod-platform"; }
 
-    auto validateVersion(ModPlatform::IndexedVersion& ver, QString mineVer, std::optional<ModPlatform::ModLoaderTypes> loaders = {}) const
-        -> bool override;
+    auto validateVersion(ModPlatform::IndexedVersion& ver,
+                         QString mineVer,
+                         std::optional<ModPlatform::ModLoaderTypes> loaders = {}) const -> bool override;
 };
 
 class ModrinthResourcePackPage : public ResourcePackResourcePage {
