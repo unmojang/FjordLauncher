@@ -59,9 +59,10 @@ Fjord Launcher is [available](https://aur.archlinux.org/packages?O=0&K=fjordlaun
 
 ```Shell
 paru -S fjordlauncher
-paru -S fjordlauncher-bin # binary package
 paru -S fjordlauncher-git # build latest Git commit from source
 ```
+
+The `fjordlauncher-bin` AUR package is broken; see [https://github.com/unmojang/FjordLauncher/issues/20](https://github.com/unmojang/FjordLauncher/issues/20).
 
 ### Debian/Ubuntu
 
