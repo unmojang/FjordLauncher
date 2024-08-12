@@ -146,9 +146,15 @@ void LaunchController::login()
     if (m_accountToUse->usesCustomApiServers()) {
         MinecraftInstancePtr inst = std::dynamic_pointer_cast<MinecraftInstance>(m_instance);
 
-        const auto& authlibInjectorVersion = inst->getPackProfile()->getComponentVersion("moe.yushi.authlibinjector");
+        bool authlibInjectorInstalled = false;
+        const auto& agents = inst->getPackProfile()->getProfile()->getAgents();
+        for (const auto& agent : agents) {
+            if (agent->library()->artifactPrefix() == "moe.yushi:authlibinjector") {
+                authlibInjectorInstalled = true;
+            }
+        }
 
-        if (authlibInjectorVersion == "") {
+        if (!authlibInjectorInstalled) {
             // Account uses custom API servers, but authlib-injector is missing
 
             int globalMissingBehavior = APPLICATION->settings()->get("MissingAuthlibInjectorBehavior").toInt();
