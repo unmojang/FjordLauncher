@@ -28,6 +28,7 @@ set(LEGACY_SRC
     legacy/org/prismlauncher/legacy/fix/online/OnlineModeFix.java
     legacy/org/prismlauncher/legacy/fix/online/SkinFix.java
     legacy/org/prismlauncher/legacy/utils/Base64.java
+    legacy/org/prismlauncher/legacy/utils/api/ApiServers.java
     legacy/org/prismlauncher/legacy/utils/api/MojangApi.java
     legacy/org/prismlauncher/legacy/utils/api/Texture.java
     legacy/org/prismlauncher/legacy/utils/json/JsonParseException.java
