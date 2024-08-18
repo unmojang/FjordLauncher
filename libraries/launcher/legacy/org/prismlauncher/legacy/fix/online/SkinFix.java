@@ -80,7 +80,7 @@ final class SkinFix {
         if (capeOwner != null) {
             // since we do not need to process the image, open a direct connection bypassing
             // Handler
-            Texture texture = MojangApi.getTexture(MojangApi.getUuid(capeOwner), "CAPE");
+            Texture texture = MojangApi.getTexture(MojangApi.getUuid(capeOwner, proxy), "CAPE");
             if (texture == null)
                 return null;
 
@@ -91,7 +91,7 @@ final class SkinFix {
     }
 
     private static URLConnection getSkinConnection(String owner, Proxy proxy) throws IOException {
-        Texture texture = MojangApi.getTexture(MojangApi.getUuid(owner), "SKIN");
+        Texture texture = MojangApi.getTexture(MojangApi.getUuid(owner, proxy), "SKIN");
         if (texture == null)
             return null;
 

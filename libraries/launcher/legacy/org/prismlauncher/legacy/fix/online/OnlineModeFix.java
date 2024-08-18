@@ -79,12 +79,12 @@ public final class OnlineModeFix {
             throw new AssertionError("missing sessionId");
         }
 
-        // sessionId hashas the form:
+        // sessionId has the form:
         // token:<accessToken>:<player UUID>
         String accessToken = sessionId.split(":")[1];
 
         String uuid = null;
-        uuid = MojangApi.getUuid(user);
+        uuid = MojangApi.getUuid(user, proxy);
         if (uuid == null) {
             return new ByteArrayUrlConnection(("Couldn't find UUID of " + user).getBytes("utf-8"));
         }
