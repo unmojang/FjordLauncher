@@ -60,6 +60,8 @@ class Config {
     int VERSION_MAJOR;
     /// The minor version number.
     int VERSION_MINOR;
+    /// The patch version number.
+    int VERSION_PATCH;
 
     /**
      * The version channel
