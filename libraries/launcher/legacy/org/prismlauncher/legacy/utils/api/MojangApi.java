@@ -48,8 +48,27 @@ import java.util.Map;
  */
 @SuppressWarnings("unchecked")
 public final class MojangApi {
+    // Define constants for the system property keys
+    private static final String API_URL_PROPERTY = "mojang.api.url";
+    private static final String SESSION_URL_PROPERTY = "mojang.session.url";
+
+    // Helper method to get the API base URL, either custom or default
+    private static String getApiBaseUrl() {
+        // Usage: -Dmojang.api.url=<url>
+        return System.getProperty(API_URL_PROPERTY, "api.mojang.com");
+    }
+
+    // Helper method to get the session server base URL, either custom or default
+    private static String getSessionServerBaseUrl() {
+        // Usage: -Dmojang.session.url=<url>
+        return System.getProperty(SESSION_URL_PROPERTY, "sessionserver.mojang.com");
+    }
+
     public static String getUuid(String username) throws IOException {
-        try (InputStream in = new URL("https://api.mojang.com/users/profiles/minecraft/" + username).openStream()) {
+        // Construct the URL using the API base URL
+        String apiUrl = "https://" + getApiBaseUrl() + "/users/profiles/minecraft/" + username;
+
+        try (InputStream in = new URL(apiUrl).openStream()) {
             Map<String, Object> map = (Map<String, Object>) JsonParser.parse(in);
             return (String) map.get("id");
         }
@@ -79,7 +98,10 @@ public final class MojangApi {
     }
 
     public static Map<String, Object> getTextures(String player) throws IOException {
-        try (InputStream profileIn = new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + player).openStream()) {
+        // Construct the URL using the session server base URL
+        String sessionUrl = "https://" + getSessionServerBaseUrl() + "/session/minecraft/profile/" + player;
+
+        try (InputStream profileIn = new URL(sessionUrl).openStream()) {
             Map<String, Object> profile = (Map<String, Object>) JsonParser.parse(profileIn);
 
             for (Map<String, Object> property : (Iterable<Map<String, Object>>) profile.get("properties")) {

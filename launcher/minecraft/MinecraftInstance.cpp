@@ -525,8 +525,7 @@ QStringList MinecraftInstance::javaArguments()
 
     if (javaVersion.isModular() && shouldApplyOnlineFixes())
         // allow reflective access to java.net - required by the skin fix
-        args << "--add-opens"
-             << "java.base/java.net=ALL-UNNAMED";
+        args << "--add-opens" << "java.base/java.net=ALL-UNNAMED";
 
     return args;
 }
@@ -560,6 +559,15 @@ QStringList MinecraftInstance::processAuthArgs(AuthSessionPtr session) const
                 if (session->authlib_injector_metadata != "") {
                     args << "-Dauthlibinjector.yggdrasil.prefetched=" + session->authlib_injector_metadata;
                 }
+                // Add the legacy flags endpoints so that onlinefix can work with custom domains too
+                QString auth_server_url_strip = session->auth_server_url;
+                // Strip the irrelevant part of the URL
+                if (auth_server_url_strip.contains("/")) {
+                    auth_server_url_strip = auth_server_url_strip.left(auth_server_url_strip.indexOf("/authlib-injector"));
+                    auth_server_url_strip = auth_server_url_strip.right(auth_server_url_strip.length() - 8);
+                }
+                args << "-Dmojang.api.url.host=" + auth_server_url_strip;
+                args << "-Dmojang.session.url=" + auth_server_url_strip;
                 using_authlib_injector = true;
                 break;
             }
@@ -571,6 +579,17 @@ QStringList MinecraftInstance::processAuthArgs(AuthSessionPtr session) const
             args << "-Dminecraft.api.account.host=" + session->account_server_url;
             args << "-Dminecraft.api.session.host=" + session->session_server_url;
             args << "-Dminecraft.api.services.host=" + session->services_server_url;
+
+            // Add the legacy flags endpoints so that onlinefix can work with custom domains too
+            QString auth_server_url_strip = session->auth_server_url;
+            // Strip the irrelevant part of the URL
+            if (auth_server_url_strip.contains("/")) {
+                auth_server_url_strip = auth_server_url_strip.left(auth_server_url_strip.indexOf("/authlib-injector"));
+                auth_server_url_strip = auth_server_url_strip.right(auth_server_url_strip.length() - 8);
+            }
+
+            args << "-Dmojang.api.url.host=" + auth_server_url_strip;
+            args << "-Dmojang.session.url=" + auth_server_url_strip;
         }
     }
     // https://github.com/FabricMC/fabric-loom/issues/915#issuecomment-1609154390
@@ -830,10 +849,8 @@ QString MinecraftInstance::createLaunchScript(AuthSessionPtr session, MinecraftS
 QStringList MinecraftInstance::verboseDescription(AuthSessionPtr session, MinecraftServerTargetPtr serverToJoin)
 {
     QStringList out;
-    out << "Main Class:"
-        << "  " + getMainClass() << "";
-    out << "Native path:"
-        << "  " + getNativePath() << "";
+    out << "Main Class:" << "  " + getMainClass() << "";
+    out << "Native path:" << "  " + getNativePath() << "";
 
     auto profile = m_components->getProfile();
 
