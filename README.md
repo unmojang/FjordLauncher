@@ -62,6 +62,8 @@ paru -S fjordlauncher
 paru -S fjordlauncher-git # build latest Git commit from source
 ```
 
+`fjordlauncher` is available in [Chaotic-AUR](https://aur.chaotic.cx/).
+
 The `fjordlauncher-bin` AUR package is broken; see [https://github.com/unmojang/FjordLauncher/issues/20](https://github.com/unmojang/FjordLauncher/issues/20).
 
 ### Debian/Ubuntu
