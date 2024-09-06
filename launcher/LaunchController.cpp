@@ -143,9 +143,8 @@ void LaunchController::login()
         return;
     }
 
-    if (m_accountToUse->usesCustomApiServers()) {
-        MinecraftInstancePtr inst = std::dynamic_pointer_cast<MinecraftInstance>(m_instance);
-
+    MinecraftInstancePtr inst = std::dynamic_pointer_cast<MinecraftInstance>(m_instance);
+    if (m_accountToUse->usesCustomApiServers() && !inst->shouldApplyOnlineFixes()) {
         bool authlibInjectorInstalled = false;
         const auto& agents = inst->getPackProfile()->getProfile()->getAgents();
         for (const auto& agent : agents) {

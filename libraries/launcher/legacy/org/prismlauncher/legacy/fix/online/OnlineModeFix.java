@@ -35,32 +35,80 @@
 
 package org.prismlauncher.legacy.fix.online;
 
+import org.prismlauncher.legacy.utils.api.ApiServers;
+import org.prismlauncher.legacy.utils.api.MojangApi;
+import org.prismlauncher.legacy.utils.url.ByteArrayUrlConnection;
 import org.prismlauncher.legacy.utils.url.UrlUtils;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.HashMap;
+import java.util.Map;
 
 public final class OnlineModeFix {
     public static URLConnection openConnection(URL address, Proxy proxy) throws IOException {
         // we start with "http://www.minecraft.net/game/joinserver.jsp?user=..."
-        if (!(address.getHost().equals("www.minecraft.net") && address.getPath().equals("/game/joinserver.jsp")))
+        if (!(address.getHost().equals("www.minecraft.net") && address.getPath().equals("/game/joinserver.jsp"))) {
             return null;
-
-        // change it to "https://session.minecraft.net/game/joinserver.jsp?user=..."
-        // this seems to be the modern version of the same endpoint...
-        // maybe Mojang planned to patch old versions of the game to use it
-        // if it ever disappears this should be changed to use sessionserver.mojang.com/session/minecraft/join
-        // which of course has a different usage requiring JSON serialisation...
-        URL url;
-        try {
-            url = new URL("https", "session.minecraft.net", address.getPort(), address.getFile());
-        } catch (MalformedURLException e) {
-            throw new AssertionError("url should be valid", e);
         }
 
-        return UrlUtils.openConnection(url, proxy);
+        Map<String, String> params = new HashMap<>();
+        String query = address.getQuery();
+        String[] entries = query.split("&");
+        for (String entry : entries) {
+            String[] pair = entry.split("=");
+            if (pair.length == 2) {
+                params.put(pair[0], pair[1]);
+            }
+        }
+
+        String user = params.get("user");
+        if (user == null) {
+            throw new AssertionError("missing user");
+        }
+        String serverId = params.get("serverId");
+        if (serverId == null) {
+            throw new AssertionError("missing serverId");
+        }
+        String sessionId = params.get("sessionId");
+        if (sessionId == null) {
+            throw new AssertionError("missing sessionId");
+        }
+
+        // sessionId has the form:
+        // token:<accessToken>:<player UUID>
+        String accessToken = sessionId.split(":")[1];
+
+        String uuid = null;
+        uuid = MojangApi.getUuid(user, proxy);
+        if (uuid == null) {
+            return new ByteArrayUrlConnection(("Couldn't find UUID of " + user).getBytes("utf-8"));
+        }
+
+        URL url = new URL(ApiServers.getSessionURL() + "/session/minecraft/join");
+        HttpURLConnection connection = (HttpURLConnection) UrlUtils.openConnection(url, proxy);
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setRequestProperty("Accept", "application/json");
+        try (OutputStream os = connection.getOutputStream()) {
+            String payload = "{"
+                    + "\"accessToken\": \"" + accessToken + "\","
+                    + "\"selectedProfile\": \"" + uuid + "\","
+                    + "\"serverId\": \"" + serverId + "\""
+                    + "}";
+            os.write(payload.getBytes("utf-8"));
+        }
+        int responseCode = connection.getResponseCode();
+
+        if (responseCode == 204) {
+            return new ByteArrayUrlConnection("OK".getBytes("utf-8"));
+        } else {
+            return new ByteArrayUrlConnection("Bad login".getBytes("utf-8"));
+        }
     }
 }

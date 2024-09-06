@@ -36,11 +36,17 @@
 package org.prismlauncher.legacy.utils.api;
 
 import org.prismlauncher.legacy.utils.Base64;
+import org.prismlauncher.legacy.utils.api.ApiServers;
 import org.prismlauncher.legacy.utils.json.JsonParser;
+import org.prismlauncher.legacy.utils.url.UrlUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,10 +54,20 @@ import java.util.Map;
  */
 @SuppressWarnings("unchecked")
 public final class MojangApi {
-    public static String getUuid(String username) throws IOException {
-        try (InputStream in = new URL("https://api.mojang.com/users/profiles/minecraft/" + username).openStream()) {
-            Map<String, Object> map = (Map<String, Object>) JsonParser.parse(in);
-            return (String) map.get("id");
+    public static String getUuid(String username, Proxy proxy) throws IOException {
+        URL url = new URL(ApiServers.getAccountURL() + "/profiles/minecraft");
+        HttpURLConnection connection = (HttpURLConnection) UrlUtils.openConnection(url, proxy);
+        connection.setDoOutput(true);
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setRequestProperty("Accept", "application/json");
+        try (OutputStream os = connection.getOutputStream()) {
+            String payload = "[\"" + username + "\"]";
+            os.write(payload.getBytes("utf-8"));
+        }
+        try (InputStream in = connection.getInputStream()) {
+            List<Map<String, Object>> list = (List<Map<String, Object>>) JsonParser.parse(in);
+            return (String) list.get(0).get("id");
         }
     }
 
@@ -79,7 +95,7 @@ public final class MojangApi {
     }
 
     public static Map<String, Object> getTextures(String player) throws IOException {
-        try (InputStream profileIn = new URL("https://sessionserver.mojang.com/session/minecraft/profile/" + player).openStream()) {
+        try (InputStream profileIn = new URL(ApiServers.getSessionURL() + "/session/minecraft/profile/" + player).openStream()) {
             Map<String, Object> profile = (Map<String, Object>) JsonParser.parse(profileIn);
 
             for (Map<String, Object> property : (Iterable<Map<String, Object>>) profile.get("properties")) {
