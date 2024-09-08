@@ -123,7 +123,7 @@ in
         ]
         ++ additionalPrograms;
     in
-      ["--prefix fjordLAUNCHER_JAVA_PATHS : ${lib.makeSearchPath "bin/java" jdks}"]
+      ["--prefix FJORDLAUNCHER_JAVA_PATHS : ${lib.makeSearchPath "bin/java" jdks}"]
       ++ lib.optionals stdenv.isLinux [
         "--set LD_LIBRARY_PATH ${addOpenGLRunpath.driverLink}/lib:${lib.makeLibraryPath runtimeLibs}"
         "--prefix PATH : ${lib.makeBinPath runtimePrograms}"
