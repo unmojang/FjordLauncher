@@ -216,7 +216,7 @@ void Yggdrasil::processResponse(QJsonObject responseData)
     m_data->yggdrasilToken.issueInstant = QDateTime::currentDateTimeUtc();
 
     // Get UUID here since we need it for later
-    // FIXME: Here is a simple workaround for now,, which uses the first available profile when selectedProfile is not provided.
+    // FIXME: Here is a simple workaround for now,, which uses the first available profile when selectedProfile is not provided
     auto profile = responseData.value("selectedProfile");
     if (!profile.isObject()) {
         auto profiles = responseData.value("availableProfiles");
