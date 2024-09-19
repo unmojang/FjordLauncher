@@ -216,10 +216,21 @@ void Yggdrasil::processResponse(QJsonObject responseData)
     m_data->yggdrasilToken.issueInstant = QDateTime::currentDateTimeUtc();
 
     // Get UUID here since we need it for later
+    // FIXME: Here is a simple workaround for now,, which uses the first available profile when selectedProfile is not provided
     auto profile = responseData.value("selectedProfile");
     if (!profile.isObject()) {
-        changeState(AccountTaskState::STATE_FAILED_HARD, tr("Authentication server didn't send a selected profile."));
-        return;
+        auto profiles = responseData.value("availableProfiles");
+        if (!profiles.isArray()) {
+            changeState(AccountTaskState::STATE_FAILED_HARD, tr("Authentication server didn't send available profiles."));
+            return;
+        } else {
+            if (profiles.toArray().isEmpty()) {
+                changeState(AccountTaskState::STATE_FAILED_HARD, tr("Account has no available profile."));
+                return;
+            } else {
+                profile = profiles.toArray().first();
+            }
+        }
     }
 
     auto profileObj = profile.toObject();
