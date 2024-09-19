@@ -224,14 +224,13 @@ void Yggdrasil::processResponse(QJsonObject responseData)
             changeState(AccountTaskState::STATE_FAILED_HARD, tr("Authentication server didn't send available profiles."));
             return;
         } else {
-            if(profiles.toArray().isEmpty()) {
+            if (profiles.toArray().isEmpty()) {
                 changeState(AccountTaskState::STATE_FAILED_HARD, tr("Account has no available profile."));
                 return;
             } else {
                 profile = profiles.toArray().first();
             }
         }
-        
     }
 
     auto profileObj = profile.toObject();
