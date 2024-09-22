@@ -19,6 +19,7 @@
 #include <QByteArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QMessageBox>
 #include <QNetworkReply>
 #include <QObject>
 #include <QString>
@@ -27,6 +28,8 @@
 
 #include "Application.h"
 #include "BuildConfig.h"
+
+QString profileName = "";
 
 Yggdrasil::Yggdrasil(AccountData* data, QObject* parent) : AccountTask(data, parent)
 {
@@ -123,6 +126,8 @@ void Yggdrasil::login(QString password)
     req.insert("password", password);
     req.insert("requestUser", false);
 
+    profileName = m_data->userName();  // Save username for later select profile
+
     // If we already have a client token, give it to the server.
     // Otherwise, let the server give us one.
 
@@ -216,7 +221,6 @@ void Yggdrasil::processResponse(QJsonObject responseData)
     m_data->yggdrasilToken.issueInstant = QDateTime::currentDateTimeUtc();
 
     // Get UUID here since we need it for later
-    // FIXME: Here is a simple workaround for now,, which uses the first available profile when selectedProfile is not provided
     auto profile = responseData.value("selectedProfile");
     if (!profile.isObject()) {
         auto profiles = responseData.value("availableProfiles");
@@ -228,7 +232,15 @@ void Yggdrasil::processResponse(QJsonObject responseData)
                 changeState(AccountTaskState::STATE_FAILED_HARD, tr("Account has no available profile."));
                 return;
             } else {
-                profile = profiles.toArray().first();
+                profile = QJsonValue::Null;
+                foreach (auto profileObj, profiles.toArray()) {
+                    if (profileObj.toObject().value("name").toString() == profileName) {
+                        profile = profileObj;
+                        break;
+                    }
+                }
+                if (profile.isNull())
+                    profile = profiles.toArray().first();
             }
         }
     }
