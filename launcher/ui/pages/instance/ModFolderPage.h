@@ -62,16 +62,19 @@ class ModFolderPage : public ExternalResourcesPage {
    private slots:
     void removeItems(const QItemSelection& selection) override;
     void deleteModMetadata();
+    void exportModMetadata();
 
     void installMods();
     void updateMods(bool includeDeps = false);
     void visitModPages();
+    void changeModVersion();
 
    protected:
     std::shared_ptr<ModFolderModel> m_model;
 };
 
 class CoreModFolderPage : public ModFolderPage {
+    Q_OBJECT
    public:
     explicit CoreModFolderPage(BaseInstance* inst, std::shared_ptr<ModFolderModel> mods, QWidget* parent = 0);
     virtual ~CoreModFolderPage() = default;
@@ -85,6 +88,7 @@ class CoreModFolderPage : public ModFolderPage {
 };
 
 class NilModFolderPage : public ModFolderPage {
+    Q_OBJECT
    public:
     explicit NilModFolderPage(BaseInstance* inst, std::shared_ptr<ModFolderModel> mods, QWidget* parent = 0);
     virtual ~NilModFolderPage() = default;

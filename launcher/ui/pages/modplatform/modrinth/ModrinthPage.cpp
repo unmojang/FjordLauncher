@@ -35,6 +35,8 @@
  */
 
 #include "ModrinthPage.h"
+#include "Version.h"
+#include "modplatform/modrinth/ModrinthAPI.h"
 #include "ui/dialogs/CustomMessageBox.h"
 #include "ui_ModrinthPage.h"
 
@@ -58,8 +60,8 @@ ModrinthPage::ModrinthPage(NewInstanceDialog* dialog, QWidget* parent)
     : QWidget(parent), ui(new Ui::ModrinthPage), dialog(dialog), m_fetch_progress(this, false)
 {
     ui->setupUi(this);
+    createFilterWidget();
 
-    connect(ui->searchButton, &QPushButton::clicked, this, &ModrinthPage::triggerSearch);
     ui->searchEdit->installEventFilter(this);
     m_model = new Modrinth::ModpackListModel(this);
     ui->packView->setModel(m_model);
@@ -76,7 +78,7 @@ ModrinthPage::ModrinthPage(NewInstanceDialog* dialog, QWidget* parent)
     m_fetch_progress.setFixedHeight(24);
     m_fetch_progress.progressFormat("");
 
-    ui->gridLayout->addWidget(&m_fetch_progress, 2, 0, 1, ui->gridLayout->columnCount());
+    ui->verticalLayout->insertWidget(1, &m_fetch_progress);
 
     ui->sortByBox->addItem(tr("Sort by Relevance"));
     ui->sortByBox->addItem(tr("Sort by Total Downloads"));
@@ -86,7 +88,7 @@ ModrinthPage::ModrinthPage(NewInstanceDialog* dialog, QWidget* parent)
 
     connect(ui->sortByBox, SIGNAL(currentIndexChanged(int)), this, SLOT(triggerSearch()));
     connect(ui->packView->selectionModel(), &QItemSelectionModel::currentChanged, this, &ModrinthPage::onSelectionChanged);
-    connect(ui->versionSelectionBox, &QComboBox::currentTextChanged, this, &ModrinthPage::onVersionSelectionChanged);
+    connect(ui->versionSelectionBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ModrinthPage::onVersionSelectionChanged);
 
     ui->packView->setItemDelegate(new ProjectItemDelegate(this));
     ui->packDescription->setMetaEntry(metaEntryBase());
@@ -105,6 +107,7 @@ void ModrinthPage::retranslate()
 void ModrinthPage::openedImpl()
 {
     BasePage::openedImpl();
+    suggestCurrent();
     triggerSearch();
 }
 
@@ -124,6 +127,16 @@ bool ModrinthPage::eventFilter(QObject* watched, QEvent* event)
         }
     }
     return QObject::eventFilter(watched, event);
+}
+
+bool checkVersionFilters(const Modrinth::ModpackVersion& v, std::shared_ptr<ModFilterWidget::Filter> filter)
+{
+    if (!filter)
+        return true;
+    return ((!filter->loaders || !v.loaders || filter->loaders & v.loaders) &&  // loaders
+            (filter->releases.empty() ||                                        // releases
+             std::find(filter->releases.cbegin(), filter->releases.cend(), v.version_type) != filter->releases.cend()) &&
+            filter->checkMcVersions({ v.gameVersion }));  // gameVersion}
 }
 
 void ModrinthPage::onSelectionChanged(QModelIndex curr, [[maybe_unused]] QModelIndex prev)
@@ -190,7 +203,7 @@ void ModrinthPage::onSelectionChanged(QModelIndex curr, [[maybe_unused]] QModelI
     } else
         updateUI();
 
-    if (!current.versionsLoaded) {
+    if (!current.versionsLoaded || m_filterWidget->changed()) {
         qDebug() << "Loading modrinth modpack versions";
 
         auto netJob = new NetJob(QString("Modrinth::PackVersions(%1)").arg(current.name), APPLICATION->network());
@@ -221,13 +234,24 @@ void ModrinthPage::onSelectionChanged(QModelIndex curr, [[maybe_unused]] QModelI
                 qDebug() << *response;
                 qWarning() << "Error while reading modrinth modpack version: " << e.cause();
             }
+            auto pred = [this](const Modrinth::ModpackVersion& v) { return !checkVersionFilters(v, m_filterWidget->getFilter()); };
+#if QT_VERSION >= QT_VERSION_CHECK(6, 1, 0)
+            current.versions.removeIf(pred);
+#else
+    for (auto it = current.versions.begin(); it != current.versions.end();)
+        if (pred(*it))
+            it = current.versions.erase(it);
+        else
+            ++it;
+#endif
             for (auto version : current.versions) {
                 auto release_type = version.version_type.isValid() ? QString(" [%1]").arg(version.version_type.toString()) : "";
-                if (!version.name.contains(version.version))
-                    ui->versionSelectionBox->addItem(QString("%1 — %2%3").arg(version.name, version.version, release_type),
-                                                     QVariant(version.id));
-                else
-                    ui->versionSelectionBox->addItem(QString("%1%2").arg(version.name, release_type), QVariant(version.id));
+                auto mcVersion = !version.gameVersion.isEmpty() && !version.name.contains(version.gameVersion)
+                                     ? QString(" for %1").arg(version.gameVersion)
+                                     : "";
+                auto versionStr = !version.name.contains(version.version) ? version.version : "";
+                ui->versionSelectionBox->addItem(QString("%1%2 — %3%4").arg(version.name, mcVersion, versionStr, release_type),
+                                                 QVariant(version.id));
             }
 
             QVariant current_updated;
@@ -337,16 +361,52 @@ void ModrinthPage::suggestCurrent()
 
 void ModrinthPage::triggerSearch()
 {
-    m_model->searchWithTerm(ui->searchEdit->text(), ui->sortByBox->currentIndex());
+    ui->packView->selectionModel()->setCurrentIndex({}, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+    ui->packView->clearSelection();
+    ui->packDescription->clear();
+    ui->versionSelectionBox->clear();
+    m_model->searchWithTerm(ui->searchEdit->text(), ui->sortByBox->currentIndex(), m_filterWidget->getFilter(), m_filterWidget->changed());
     m_fetch_progress.watch(m_model->activeSearchJob().get());
 }
 
-void ModrinthPage::onVersionSelectionChanged(QString version)
+void ModrinthPage::onVersionSelectionChanged(int index)
 {
-    if (version.isNull() || version.isEmpty()) {
+    if (index == -1) {
         selectedVersion = "";
         return;
     }
     selectedVersion = ui->versionSelectionBox->currentData().toString();
     suggestCurrent();
+}
+
+void ModrinthPage::setSearchTerm(QString term)
+{
+    ui->searchEdit->setText(term);
+}
+
+QString ModrinthPage::getSerachTerm() const
+{
+    return ui->searchEdit->text();
+}
+
+void ModrinthPage::createFilterWidget()
+{
+    auto widget = ModFilterWidget::create(nullptr, true, this);
+    m_filterWidget.swap(widget);
+    auto old = ui->splitter->replaceWidget(0, m_filterWidget.get());
+    // because we replaced the widget we also need to delete it
+    if (old) {
+        delete old;
+    }
+
+    connect(ui->filterButton, &QPushButton::clicked, this, [this] { m_filterWidget->setHidden(!m_filterWidget->isHidden()); });
+
+    connect(m_filterWidget.get(), &ModFilterWidget::filterChanged, this, &ModrinthPage::triggerSearch);
+    auto response = std::make_shared<QByteArray>();
+    m_categoriesTask = ModrinthAPI::getModCategories(response);
+    QObject::connect(m_categoriesTask.get(), &Task::succeeded, [this, response]() {
+        auto categories = ModrinthAPI::loadCategories(response, "modpack");
+        m_filterWidget->setCategories(categories);
+    });
+    m_categoriesTask->start();
 }

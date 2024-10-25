@@ -29,29 +29,18 @@
 #include "BuildConfig.h"
 
 CreateAuthlibInjectorAccount::CreateAuthlibInjectorAccount(QUrl url, MinecraftAccountPtr account, QString username)
-    : NetAction(), m_url(url), m_account(account), m_username(username)
+    : NetRequest(), m_url(url), m_account(account), m_username(username)
 {}
 
-void CreateAuthlibInjectorAccount::executeTask()
+QNetworkReply* CreateAuthlibInjectorAccount::getReply(QNetworkRequest& request)
 {
-    m_state = State::Running;
-    QNetworkRequest request(m_url);
-    QNetworkReply* rep = APPLICATION->network()->get(request);
-
-    m_reply.reset(rep);
-    connect(rep, &QNetworkReply::finished, this, &CreateAuthlibInjectorAccount::downloadFinished);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)  // QNetworkReply::errorOccurred added in 5.15
-    connect(rep, &QNetworkReply::errorOccurred, this, &CreateAuthlibInjectorAccount::downloadError);
-#else
-    connect(rep, QOverload<QNetworkReply::NetworkError>::of(&QNetworkReply::error), this, &CreateAuthlibInjectorAccount::downloadError);
-#endif
-    connect(rep, &QNetworkReply::sslErrors, this, &CreateAuthlibInjectorAccount::sslErrors);
+    setStatus(tr("Getting authlib-injector server details"));
+    return m_network->get(request);
 }
 
-void CreateAuthlibInjectorAccount::downloadError(QNetworkReply::NetworkError error)
+CreateAuthlibInjectorAccount::Ptr CreateAuthlibInjectorAccount::make(QUrl url, MinecraftAccountPtr account, QString username)
 {
-    qDebug() << m_reply->errorString();
-    m_state = State::Failed;
+    return CreateAuthlibInjectorAccount::Ptr(new CreateAuthlibInjectorAccount(url, account, username));
 }
 
 void CreateAuthlibInjectorAccount::downloadFinished()

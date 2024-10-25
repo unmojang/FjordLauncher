@@ -72,7 +72,7 @@ void appendSafe(const QString& filename, const QByteArray& data);
 void append(const QString& filename, const QByteArray& data);
 
 /**
- * read data from a file safely\
+ * read data from a file safely
  */
 QByteArray read(const QString& filename);
 
@@ -240,6 +240,7 @@ class create_link : public QObject {
     bool operator()(bool dryRun = false) { return operator()(QString(), dryRun); }
 
     int totalLinked() { return m_linked; }
+    int totalToLink() { return static_cast<int>(m_links_to_make.size()); }
 
     void runPrivileged() { runPrivileged(QString()); }
     void runPrivileged(const QString& offset);
@@ -558,5 +559,7 @@ uintmax_t hardLinkCount(const QString& path);
 #ifdef Q_OS_WIN
 QString getPathNameInLocal8bit(const QString& file);
 #endif
+
+QString getUniqueResourceName(const QString& filePath);
 
 }  // namespace FS

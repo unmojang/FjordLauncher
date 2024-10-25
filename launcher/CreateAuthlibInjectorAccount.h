@@ -19,28 +19,22 @@
 #pragma once
 
 #include "minecraft/auth/MinecraftAccount.h"
-#include "net/NetAction.h"
+#include "net/NetRequest.h"
 
-typedef shared_qobject_ptr<class CreateAuthlibInjectorAccount> CreateAuthlibInjectorAccountPtr;
-class CreateAuthlibInjectorAccount : public NetAction {
+class CreateAuthlibInjectorAccount : public Net::NetRequest {
+    Q_OBJECT
    public:
-    explicit CreateAuthlibInjectorAccount(QUrl url, MinecraftAccountPtr account, QString username);
-    static CreateAuthlibInjectorAccountPtr make(QUrl url, MinecraftAccountPtr account, QString username)
-    {
-        return CreateAuthlibInjectorAccountPtr(new CreateAuthlibInjectorAccount(url, account, username));
-    }
+    using Ptr = shared_qobject_ptr<CreateAuthlibInjectorAccount>;
+    CreateAuthlibInjectorAccount(QUrl url, MinecraftAccountPtr account, QString username);
+    virtual ~CreateAuthlibInjectorAccount() = default;
+
+    static CreateAuthlibInjectorAccount::Ptr make(QUrl url, MinecraftAccountPtr account, QString username);
+
     MinecraftAccountPtr getAccount();
 
-    void init() override {};
-
    protected slots:
-    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal) override {}
-    void downloadError(QNetworkReply::NetworkError error) override;
-    void downloadFinished() override;
-    void downloadReadyRead() override {}
-
-   public slots:
-    void executeTask() override;
+    virtual QNetworkReply* getReply(QNetworkRequest&) override;
+    void downloadFinished();
 
    private:
     QUrl m_url;

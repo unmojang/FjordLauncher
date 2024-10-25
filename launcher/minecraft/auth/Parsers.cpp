@@ -79,7 +79,7 @@ bool getBool(QJsonValue value, bool& out)
 // 2148916238 = child account not linked to a family
 */
 
-bool parseXTokenResponse(QByteArray& data, Katabasis::Token& output, QString name)
+bool parseXTokenResponse(QByteArray& data, Token& output, QString name)
 {
     qDebug() << "Parsing" << name << ":";
     qCDebug(authCredentials()) << data;
@@ -135,7 +135,7 @@ bool parseXTokenResponse(QByteArray& data, Katabasis::Token& output, QString nam
         qWarning() << "Missing uhs";
         return false;
     }
-    output.validity = Katabasis::Validity::Certain;
+    output.validity = Validity::Certain;
     qDebug() << name << "is valid.";
     return true;
 }
@@ -180,6 +180,7 @@ bool parseMinecraftProfile(QByteArray& data, MinecraftProfile& output)
         if (!getString(skinObj.value("url"), skinOut.url)) {
             continue;
         }
+        skinOut.url.replace("http://textures.minecraft.net", "https://textures.minecraft.net");
         if (!getString(skinObj.value("variant"), skinOut.variant)) {
             continue;
         }
@@ -213,7 +214,7 @@ bool parseMinecraftProfile(QByteArray& data, MinecraftProfile& output)
         output.capes[capeOut.id] = capeOut;
     }
     output.currentCape = currentCape;
-    output.validity = Katabasis::Validity::Certain;
+    output.validity = Validity::Certain;
     return true;
 }
 
@@ -221,9 +222,9 @@ namespace {
 // these skin URLs are for the MHF_Steve and MHF_Alex accounts (made by a Mojang employee)
 // they are needed because the session server doesn't return skin urls for default skins
 static const QString SKIN_URL_STEVE =
-    "http://textures.minecraft.net/texture/1a4af718455d4aab528e7a61f86fa25e6a369d1768dcb13f7df319a713eb810b";
+    "https://textures.minecraft.net/texture/1a4af718455d4aab528e7a61f86fa25e6a369d1768dcb13f7df319a713eb810b";
 static const QString SKIN_URL_ALEX =
-    "http://textures.minecraft.net/texture/83cee5ca6afcdb171285aa00e8049c297b2dbeba0efb8ff970a5677a1b644032";
+    "https://textures.minecraft.net/texture/83cee5ca6afcdb171285aa00e8049c297b2dbeba0efb8ff970a5677a1b644032";
 
 bool isDefaultModelSteve(QString uuid)
 {
@@ -347,7 +348,7 @@ bool parseMinecraftProfileMojang(QByteArray& data, MinecraftProfile& output)
     Skin skinOut;
     // fill in default skin info ourselves, as this endpoint doesn't provide it
     bool steve = isDefaultModelSteve(output.id);
-    skinOut.variant = steve ? "classic" : "slim";
+    skinOut.variant = steve ? "CLASSIC" : "SLIM";
     skinOut.url = steve ? SKIN_URL_STEVE : SKIN_URL_ALEX;
     // sadly we can't figure this out, but I don't think it really matters...
     skinOut.id = "00000000-0000-0000-0000-000000000000";
@@ -388,7 +389,7 @@ bool parseMinecraftProfileMojang(QByteArray& data, MinecraftProfile& output)
         output.currentCape = capeOut.alias;
     }
 
-    output.validity = Katabasis::Validity::Certain;
+    output.validity = Validity::Certain;
     return true;
 }
 
@@ -422,7 +423,7 @@ bool parseMinecraftEntitlements(QByteArray& data, MinecraftEntitlement& output)
             output.ownsMinecraft = true;
         }
     }
-    output.validity = Katabasis::Validity::Certain;
+    output.validity = Validity::Certain;
     return true;
 }
 
@@ -456,7 +457,7 @@ bool parseRolloutResponse(QByteArray& data, bool& result)
     return true;
 }
 
-bool parseMojangResponse(QByteArray& data, Katabasis::Token& output)
+bool parseMojangResponse(QByteArray& data, Token& output)
 {
     QJsonParseError jsonError;
     qDebug() << "Parsing Mojang response...";
@@ -488,7 +489,7 @@ bool parseMojangResponse(QByteArray& data, Katabasis::Token& output)
         qWarning() << "access_token is not valid";
         return false;
     }
-    output.validity = Katabasis::Validity::Certain;
+    output.validity = Validity::Certain;
     qDebug() << "Mojang response is valid.";
     return true;
 }

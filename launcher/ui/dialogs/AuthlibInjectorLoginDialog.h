@@ -67,5 +67,5 @@ class AuthlibInjectorLoginDialog : public QDialog {
     MinecraftAccountPtr m_account;
     Task::Ptr m_loginTask;
     Task::Ptr m_createAuthlibInjectorAccountNetJob;
-    CreateAuthlibInjectorAccountPtr m_createAuthlibInjectorAccountTask;
+    CreateAuthlibInjectorAccount::Ptr m_createAuthlibInjectorAccountTask;
 };

@@ -36,6 +36,7 @@
 
 #include "NewInstanceDialog.h"
 #include "Application.h"
+#include "ui/pages/modplatform/ModpackProviderBasePage.h"
 #include "ui/pages/modplatform/import_ftb/ImportFTBPage.h"
 #include "ui_NewInstanceDialog.h"
 
@@ -100,6 +101,9 @@ NewInstanceDialog::NewInstanceDialog(const QString& initialGroup,
     ui->verticalLayout->insertWidget(2, m_container);
 
     m_container->addButtons(m_buttons);
+    connect(m_container, &PageContainer::selectedPageChanged, this, [this](BasePage* previous, BasePage* selected) {
+        m_buttons->button(QDialogButtonBox::Ok)->setEnabled(creationTask && !instName().isEmpty());
+    });
 
     // Bonk Qt over its stupid head and make sure it understands which button is the default one...
     // See: https://stackoverflow.com/questions/24556831/qbuttonbox-set-default-button
@@ -138,6 +142,8 @@ NewInstanceDialog::NewInstanceDialog(const QString& initialGroup,
         auto geometry = screen->availableSize();
         resize(width(), qMin(geometry.height() - 50, 710));
     }
+
+    connect(m_container, &PageContainer::selectedPageChanged, this, &NewInstanceDialog::selectedPageChanged);
 }
 
 void NewInstanceDialog::reject()
@@ -199,7 +205,7 @@ void NewInstanceDialog::setSuggestedPack(const QString& name, InstanceTask* task
     importVersion.clear();
 
     if (!task) {
-        ui->iconButton->setIcon(APPLICATION->icons()->getIcon("default"));
+        ui->iconButton->setIcon(APPLICATION->icons()->getIcon(InstIconKey));
         importIcon = false;
     }
 
@@ -215,7 +221,7 @@ void NewInstanceDialog::setSuggestedPack(const QString& name, QString version, I
     importVersion = std::move(version);
 
     if (!task) {
-        ui->iconButton->setIcon(APPLICATION->icons()->getIcon("default"));
+        ui->iconButton->setIcon(APPLICATION->icons()->getIcon(InstIconKey));
         importIcon = false;
     }
 
@@ -235,6 +241,9 @@ void NewInstanceDialog::setSuggestedIconFromFile(const QString& path, const QStr
 
 void NewInstanceDialog::setSuggestedIcon(const QString& key)
 {
+    if (key == "default")
+        return;
+
     auto icon = APPLICATION->icons()->getIcon(key);
     importIcon = false;
 
@@ -311,4 +320,17 @@ void NewInstanceDialog::importIconNow()
         importIcon = false;
     }
     APPLICATION->settings()->set("NewInstanceGeometry", saveGeometry().toBase64());
+}
+
+void NewInstanceDialog::selectedPageChanged(BasePage* previous, BasePage* selected)
+{
+    auto prevPage = dynamic_cast<ModpackProviderBasePage*>(previous);
+    if (prevPage) {
+        m_searchTerm = prevPage->getSerachTerm();
+    }
+
+    auto nextPage = dynamic_cast<ModpackProviderBasePage*>(selected);
+    if (nextPage) {
+        nextPage->setSearchTerm(m_searchTerm);
+    }
 }

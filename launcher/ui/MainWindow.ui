@@ -104,7 +104,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>20</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">
@@ -149,6 +149,7 @@
     <addaction name="actionChangeTheme"/>
     <addaction name="separator"/>
     <addaction name="actionCAT"/>
+    <addaction name="actionToggleStatusBar"/>
     <addaction name="actionLockToolbars"/>
     <addaction name="separator"/>
    </widget>
@@ -163,6 +164,8 @@
     <addaction name="separator"/>
     <addaction name="actionViewInstanceFolder"/>
     <addaction name="actionViewCentralModsFolder"/>
+    <addaction name="actionViewSkinsFolder"/>
+    <addaction name="actionViewJavaFolder"/>
     <addaction name="separator"/>
     <addaction name="actionViewIconThemeFolder"/>
     <addaction name="actionViewWidgetThemeFolder"/>
@@ -228,6 +231,14 @@
    </property>
    <property name="toolTip">
     <string>It's a fluffy kitty :3</string>
+   </property>
+  </action>
+  <action name="actionToggleStatusBar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Status Bar</string>
    </property>
   </action>
   <action name="actionLockToolbars">
@@ -455,15 +466,6 @@
     <string>CurseForge (zip)</string>
    </property>
   </action>
-  <action name="actionExportInstanceToModList">
-   <property name="icon">
-    <iconset theme="new">
-     <normaloff>.</normaloff>.</iconset>
-   </property>
-   <property name="text">
-    <string>Mod List</string>
-   </property>
-  </action>
   <action name="actionCreateInstanceShortcut">
    <property name="icon">
     <iconset theme="shortcut">
@@ -549,6 +551,18 @@
    </property>
    <property name="toolTip">
     <string>Open the central mods folder in a file browser.</string>
+   </property>
+  </action>
+  <action name="actionViewSkinsFolder">
+   <property name="icon">
+    <iconset theme="viewfolder">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Skins</string>
+   </property>
+   <property name="toolTip">
+    <string>Open the skins folder in a file browser.</string>
    </property>
   </action>
   <action name="actionViewIconsFolder">
@@ -746,6 +760,18 @@
    </property>
    <property name="toolTip">
     <string>Open the cat packs folder in a file browser.</string>
+   </property>
+  </action>
+  <action name="actionViewJavaFolder">
+   <property name="icon">
+    <iconset theme="viewfolder">
+     <normaloff>.</normaloff>.</iconset>
+   </property>
+   <property name="text">
+    <string>Java</string>
+   </property>
+   <property name="toolTip">
+    <string>Open the Java folder in a file browser. Only available if the built-in Java downloader is used.</string>
    </property>
   </action>
  </widget>

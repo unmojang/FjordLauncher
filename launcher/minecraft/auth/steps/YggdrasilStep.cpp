@@ -1,6 +1,5 @@
 #include "YggdrasilStep.h"
 
-#include "minecraft/auth/AuthRequest.h"
 #include "minecraft/auth/Parsers.h"
 #include "minecraft/auth/Yggdrasil.h"
 
@@ -13,16 +12,9 @@ YggdrasilStep::YggdrasilStep(AccountData* data, QString password) : AuthStep(dat
     connect(m_yggdrasil, &Task::aborted, this, &YggdrasilStep::onAuthFailed);
 }
 
-YggdrasilStep::~YggdrasilStep() noexcept = default;
-
 QString YggdrasilStep::describe()
 {
     return tr("Logging in with Mojang account.");
-}
-
-void YggdrasilStep::rehydrate()
-{
-    // NOOP, for now.
 }
 
 void YggdrasilStep::perform()
@@ -41,10 +33,6 @@ void YggdrasilStep::onAuthSucceeded()
 
 void YggdrasilStep::onAuthFailed()
 {
-    // TODO: hook these in again, expand to MSA
-    // m_error = m_yggdrasil->m_error;
-    // m_aborted = m_yggdrasil->m_aborted;
-
     auto state = m_yggdrasil->taskState();
     QString errorMessage = tr("Mojang user authentication failed.");
 

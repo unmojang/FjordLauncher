@@ -14,8 +14,8 @@ set(Launcher_DisplayName "Fjord Launcher")
 set(Launcher_Name "${Launcher_CommonName}" PARENT_SCOPE)
 set(Launcher_DisplayName "${Launcher_DisplayName}" PARENT_SCOPE)
 
-set(Launcher_Copyright "© 2024-2024 Fjord Launcher Contributors\\n© 2022-2024 PollyMC Contributors\\n© 2022-2024 Prism Launcher Contributors\\n© 2021-2022 PolyMC Contributors\\n© 2012-2021 MultiMC Contributors")
-set(Launcher_Copyright_Mac "© 2024-2024 Fjord Launcher Contributors, © 2022-2024 PollyMC Contributors, © 2022-2024 Prism Launcher Contributors, © 2021-2022 PolyMC Contributors, and © 2012-2021 MultiMC Contributors" PARENT_SCOPE)
+set(Launcher_Copyright "© 2024-2024 Fjord Launcher Contributors\\n© 2022-2024 Prism Launcher Contributors\\n© 2021-2022 PolyMC Contributors\\n© 2012-2021 MultiMC Contributors")
+set(Launcher_Copyright_Mac "© 2024-2024 Fjord Launcher Contributors, © 2022-2024 Prism Launcher Contributors, © 2021-2022 PolyMC Contributors and © 2012-2021 MultiMC Contributors" PARENT_SCOPE)
 set(Launcher_Copyright "${Launcher_Copyright}" PARENT_SCOPE)
 set(Launcher_Domain "" PARENT_SCOPE)
 set(Launcher_UserAgent "PrismLauncher/${Launcher_RELEASE_VERSION_NAME}" PARENT_SCOPE)
@@ -32,7 +32,7 @@ set(Launcher_Branding_ICNS "program_info/fjordlauncher.icns" PARENT_SCOPE)
 set(Launcher_Branding_ICO "program_info/fjordlauncher.ico")
 set(Launcher_Branding_ICO "${Launcher_Branding_ICO}" PARENT_SCOPE)
 set(Launcher_Branding_WindowsRC "program_info/fjordlauncher.rc" PARENT_SCOPE)
-set(Launcher_Branding_LogoQRC "program_info/prismlauncher.qrc" PARENT_SCOPE)
+set(Launcher_Branding_LogoQRC "program_info/fjordlauncher.qrc" PARENT_SCOPE)
 
 set(Launcher_Portable_File "program_info/portable.txt" PARENT_SCOPE)
 
@@ -41,6 +41,31 @@ configure_file(org.unmojang.FjordLauncher.metainfo.xml.in org.unmojang.FjordLaun
 configure_file(fjordlauncher.rc.in fjordlauncher.rc @ONLY)
 configure_file(fjordlauncher.manifest.in fjordlauncher.manifest @ONLY)
 configure_file(fjordlauncher.ico fjordlauncher.ico COPYONLY)
+
+if(MSVC)
+    set(Launcher_MSVC_Redist_NSIS_Section [=[
+!ifdef haveNScurl
+Section "Visual Studio Runtime"
+    Var /GLOBAL vc_redist_exe
+    ${If} ${IsNativeARM64}
+        StrCpy $vc_redist_exe "vc_redist.arm64.exe"
+    ${Else}
+        StrCpy $vc_redist_exe "vc_redist.x64.exe"
+    ${EndIf}
+    DetailPrint 'Downloading Microsoft Visual C++ Redistributable...'
+    NScurl::http GET "https://aka.ms/vs/17/release/$vc_redist_exe" "$INSTDIR\vc_redist\$vc_redist_exe" /INSIST /CANCEL /Zone.Identifier /END
+    Pop $0
+    ${If} $0 == "OK"
+        DetailPrint "Download successful"
+        ExecWait "$INSTDIR\vc_redist\$vc_redist_exe /install /passive /norestart\"
+    ${Else}
+        DetailPrint "Download failed with error $0"
+    ${EndIf}
+SectionEnd
+!endif
+]=])
+endif()
+
 configure_file(win_install.nsi.in win_install.nsi @ONLY)
 
 if(SCDOC_FOUND)
