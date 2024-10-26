@@ -60,14 +60,24 @@
      </property>
     </widget>
    </item>
-   <item>
-    <widget class="QProgressBar" name="progressBar">
-     <property name="value">
-      <number>24</number>
-     </property>
-     <property name="textVisible">
-      <bool>false</bool>
-     </property>
+    <item>
+    <widget class="QLabel" name="loadingLabel">
+      <property name="font">
+      <font>
+        <pointsize>16</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+      </font>
+      </property>
+      <property name="text">
+      <string>Please wait...</string>
+      </property>
+      <property name="alignment">
+      <set>Qt::AlignCenter</set>
+      </property>
+      <property name="wordWrap">
+      <bool>true</bool>
+      </property>
     </widget>
    </item>
    <item>

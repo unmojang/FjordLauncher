@@ -35,12 +35,12 @@
  */
 
 #include "LaunchController.h"
+#include <meta/Index.h>
 #include "Application.h"
 #include "launch/steps/PrintServers.h"
 #include "minecraft/auth/AccountData.h"
 #include "minecraft/auth/AccountList.h"
 #include "settings/MissingAuthlibInjectorBehavior.h"
-#include "ui/pages/instance/VersionPage.h"
 
 #include "ui/InstanceWindow.h"
 #include "ui/MainWindow.h"

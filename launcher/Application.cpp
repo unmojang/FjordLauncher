@@ -109,6 +109,8 @@
 #include "icons/IconList.h"
 #include "net/HttpMetaCache.h"
 
+#include "ui/GuiUtil.h"
+
 #include "java/JavaInstallList.h"
 
 #include "updater/ExternalUpdater.h"

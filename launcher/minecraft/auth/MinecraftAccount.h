@@ -83,7 +83,6 @@ class MinecraftAccount : public QObject, public Usable {
     //! Default constructor
     explicit MinecraftAccount(QObject* parent = 0);
 
-    static MinecraftAccountPtr createFromUsername(const QString& username);
     static MinecraftAccountPtr createFromUsernameAuthlibInjector(const QString& username, const QString& authlibInjectorUrl);
 
     static MinecraftAccountPtr createBlankMSA();
@@ -98,7 +97,7 @@ class MinecraftAccount : public QObject, public Usable {
     QJsonObject saveToJson() const;
 
    public: /* manipulation */
-    shared_qobject_ptr<AuthFlow> login(bool useDeviceCode = false);
+    shared_qobject_ptr<AuthFlow> login(bool useDeviceCode = false, std::optional<QString> password = std::nullopt);
 
     shared_qobject_ptr<AuthFlow> refresh();
 

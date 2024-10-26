@@ -233,8 +233,6 @@ set(MINECRAFT_SOURCES
     minecraft/auth/MinecraftAccount.h
     minecraft/auth/Parsers.cpp
     minecraft/auth/Parsers.h
-    minecraft/auth/Yggdrasil.cpp
-    minecraft/auth/Yggdrasil.h
 
     minecraft/auth/AuthFlow.cpp
     minecraft/auth/AuthFlow.h
@@ -257,6 +255,8 @@ set(MINECRAFT_SOURCES
     minecraft/auth/steps/XboxProfileStep.h
     minecraft/auth/steps/XboxUserStep.cpp
     minecraft/auth/steps/XboxUserStep.h
+    minecraft/auth/steps/YggdrasilMinecraftProfileStep.cpp
+    minecraft/auth/steps/YggdrasilMinecraftProfileStep.h
     minecraft/auth/steps/YggdrasilStep.cpp
     minecraft/auth/steps/YggdrasilStep.h
 
@@ -1071,8 +1071,6 @@ SET(LAUNCHER_SOURCES
     ui/dialogs/IconPickerDialog.h
     ui/dialogs/ImportResourceDialog.cpp
     ui/dialogs/ImportResourceDialog.h
-    ui/dialogs/LoginDialog.cpp
-    ui/dialogs/LoginDialog.h
     ui/dialogs/AuthlibInjectorLoginDialog.cpp
     ui/dialogs/AuthlibInjectorLoginDialog.h
     ui/dialogs/MSALoginDialog.cpp

@@ -24,13 +24,16 @@
 #include <QNetworkRequest>
 #include <QStringList>
 #include <QUrl>
+#include "net/ByteArraySink.h"
 
 #include "Application.h"
-#include "BuildConfig.h"
 
 CreateAuthlibInjectorAccount::CreateAuthlibInjectorAccount(QUrl url, MinecraftAccountPtr account, QString username)
-    : NetRequest(), m_url(url), m_account(account), m_username(username)
-{}
+    : NetRequest(), m_account(account), m_username(username)
+{
+    m_url = url;
+    m_sink.reset(new Sink(*this));
+}
 
 QNetworkReply* CreateAuthlibInjectorAccount::getReply(QNetworkRequest& request)
 {
@@ -43,26 +46,34 @@ CreateAuthlibInjectorAccount::Ptr CreateAuthlibInjectorAccount::make(QUrl url, M
     return CreateAuthlibInjectorAccount::Ptr(new CreateAuthlibInjectorAccount(url, account, username));
 }
 
-void CreateAuthlibInjectorAccount::downloadFinished()
+auto CreateAuthlibInjectorAccount::Sink::init(QNetworkRequest& request) -> Task::State
 {
-    if (m_state != State::Failed) {
-        QVariant header = m_reply->rawHeader("X-Authlib-Injector-API-Location");
-        if (header.isValid()) {
-            auto location = header.toString();
-            m_url = m_url.resolved(location);
-        } else {
-            qDebug() << "X-Authlib-Injector-API-Location header not found!";
-        }
-        m_account.reset(MinecraftAccount::createFromUsernameAuthlibInjector(m_username, m_url.toString()));
-        m_state = State::Succeeded;
-        emit succeeded();
-        return;
+    return Task::State::Running;
+}
+
+auto CreateAuthlibInjectorAccount::Sink::write(QByteArray& data) -> Task::State
+{
+    return Task::State::Running;
+}
+
+auto CreateAuthlibInjectorAccount::Sink::abort() -> Task::State
+{
+    return Task::State::Failed;
+}
+
+auto CreateAuthlibInjectorAccount::Sink::finalize(QNetworkReply& reply) -> Task::State
+{
+    QVariant header = reply.rawHeader("X-Authlib-Injector-API-Location");
+    QUrl url = m_outer.m_url;
+    if (header.isValid()) {
+        auto location = header.toString();
+        url = url.resolved(location);
     } else {
-        qDebug() << m_reply->readAll();
-        m_reply.reset();
-        emitFailed();
-        return;
+        qDebug() << "X-Authlib-Injector-API-Location header not found!";
     }
+
+    m_outer.m_account.reset(MinecraftAccount::createFromUsernameAuthlibInjector(m_outer.m_username, url.toString()));
+    return Task::State::Succeeded;
 }
 
 MinecraftAccountPtr CreateAuthlibInjectorAccount::getAccount()

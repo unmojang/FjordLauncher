@@ -32,12 +32,26 @@ class CreateAuthlibInjectorAccount : public Net::NetRequest {
 
     MinecraftAccountPtr getAccount();
 
+    class Sink : public Net::Sink {
+       public:
+        Sink(CreateAuthlibInjectorAccount& outer) : m_outer(outer) {}
+        virtual ~Sink() = default;
+
+       public:
+        auto init(QNetworkRequest& request) -> Task::State override;
+        auto write(QByteArray& data) -> Task::State override;
+        auto abort() -> Task::State override;
+        auto finalize(QNetworkReply& reply) -> Task::State override;
+        auto hasLocalData() -> bool override { return false; }
+
+       private:
+        CreateAuthlibInjectorAccount& m_outer;
+    };
+
    protected slots:
     virtual QNetworkReply* getReply(QNetworkRequest&) override;
-    void downloadFinished();
 
    private:
-    QUrl m_url;
     MinecraftAccountPtr m_account;
     QString m_username;
 };

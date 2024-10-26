@@ -67,15 +67,6 @@ MinecraftAccountPtr MinecraftAccount::loadFromJsonV3(const QJsonObject& json)
     return nullptr;
 }
 
-MinecraftAccountPtr MinecraftAccount::createFromUsername(const QString& username)
-{
-    auto account = makeShared<MinecraftAccount>();
-    account->data.type = AccountType::Mojang;
-    account->data.yggdrasilToken.extra["userName"] = username;
-    account->data.yggdrasilToken.extra["clientToken"] = QUuid::createUuid().toString().remove(QRegularExpression("[{}-]"));
-    return account;
-}
-
 MinecraftAccountPtr MinecraftAccount::createFromUsernameAuthlibInjector(const QString& username, const QString& authlibInjectorUrl)
 {
     auto account = makeShared<MinecraftAccount>();
@@ -143,11 +134,11 @@ QPixmap MinecraftAccount::getFace() const
     return skin.scaled(64, 64, Qt::KeepAspectRatio);
 }
 
-shared_qobject_ptr<AuthFlow> MinecraftAccount::login(bool useDeviceCode)
+shared_qobject_ptr<AuthFlow> MinecraftAccount::login(bool useDeviceCode, std::optional<QString> password)
 {
     Q_ASSERT(m_currentTask.get() == nullptr);
 
-    m_currentTask.reset(new AuthFlow(&data, useDeviceCode ? AuthFlow::Action::DeviceCode : AuthFlow::Action::Login, this));
+    m_currentTask.reset(new AuthFlow(&data, useDeviceCode ? AuthFlow::Action::DeviceCode : AuthFlow::Action::Login, this, password));
     connect(m_currentTask.get(), &Task::succeeded, this, &MinecraftAccount::authSucceeded);
     connect(m_currentTask.get(), &Task::failed, this, &MinecraftAccount::authFailed);
     connect(m_currentTask.get(), &Task::aborted, this, [this] { authFailed(tr("Aborted")); });

@@ -51,7 +51,6 @@ class AuthlibInjectorLoginDialog : public QDialog {
     void onUrlTaskSucceeded();
     void onTaskSucceeded();
     void onTaskStatus(const QString& status);
-    void onTaskProgress(qint64 current, qint64 total);
 
     void on_userTextBox_textEdited(const QString& newText);
     void on_passTextBox_textEdited(const QString& newText);

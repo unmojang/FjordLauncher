@@ -53,7 +53,6 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionAddMicrosoft"/>
-   <addaction name="actionAddMojang"/>
    <addaction name="actionAddAuthlibInjector"/>
    <addaction name="actionAddOffline"/>
    <addaction name="actionRefresh"/>
