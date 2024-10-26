@@ -184,7 +184,7 @@ void PackInstallTask::onResolveModsSucceeded()
         VersionFile& local_file = m_version.files[index];
 
         // First check for blocked mods
-        if (!results_file.version.downloadUrl.isEmpty()) {
+        if (results_file.version.downloadUrl.isEmpty()) {
             BlockedMod blocked_mod;
             blocked_mod.name = local_file.name;
             blocked_mod.websiteUrl = results_file.pack.websiteUrl;
