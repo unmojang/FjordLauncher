@@ -59,9 +59,10 @@ void MSADeviceCodeStep::perform()
 {
     QUrlQuery data;
     data.addQueryItem("client_id", m_clientId);
-    data.addQueryItem("scope", "XboxLive.SignIn XboxLive.offline_access");
+    data.addQueryItem("scope", "service::user.auth.xboxlive.com::MBI_SSL");
+    data.addQueryItem("response_type", "device_code");
     auto payload = data.query(QUrl::FullyEncoded).toUtf8();
-    QUrl url("https://login.microsoftonline.com/consumers/oauth2/v2.0/devicecode");
+    QUrl url("https://login.live.com/oauth20_connect.srf");
     auto headers = QList<Net::HeaderPair>{
         { "Content-Type", "application/x-www-form-urlencoded" },
         { "Accept", "application/json" },
@@ -175,8 +176,9 @@ void MSADeviceCodeStep::authenticateUser()
     data.addQueryItem("client_id", m_clientId);
     data.addQueryItem("grant_type", "urn:ietf:params:oauth:grant-type:device_code");
     data.addQueryItem("device_code", m_device_code);
+    data.addQueryItem("response_type", "device_code");
     auto payload = data.query(QUrl::FullyEncoded).toUtf8();
-    QUrl url("https://login.microsoftonline.com/consumers/oauth2/v2.0/token");
+    QUrl url("https://login.live.com/oauth20_token.srf");
     auto headers = QList<Net::HeaderPair>{
         { "Content-Type", "application/x-www-form-urlencoded" },
         { "Accept", "application/json" },

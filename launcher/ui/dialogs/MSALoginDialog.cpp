@@ -145,11 +145,7 @@ void MSALoginDialog::authorizeWithBrowserWithExtra(QString url, QString code, in
     ui->code->setText(code);
     auto isDefaultUrl = url == "https://www.microsoft.com/link";
     ui->qr->setVisible(isDefaultUrl);
-    if (isDefaultUrl) {
-        ui->qrMessage->setText(tr("Open %1 or scan the QR and enter the above code.").arg(linkString));
-    } else {
-        ui->qrMessage->setText(tr("Open %1 and enter the above code.").arg(linkString));
-    }
+    ui->qrMessage->setText(tr("Open %1 and enter the above code.").arg(linkString));
 }
 
 void MSALoginDialog::onDeviceFlowStatus(QString status)

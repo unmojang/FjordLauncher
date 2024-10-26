@@ -104,9 +104,16 @@ MSAStep::MSAStep(AccountData* data, bool silent) : AuthStep(data), m_silent(sile
     } else {
         oauth2.setReplyHandler(new CustomOAuthOobReplyHandler(this));
     }
-    oauth2.setAuthorizationUrl(QUrl("https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize"));
-    oauth2.setAccessTokenUrl(QUrl("https://login.microsoftonline.com/consumers/oauth2/v2.0/token"));
-    oauth2.setScope("XboxLive.SignIn XboxLive.offline_access");
+    oauth2.setAuthorizationUrl(QUrl("https://login.live.com/oauth20_connect.srf"));
+    oauth2.setAccessTokenUrl(QUrl("https://login.live.com/oauth20_token.srf"));
+    const auto& scope = "service::user.auth.xboxlive.com::MBI_SSL";
+    oauth2.setScope(scope);
+    // QOAuth2AuthorizationCodeFlow doesn't pass a "scope" when refreshing access tokens, but Microsoft expects it.
+    oauth2.setModifyParametersFunction([](QAbstractOAuth::Stage stage, QMultiMap<QString, QVariant>* parameters) {
+        if (stage == QAbstractOAuth::Stage::RefreshingAccessToken) {
+            (*parameters).insert("scope", scope);
+        }
+    });
     oauth2.setClientIdentifier(m_clientId);
     oauth2.setNetworkAccessManager(APPLICATION->network().get());
 
