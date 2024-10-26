@@ -277,7 +277,6 @@ void YggdrasilStep::processError(QJsonObject responseData)
     QJsonValue causeVal = responseData.value("cause");
 
     if (errorVal.isString() && errorMessageValue.isString()) {
-        /*m_error = std::shared_ptr<Error>(new Error{ errorVal.toString(""), errorMessageValue.toString(""), causeVal.toString("") });*/
         emit finished(AccountTaskState::STATE_FAILED_HARD, errorMessageValue.toString(""));
     } else {
         // Error is not in standard format. Don't set m_error and return unknown error.
