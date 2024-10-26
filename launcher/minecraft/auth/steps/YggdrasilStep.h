@@ -1,5 +1,6 @@
 #pragma once
 #include <QObject>
+#include <optional>
 
 #include "minecraft/auth/AuthStep.h"
 #include "net/NetJob.h"

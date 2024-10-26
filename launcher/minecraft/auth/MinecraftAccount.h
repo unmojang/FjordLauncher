@@ -42,6 +42,7 @@
 #include <QPair>
 #include <QPixmap>
 #include <QString>
+#include <optional>
 
 #include "AccountData.h"
 #include "AuthSession.h"

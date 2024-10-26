@@ -500,9 +500,6 @@ QStringList getMinecraftJavaBundle()
     auto appDataPath = QProcessEnvironment::systemEnvironment().value("APPDATA", "");
     processpaths << FS::PathCombine(QFileInfo(appDataPath).absoluteFilePath(), ".minecraft", "runtime");
 
-    auto appDataPath = QProcessEnvironment::systemEnvironment().value("APPDATA", "");
-    processpaths << FS::PathCombine(QFileInfo(appDataPath).absoluteFilePath(), ".minecraft", "runtime");
-
     // add the microsoft store version of the launcher to the search. the current path is:
     // C:\Users\USERNAME\AppData\Local\Packages\Microsoft.4297127D64EC6_8wekyb3d8bbwe\LocalCache\Local\runtime
     auto localAppDataPath = QProcessEnvironment::systemEnvironment().value("LOCALAPPDATA", "");

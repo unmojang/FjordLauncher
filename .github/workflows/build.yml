@@ -681,7 +681,7 @@ jobs:
       - name: Setup Cachix
         uses: cachix/cachix-action@v15
         with:
-          name: fjordlauncher
+          name: unmojang
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
 
       - name: Run flake checks

@@ -109,11 +109,19 @@ MSAStep::MSAStep(AccountData* data, bool silent) : AuthStep(data), m_silent(sile
     const auto& scope = "service::user.auth.xboxlive.com::MBI_SSL";
     oauth2.setScope(scope);
     // QOAuth2AuthorizationCodeFlow doesn't pass a "scope" when refreshing access tokens, but Microsoft expects it.
-    oauth2.setModifyParametersFunction([](QAbstractOAuth::Stage stage, QMultiMap<QString, QVariant>* parameters) {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    oauth2.setModifyParametersFunction([&](QAbstractOAuth::Stage stage, QVariantMap* parameters) {
+        if (stage == QAbstractOAuth::Stage::RefreshingAccessToken) {
+            (*parameters)["scope"] = scope;
+        }
+    });
+#else
+    oauth2.setModifyParametersFunction([&](QAbstractOAuth::Stage stage, QMultiMap<QString, QVariant>* parameters) {
         if (stage == QAbstractOAuth::Stage::RefreshingAccessToken) {
             (*parameters).insert("scope", scope);
         }
     });
+#endif
     oauth2.setClientIdentifier(m_clientId);
     oauth2.setNetworkAccessManager(APPLICATION->network().get());
 

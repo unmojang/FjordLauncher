@@ -1,7 +1,7 @@
 #include <QTest>
 #include <QTimer>
 
-#include <iostream>
+#include <sstream>
 
 #include "Manifest.h"
 
@@ -93,7 +93,7 @@ A-Name-That-Is-Way-Too-Loooooooooooooooooooooooooooooooooooooooooooooooonooooooo
         }
         QVERIFY(caught);
     }
-    void test_misingColon()
+    void test_missingColon()
     {
         std::istringstream iss{ "Manifest-Version 1.0" };
         bool caught = false;
@@ -104,7 +104,7 @@ A-Name-That-Is-Way-Too-Loooooooooooooooooooooooooooooooooooooooooooooooonooooooo
         }
         QVERIFY(caught);
     }
-    void test_misingSpace()
+    void test_missingSpace()
     {
         std::istringstream iss{ "Manifest-Version:1.0" };
         bool caught = false;
