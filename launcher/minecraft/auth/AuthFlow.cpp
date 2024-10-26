@@ -131,7 +131,7 @@ bool AuthFlow::changeState(AccountTaskState newState, QString reason)
             return false;
         }
         case AccountTaskState::STATE_FAILED_HARD: {
-            setStatus(tr("Failed to authenticate. The session has expired."));
+            setStatus(tr("Failed to authenticate."));
             m_data->errorString = reason;
             m_data->accountState = AccountState::Expired;
             emitFailed(reason);

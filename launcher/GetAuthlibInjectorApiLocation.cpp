@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "CreateAuthlibInjectorAccount.h"
+#include "GetAuthlibInjectorApiLocation.h"
 
 #include <QDebug>
 #include <QJsonDocument>
@@ -28,40 +28,40 @@
 
 #include "Application.h"
 
-CreateAuthlibInjectorAccount::CreateAuthlibInjectorAccount(QUrl url, MinecraftAccountPtr account, QString username)
+GetAuthlibInjectorApiLocation::GetAuthlibInjectorApiLocation(QUrl url, MinecraftAccountPtr account, QString username)
     : NetRequest(), m_account(account), m_username(username)
 {
     m_url = url;
     m_sink.reset(new Sink(*this));
 }
 
-QNetworkReply* CreateAuthlibInjectorAccount::getReply(QNetworkRequest& request)
+QNetworkReply* GetAuthlibInjectorApiLocation::getReply(QNetworkRequest& request)
 {
     setStatus(tr("Getting authlib-injector server details"));
     return m_network->get(request);
 }
 
-CreateAuthlibInjectorAccount::Ptr CreateAuthlibInjectorAccount::make(QUrl url, MinecraftAccountPtr account, QString username)
+GetAuthlibInjectorApiLocation::Ptr GetAuthlibInjectorApiLocation::make(QUrl url, MinecraftAccountPtr account, QString username)
 {
-    return CreateAuthlibInjectorAccount::Ptr(new CreateAuthlibInjectorAccount(url, account, username));
+    return GetAuthlibInjectorApiLocation::Ptr(new GetAuthlibInjectorApiLocation(url, account, username));
 }
 
-auto CreateAuthlibInjectorAccount::Sink::init(QNetworkRequest& request) -> Task::State
-{
-    return Task::State::Running;
-}
-
-auto CreateAuthlibInjectorAccount::Sink::write(QByteArray& data) -> Task::State
+auto GetAuthlibInjectorApiLocation::Sink::init(QNetworkRequest& request) -> Task::State
 {
     return Task::State::Running;
 }
 
-auto CreateAuthlibInjectorAccount::Sink::abort() -> Task::State
+auto GetAuthlibInjectorApiLocation::Sink::write(QByteArray& data) -> Task::State
+{
+    return Task::State::Running;
+}
+
+auto GetAuthlibInjectorApiLocation::Sink::abort() -> Task::State
 {
     return Task::State::Failed;
 }
 
-auto CreateAuthlibInjectorAccount::Sink::finalize(QNetworkReply& reply) -> Task::State
+auto GetAuthlibInjectorApiLocation::Sink::finalize(QNetworkReply& reply) -> Task::State
 {
     QVariant header = reply.rawHeader("X-Authlib-Injector-API-Location");
     QUrl url = m_outer.m_url;
@@ -76,7 +76,7 @@ auto CreateAuthlibInjectorAccount::Sink::finalize(QNetworkReply& reply) -> Task:
     return Task::State::Succeeded;
 }
 
-MinecraftAccountPtr CreateAuthlibInjectorAccount::getAccount()
+MinecraftAccountPtr GetAuthlibInjectorApiLocation::getAccount()
 {
     return m_account;
 }

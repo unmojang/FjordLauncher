@@ -21,20 +21,20 @@
 #include "minecraft/auth/MinecraftAccount.h"
 #include "net/NetRequest.h"
 
-class CreateAuthlibInjectorAccount : public Net::NetRequest {
+class GetAuthlibInjectorApiLocation : public Net::NetRequest {
     Q_OBJECT
    public:
-    using Ptr = shared_qobject_ptr<CreateAuthlibInjectorAccount>;
-    CreateAuthlibInjectorAccount(QUrl url, MinecraftAccountPtr account, QString username);
-    virtual ~CreateAuthlibInjectorAccount() = default;
+    using Ptr = shared_qobject_ptr<GetAuthlibInjectorApiLocation>;
+    GetAuthlibInjectorApiLocation(QUrl url, MinecraftAccountPtr account, QString username);
+    virtual ~GetAuthlibInjectorApiLocation() = default;
 
-    static CreateAuthlibInjectorAccount::Ptr make(QUrl url, MinecraftAccountPtr account, QString username);
+    static GetAuthlibInjectorApiLocation::Ptr make(QUrl url, MinecraftAccountPtr account, QString username);
 
     MinecraftAccountPtr getAccount();
 
     class Sink : public Net::Sink {
        public:
-        Sink(CreateAuthlibInjectorAccount& outer) : m_outer(outer) {}
+        Sink(GetAuthlibInjectorApiLocation& outer) : m_outer(outer) {}
         virtual ~Sink() = default;
 
        public:
@@ -45,7 +45,7 @@ class CreateAuthlibInjectorAccount : public Net::NetRequest {
         auto hasLocalData() -> bool override { return false; }
 
        private:
-        CreateAuthlibInjectorAccount& m_outer;
+        GetAuthlibInjectorApiLocation& m_outer;
     };
 
    protected slots:

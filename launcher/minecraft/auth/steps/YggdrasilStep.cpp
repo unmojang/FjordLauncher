@@ -7,7 +7,7 @@ YggdrasilStep::YggdrasilStep(AccountData* data, std::optional<QString> password)
 
 QString YggdrasilStep::describe()
 {
-    return tr("Logging in with Mojang account.");
+    return tr("Logging in with Yggdrasil.");
 }
 
 void YggdrasilStep::perform()
@@ -64,6 +64,7 @@ void YggdrasilStep::login(QString password)
 
     m_task.reset(new NetJob("YggdrasilStep", APPLICATION->network()));
     m_task->setAskRetry(false);
+    m_task->setAutoRetryLimit(0);
     m_task->addNetAction(m_request);
 
     connect(m_task.get(), &Task::finished, this, &YggdrasilStep::onRequestDone);
@@ -102,6 +103,7 @@ void YggdrasilStep::refresh()
 
     m_task.reset(new NetJob("YggdrasilStep", APPLICATION->network()));
     m_task->setAskRetry(false);
+    m_task->setAutoRetryLimit(0);
     m_task->addNetAction(m_request);
 
     connect(m_task.get(), &Task::finished, this, &YggdrasilStep::onRequestDone);
@@ -111,10 +113,90 @@ void YggdrasilStep::refresh()
 
 void YggdrasilStep::onRequestDone()
 {
-    // TODO handle errors
+    qDebug() << "Yggdrasil request done";
+    switch (m_request->error()) {
+        case QNetworkReply::NoError:
+            break;
+        case QNetworkReply::AuthenticationRequiredError:
+            // These cases will be handled as usual
+            break;
+        case QNetworkReply::TimeoutError:
+            emit finished(AccountTaskState::STATE_FAILED_SOFT, tr("Authentication operation timed out."));
+            return;
+        case QNetworkReply::OperationCanceledError:
+            emit finished(AccountTaskState::STATE_FAILED_SOFT, tr("Authentication operation cancelled."));
+            return;
+        case QNetworkReply::SslHandshakeFailedError:
+            emit finished(AccountTaskState::STATE_FAILED_SOFT,
+                          tr("<b>SSL Handshake failed.</b><br/>There might be a few causes for it:<br/>"
+                             "<ul>"
+                             "<li>You use Windows and need to update your root certificates, please install any outstanding updates.</li>"
+                             "<li>Some device on your network is interfering with SSL traffic. In that case, "
+                             "you have bigger worries than Minecraft not starting.</li>"
+                             "<li>Possibly something else. Check the log file for details</li>"
+                             "</ul>"));
+            return;
+        // used for invalid credentials and similar errors. Fall through.
+        case QNetworkReply::ContentAccessDenied:
+        case QNetworkReply::ContentOperationNotPermittedError:
+            break;
+        case QNetworkReply::ContentGoneError: {
+            emit finished(AccountTaskState::STATE_FAILED_GONE,
+                          tr("The Mojang account no longer exists. It may have been migrated to a Microsoft account."));
+            return;
+        }
+        default:
+            emit finished(AccountTaskState::STATE_FAILED_SOFT, tr("Authentication operation failed due to a network error: %1 (%2)")
+                                                                   .arg(m_request->errorString())
+                                                                   .arg(m_request->error()));
+            return;
+    }
 
+    // Try to parse the response regardless of the response code.
+    // Sometimes the auth server will give more information and an error code.
+    // Check the response code.
     QJsonParseError jsonError;
     QJsonDocument doc = QJsonDocument::fromJson(*m_response, &jsonError);
+    // Check the response code.
+    int responseCode = m_request->replyStatusCode();
+
+    if (responseCode == 200) {
+        // If the response code was 200, then there shouldn't be an error. Make sure
+        // anyways.
+        // Also, sometimes an empty reply indicates success. If there was no data received,
+        // pass an empty json object to the processResponse function.
+        if (jsonError.error == QJsonParseError::NoError || m_response->size() == 0) {
+            processResponse(m_response->size() > 0 ? doc.object() : QJsonObject());
+            return;
+        } else {
+            emit finished(AccountTaskState::STATE_FAILED_SOFT,
+                          tr("Failed to parse authentication server response JSON response: %1 at offset %2.")
+                              .arg(jsonError.errorString())
+                              .arg(jsonError.offset));
+            qCritical() << *m_response;
+        }
+        return;
+    }
+
+    // If the response code was not 200, then Yggdrasil may have given us information
+    // about the error.
+    // If we can parse the response, then get information from it. Otherwise just say
+    // there was an unknown error.
+    if (jsonError.error == QJsonParseError::NoError) {
+        // We were able to parse the server's response. Woo!
+        // Call processError. If a subclass has overridden it then they'll handle their
+        // stuff there.
+        qDebug() << "The request failed, but the server gave us an error message. Processing error.";
+        processError(doc.object());
+    } else {
+        // The server didn't say anything regarding the error. Give the user an unknown
+        // error.
+        qDebug() << "The request failed and the server gave no error message. Unknown error.";
+        emit finished(
+            AccountTaskState::STATE_FAILED_SOFT,
+            tr("An unknown error occurred when trying to communicate with the authentication server: %1").arg(m_request->errorString()));
+    }
+
     YggdrasilStep::processResponse(doc.object());
 }
 
@@ -122,9 +204,7 @@ void YggdrasilStep::processResponse(QJsonObject responseData)
 {
     // Read the response data. We need to get the client token, access token, and the selected
     // profile.
-    qDebug() << "Processing authentication response.";
 
-    // qDebug() << responseData;
     // If we already have a client token, make sure the one the server gave us matches our
     // existing one.
     QString clientToken = responseData.value("clientToken").toString("");
@@ -192,15 +272,15 @@ void YggdrasilStep::processResponse(QJsonObject responseData)
 
 void YggdrasilStep::processError(QJsonObject responseData)
 {
-    /*QJsonValue errorVal = responseData.value("error");*/
-    /*QJsonValue errorMessageValue = responseData.value("errorMessage");*/
-    /*QJsonValue causeVal = responseData.value("cause");*/
-    /**/
-    /*if (errorVal.isString() && errorMessageValue.isString()) {*/
-    /*    m_error = std::shared_ptr<Error>(new Error{ errorVal.toString(""), errorMessageValue.toString(""), causeVal.toString("") });*/
-    /*    changeState(AccountTaskState::STATE_FAILED_HARD, m_error->m_errorMessageVerbose);*/
-    /*} else {*/
-    /*    // Error is not in standard format. Don't set m_error and return unknown error.*/
-    /*    changeState(AccountTaskState::STATE_FAILED_HARD, tr("An unknown Yggdrasil error occurred."));*/
-    /*}*/
+    QJsonValue errorVal = responseData.value("error");
+    QJsonValue errorMessageValue = responseData.value("errorMessage");
+    QJsonValue causeVal = responseData.value("cause");
+
+    if (errorVal.isString() && errorMessageValue.isString()) {
+        /*m_error = std::shared_ptr<Error>(new Error{ errorVal.toString(""), errorMessageValue.toString(""), causeVal.toString("") });*/
+        emit finished(AccountTaskState::STATE_FAILED_HARD, errorMessageValue.toString(""));
+    } else {
+        // Error is not in standard format. Don't set m_error and return unknown error.
+        emit finished(AccountTaskState::STATE_FAILED_HARD, tr("An unknown Yggdrasil error occurred."));
+    }
 }

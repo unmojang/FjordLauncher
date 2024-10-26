@@ -45,8 +45,8 @@ set(CORE_SOURCES
     ResourceDownloadTask.h
     ResourceDownloadTask.cpp
 
-    CreateAuthlibInjectorAccount.cpp
-    CreateAuthlibInjectorAccount.h
+    GetAuthlibInjectorApiLocation.cpp
+    GetAuthlibInjectorApiLocation.h
 
     # Use tracking separate from memory management
     Usable.h

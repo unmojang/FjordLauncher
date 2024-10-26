@@ -66,8 +66,8 @@ auto NetJob::addNetAction(Net::NetRequest::Ptr action) -> bool
 
 void NetJob::executeNextSubTask()
 {
-    // We're finished, check for failures and retry if we can (up to 3 times)
-    if (isRunning() && m_queue.isEmpty() && m_doing.isEmpty() && !m_failed.isEmpty() && m_try < 3) {
+    // We're finished, check for failures and retry if we can (up to m_auto_retry_limit times)
+    if (isRunning() && m_queue.isEmpty() && m_doing.isEmpty() && !m_failed.isEmpty() && m_try < m_auto_retry_limit) {
         m_try += 1;
         while (!m_failed.isEmpty()) {
             auto task = m_failed.take(*m_failed.keyBegin());
@@ -187,4 +187,9 @@ void NetJob::emitFailed(QString reason)
 void NetJob::setAskRetry(bool askRetry)
 {
     m_ask_retry = askRetry;
+}
+
+void NetJob::setAutoRetryLimit(int autoRetryLimit)
+{
+    m_auto_retry_limit = autoRetryLimit;
 }
