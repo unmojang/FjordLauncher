@@ -1248,9 +1248,8 @@ qt_wrap_ui(LAUNCHER_UI
     ui/dialogs/ImportResourceDialog.ui
     ui/dialogs/MSALoginDialog.ui
     ui/dialogs/OfflineLoginDialog.ui
-    ui/dialogs/AboutDialog.ui
-    ui/dialogs/LoginDialog.ui
     ui/dialogs/AuthlibInjectorLoginDialog.ui
+    ui/dialogs/AboutDialog.ui
     ui/dialogs/EditAccountDialog.ui
     ui/dialogs/ReviewMessageBox.ui
     ui/dialogs/ScrollMessageBox.ui
