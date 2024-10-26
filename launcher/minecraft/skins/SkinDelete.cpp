@@ -50,10 +50,11 @@ QNetworkReply* SkinDelete::getReply(QNetworkRequest& request)
     return m_network->deleteResource(request);
 }
 
-SkinDelete::Ptr SkinDelete::make(QString token)
+SkinDelete::Ptr SkinDelete::make(MinecraftAccountPtr account)
 {
     auto up = makeShared<SkinDelete>();
-    up->m_url = QUrl("https://api.minecraftservices.com/minecraft/profile/skins/active");
+    QString token = account->accessToken();
+    up->m_url = QUrl(account->servicesServerUrl() + "/minecraft/profile/skins/active");
     up->m_sink.reset(new Net::ByteArraySink(std::make_shared<QByteArray>()));
     up->addHeaderProxy(new Net::RawHeaderProxy(QList<Net::HeaderPair>{
         { "Authorization", QString("Bearer %1").arg(token).toLocal8Bit() },

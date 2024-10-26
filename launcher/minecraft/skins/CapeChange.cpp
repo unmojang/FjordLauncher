@@ -57,10 +57,11 @@ QNetworkReply* CapeChange::getReply(QNetworkRequest& request)
     }
 }
 
-CapeChange::Ptr CapeChange::make(QString token, QString capeId)
+CapeChange::Ptr CapeChange::make(MinecraftAccountPtr account, QString capeId)
 {
     auto up = makeShared<CapeChange>(capeId);
-    up->m_url = QUrl("https://api.minecraftservices.com/minecraft/profile/capes/active");
+    QString token = account->accessToken();
+    up->m_url = QUrl(account->servicesServerUrl() + "/minecraft/profile/capes/active");
     up->setObjectName(QString("BYTES:") + up->m_url.toString());
     up->m_sink.reset(new Net::ByteArraySink(std::make_shared<QByteArray>()));
     up->addHeaderProxy(new Net::RawHeaderProxy(QList<Net::HeaderPair>{

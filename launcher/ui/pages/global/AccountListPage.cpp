@@ -48,7 +48,6 @@
 
 #include "ui/dialogs/AuthlibInjectorLoginDialog.h"
 #include "ui/dialogs/CustomMessageBox.h"
-#include "ui/dialogs/LoginDialog.h"
 #include "ui/dialogs/MSALoginDialog.h"
 #include "ui/dialogs/OfflineLoginDialog.h"
 
@@ -59,7 +58,7 @@ AccountListPage::AccountListPage(QWidget* parent) : QMainWindow(parent), ui(new 
     ui->setupUi(this);
     ui->listView->setEmptyString(
         tr("Welcome!\n"
-           "If you're new here, you can select the \"Add Offline\" button to play without an account."));
+           "If you're new here, you can select the \"Add Microsoft\" button to link your Microsoft account."));
     ui->listView->setEmptyMode(VersionListView::String);
     ui->listView->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -137,7 +136,7 @@ void AccountListPage::on_actionAddAuthlibInjector_triggered()
 {
     if (!m_accounts->anyAccountIsValid()) {
         QMessageBox::warning(this, tr("Error"),
-                             tr("You must add a Microsoft or Mojang account that owns Minecraft before you can add an account on a custom "
+                             tr("You must add a Microsoft account that owns Minecraft before you can add an account on a custom "
                                 "authentication server."
                                 "<br><br>"
                                 "If you have lost your account you can contact Microsoft for support."));

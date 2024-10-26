@@ -67,10 +67,11 @@ QNetworkReply* SkinUpload::getReply(QNetworkRequest& request)
     return m_network->post(request, multiPart);
 }
 
-SkinUpload::Ptr SkinUpload::make(QString token, QString path, QString variant)
+SkinUpload::Ptr SkinUpload::make(MinecraftAccountPtr account, QString path, QString variant)
 {
     auto up = makeShared<SkinUpload>(path, variant);
-    up->m_url = QUrl("https://api.minecraftservices.com/minecraft/profile/skins");
+    QString token = account->accessToken();
+    up->m_url = QUrl(account->servicesServerUrl() + "/minecraft/profile/skins");
     up->setObjectName(QString("BYTES:") + up->m_url.toString());
     up->m_sink.reset(new Net::ByteArraySink(std::make_shared<QByteArray>()));
     up->addHeaderProxy(new Net::RawHeaderProxy(QList<Net::HeaderPair>{

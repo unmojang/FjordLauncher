@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <minecraft/auth/MinecraftAccount.h>
 #include "net/NetRequest.h"
 
 class CapeChange : public Net::NetRequest {
@@ -27,7 +28,7 @@ class CapeChange : public Net::NetRequest {
     CapeChange(QString capeId);
     virtual ~CapeChange() = default;
 
-    static CapeChange::Ptr make(QString token, QString capeId);
+    static CapeChange::Ptr make(MinecraftAccountPtr account, QString capeId);
 
    protected:
     virtual QNetworkReply* getReply(QNetworkRequest&) override;

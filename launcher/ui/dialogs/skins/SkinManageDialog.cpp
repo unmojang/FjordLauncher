@@ -246,11 +246,11 @@ void SkinManageDialog::accept()
         return;
     }
 
-    skinUpload->addNetAction(SkinUpload::make(m_acct->accessToken(), skin->getPath(), skin->getModelString()));
+    skinUpload->addNetAction(SkinUpload::make(m_acct, skin->getPath(), skin->getModelString()));
 
     auto selectedCape = skin->getCapeId();
     if (selectedCape != m_acct->accountData()->minecraftProfile.currentCape) {
-        skinUpload->addNetAction(CapeChange::make(m_acct->accessToken(), selectedCape));
+        skinUpload->addNetAction(CapeChange::make(m_acct, selectedCape));
     }
 
     skinUpload->addTask(m_acct->refresh().staticCast<Task>());
@@ -267,7 +267,7 @@ void SkinManageDialog::on_resetBtn_clicked()
 {
     ProgressDialog prog(this);
     NetJob::Ptr skinReset{ new NetJob(tr("Reset skin"), APPLICATION->network(), 1) };
-    skinReset->addNetAction(SkinDelete::make(m_acct->accessToken()));
+    skinReset->addNetAction(SkinDelete::make(m_acct));
     skinReset->addTask(m_acct->refresh().staticCast<Task>());
     if (prog.execWithTask(skinReset.get()) != QDialog::Accepted) {
         CustomMessageBox::selectable(this, tr("Skin Delete"), tr("Failed to delete current skin!"), QMessageBox::Warning)->exec();

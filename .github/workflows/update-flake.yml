@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   update-flake:
-    if: github.repository == 'unmojang/Fjord Launcher'
+    if: github.repository == 'unmojang/FjordLauncher'
     runs-on: ubuntu-latest
 
     steps:

@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <minecraft/auth/MinecraftAccount.h>
 #include "net/NetRequest.h"
 
 class SkinDelete : public Net::NetRequest {
@@ -27,7 +28,7 @@ class SkinDelete : public Net::NetRequest {
     SkinDelete();
     virtual ~SkinDelete() = default;
 
-    static SkinDelete::Ptr make(QString token);
+    static SkinDelete::Ptr make(MinecraftAccountPtr account);
 
    protected:
     virtual QNetworkReply* getReply(QNetworkRequest&) override;

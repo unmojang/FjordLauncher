@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <minecraft/auth/MinecraftAccount.h>
 #include "net/NetRequest.h"
 
 class SkinUpload : public Net::NetRequest {
@@ -29,7 +30,7 @@ class SkinUpload : public Net::NetRequest {
     SkinUpload(QString path, QString variant);
     virtual ~SkinUpload() = default;
 
-    static SkinUpload::Ptr make(QString token, QString path, QString variant);
+    static SkinUpload::Ptr make(MinecraftAccountPtr account, QString path, QString variant);
 
    protected:
     virtual QNetworkReply* getReply(QNetworkRequest&) override;
