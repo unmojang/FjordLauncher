@@ -238,15 +238,17 @@ void AccountListPage::updateButtonStates()
     bool hasSelection = !selection.empty();
     bool accountIsReady = false;
     bool accountIsOnline = false;
+    bool accountSupportsSkinManagement = false;
     if (hasSelection) {
         QModelIndex selected = selection.first();
         MinecraftAccountPtr account = selected.data(AccountList::PointerRole).value<MinecraftAccountPtr>();
         accountIsReady = !account->isActive();
         accountIsOnline = account->accountType() != AccountType::Offline;
+        accountSupportsSkinManagement = account->supportsSkinManagement();
     }
     ui->actionRemove->setEnabled(accountIsReady);
     ui->actionSetDefault->setEnabled(accountIsReady);
-    ui->actionManageSkins->setEnabled(accountIsReady && accountIsOnline);
+    ui->actionManageSkins->setEnabled(accountIsReady && accountIsOnline && accountSupportsSkinManagement);
     ui->actionRefresh->setEnabled(accountIsReady && accountIsOnline);
 
     if (m_accounts->defaultAccount().get() == nullptr) {

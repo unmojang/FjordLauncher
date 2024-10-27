@@ -398,6 +398,11 @@ bool AccountData::usesCustomApiServers() const
     return type == AccountType::AuthlibInjector;
 }
 
+bool AccountData::supportsSkinManagement() const
+{
+    return type == AccountType::MSA;
+}
+
 QString AccountData::authServerUrl() const
 {
     if (usesCustomApiServers()) {

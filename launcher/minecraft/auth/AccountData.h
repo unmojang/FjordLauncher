@@ -96,6 +96,7 @@ struct AccountData {
     QJsonObject saveState() const;
     bool resumeStateFromV3(QJsonObject data);
 
+    bool supportsSkinManagement() const;
     bool usesCustomApiServers() const;
     QString authServerUrl() const;
     QString accountServerUrl() const;

@@ -379,6 +379,7 @@ bool parseMinecraftProfileMojang(QByteArray& data, MinecraftProfile& output)
                 // we don't know the cape ID as it is not returned from the session server
                 // so just fake it - changing capes is probably locked anyway :(
                 capeOut.alias = "cape";
+                capeOut.id = "00000000-0000-0000-0000-000000000000";
             }
         }
     }

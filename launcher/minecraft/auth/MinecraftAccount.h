@@ -119,6 +119,8 @@ class MinecraftAccount : public QObject, public Usable {
 
     bool usesCustomApiServers() const { return data.usesCustomApiServers(); }
 
+    bool supportsSkinManagement() const { return data.supportsSkinManagement(); }
+
     QString accountDisplayString() const { return data.accountDisplayString(); }
 
     QString accessToken() const { return data.accessToken(); }
