@@ -85,24 +85,6 @@
      </item>
     </layout>
    </item>
-   <item row="0" column="0">
-    <layout class="QHBoxLayout">
-     <item>
-      <widget class="QLineEdit" name="searchEdit">
-       <property name="placeholderText">
-        <string>Search and filter ...</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="searchButton">
-       <property name="text">
-        <string>Search</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
   </layout>
  </widget>
  <customwidgets>
