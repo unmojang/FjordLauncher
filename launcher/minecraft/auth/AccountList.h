@@ -56,7 +56,6 @@ class AccountList : public QAbstractListModel {
         // TODO: Add icon column.
         ProfileNameColumn = 0,
         NameColumn,
-        MigrationColumn,
         TypeColumn,
         StatusColumn,
         AuthServerColumn,

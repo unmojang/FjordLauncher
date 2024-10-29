@@ -336,17 +336,6 @@ QVariant AccountList::data(const QModelIndex& index, int role) const
                     return account->authlibInjectorUrl();
                 }
 
-                case MigrationColumn: {
-                    if (account->accountType() != AccountType::Mojang) {
-                        return tr("N/A", "Can Migrate");
-                    }
-                    if (account->canMigrate()) {
-                        return tr("Yes", "Can Migrate");
-                    } else {
-                        return tr("No", "Can Migrate");
-                    }
-                }
-
                 default:
                     return QVariant();
             }

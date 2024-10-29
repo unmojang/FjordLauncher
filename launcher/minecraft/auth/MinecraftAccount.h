@@ -131,8 +131,6 @@ class MinecraftAccount : public QObject, public Usable {
 
     bool isActive() const;
 
-    bool canMigrate() const { return data.canMigrateToMSA; }
-
     [[nodiscard]] AccountType accountType() const noexcept { return data.type; }
 
     bool ownsMinecraft() const { return data.type != AccountType::Offline && data.minecraftEntitlement.ownsMinecraft; }
@@ -142,12 +140,6 @@ class MinecraftAccount : public QObject, public Usable {
     QString typeDisplayName() const
     {
         switch (data.type) {
-            case AccountType::Mojang: {
-                if (data.legacy) {
-                    return tr("Legacy", "Account type");
-                }
-                return tr("Mojang", "Account type");
-            } break;
             case AccountType::AuthlibInjector: {
                 return tr("authlib-injector", "Account type");
             } break;
@@ -166,12 +158,6 @@ class MinecraftAccount : public QObject, public Usable {
     QString typeString() const
     {
         switch (data.type) {
-            case AccountType::Mojang: {
-                if (data.legacy) {
-                    return "legacy";
-                }
-                return "mojang";
-            } break;
             case AccountType::AuthlibInjector: {
                 // This typeString gets passed to Minecraft; any Yggdrasil
                 // account should have the "mojang" type regardless of which

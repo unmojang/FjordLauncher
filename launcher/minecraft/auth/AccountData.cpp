@@ -290,8 +290,6 @@ bool AccountData::resumeStateFromV3(QJsonObject data)
     bool needsElyByMigration = false;
     if (typeS == "MSA") {
         type = AccountType::MSA;
-    } else if (typeS == "Mojang") {
-        type = AccountType::Mojang;
     } else if (typeS == "AuthlibInjector") {
         type = AccountType::AuthlibInjector;
     } else if (typeS == "Elyby") {
@@ -303,11 +301,6 @@ bool AccountData::resumeStateFromV3(QJsonObject data)
     } else {
         qWarning() << "Failed to parse account data: type is not recognized.";
         return false;
-    }
-
-    if (type == AccountType::Mojang) {
-        legacy = data.value("legacy").toBool(false);
-        canMigrateToMSA = data.value("canMigrateToMSA").toBool(false);
     }
 
     if (type == AccountType::AuthlibInjector) {
@@ -369,14 +362,6 @@ QJsonObject AccountData::saveState() const
         tokenToJSONV3(output, mojangservicesToken, "xrp-mc");
     } else if (type == AccountType::Offline) {
         output["type"] = "Offline";
-    } else if (type == AccountType::Mojang) {
-        if (legacy) {
-            output["legacy"] = true;
-        }
-        if (canMigrateToMSA) {
-            output["canMigrateToMSA"] = true;
-        }
-        output["type"] = "Mojang";
     } else if (type == AccountType::AuthlibInjector) {
         output["type"] = "AuthlibInjector";
         output["customAuthServerUrl"] = customAuthServerUrl;
@@ -463,7 +448,7 @@ QString AccountData::accessToken() const
 
 QString AccountData::clientToken() const
 {
-    if (type != AccountType::Mojang && type != AccountType::AuthlibInjector) {
+    if (type != AccountType::AuthlibInjector) {
         return QString();
     }
     return yggdrasilToken.extra["clientToken"].toString();
@@ -471,7 +456,7 @@ QString AccountData::clientToken() const
 
 void AccountData::setClientToken(QString clientToken)
 {
-    if (type != AccountType::Mojang && type != AccountType::AuthlibInjector) {
+    if (type != AccountType::AuthlibInjector) {
         return;
     }
     yggdrasilToken.extra["clientToken"] = clientToken;
@@ -487,7 +472,7 @@ void AccountData::generateClientTokenIfMissing()
 
 void AccountData::invalidateClientToken()
 {
-    if (type != AccountType::Mojang && type != AccountType::AuthlibInjector) {
+    if (type != AccountType::AuthlibInjector) {
         return;
     }
     yggdrasilToken.extra["clientToken"] = QUuid::createUuid().toString().remove(QRegularExpression("[{-}]"));
@@ -510,7 +495,6 @@ QString AccountData::profileName() const
 QString AccountData::accountDisplayString() const
 {
     switch (type) {
-        case AccountType::Mojang:
         case AccountType::AuthlibInjector: {
             return userName();
         }

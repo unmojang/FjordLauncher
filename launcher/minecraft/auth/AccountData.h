@@ -88,7 +88,7 @@ struct MinecraftProfile {
     Validity validity = Validity::None;
 };
 
-enum class AccountType { MSA, Mojang, AuthlibInjector, Offline };
+enum class AccountType { MSA, AuthlibInjector, Offline };
 
 enum class AccountState { Unchecked, Offline, Working, Online, Disabled, Errored, Expired, Gone };
 
@@ -104,13 +104,13 @@ struct AccountData {
     QString servicesServerUrl() const;
     QString authlibInjectorUrl() const;
 
-    //! userName for Mojang accounts, gamertag for MSA
+    //! userName for authlib-injector accounts, gamertag for MSA
     QString accountDisplayString() const;
 
-    //! Only valid for Mojang accounts. MSA does not preserve this information
+    //! Only valid for authlib-injector accounts. MSA does not preserve this information
     QString userName() const;
 
-    //! Only valid for Mojang accounts.
+    //! Only valid for authlib-injector accounts.
     QString clientToken() const;
     void setClientToken(QString clientToken);
     void invalidateClientToken();
@@ -125,8 +125,6 @@ struct AccountData {
     QString lastError() const;
 
     AccountType type = AccountType::MSA;
-    bool legacy = false;
-    bool canMigrateToMSA = false;
 
     QString customAuthServerUrl;
     QString customAccountServerUrl;
