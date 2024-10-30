@@ -1,6 +1,7 @@
 #include "FlameModel.h"
 #include <Json.h>
 #include "Application.h"
+#include "modplatform/ModIndex.h"
 #include "modplatform/ResourceAPI.h"
 #include "modplatform/flame/FlameAPI.h"
 #include "ui/widgets/ProjectItem.h"
@@ -110,6 +111,7 @@ void ListModel::requestLogo(QString logo, QString url)
 
     MetaEntryPtr entry = APPLICATION->metacache()->resolveEntry("FlamePacks", QString("logos/%1").arg(logo));
     auto job = new NetJob(QString("Flame Icon Download %1").arg(logo), APPLICATION->network());
+    job->setAskRetry(false);
     job->addNetAction(Net::ApiDownload::makeCached(QUrl(url), entry));
 
     auto fullPath = entry->getFullPath();
@@ -172,7 +174,7 @@ void ListModel::performPaginatedSearch()
             callbacks.on_succeed = [this](auto& doc, auto& pack) { searchRequestForOneSucceeded(doc); };
             callbacks.on_abort = [this] {
                 qCritical() << "Search task aborted by an unknown reason!";
-                searchRequestFailed("Abborted");
+                searchRequestFailed("Aborted");
             };
             static const FlameAPI api;
             if (auto job = api.getProjectInfo({ projectId }, std::move(callbacks)); job) {
@@ -182,34 +184,28 @@ void ListModel::performPaginatedSearch()
             return;
         }
     }
-    auto netJob = makeShared<NetJob>("Flame::Search", APPLICATION->network());
-    auto searchUrl = QString(
-                         "https://api.curseforge.com/v1/mods/search?"
-                         "gameId=432&"
-                         "classId=4471&"
-                         "index=%1&"
-                         "pageSize=25&"
-                         "searchFilter=%2&"
-                         "sortField=%3&"
-                         "sortOrder=desc")
-                         .arg(nextSearchOffset)
-                         .arg(currentSearchTerm)
-                         .arg(currentSort + 1);
+    ResourceAPI::SortingMethod sort{};
+    sort.index = currentSort + 1;
 
-    netJob->addNetAction(Net::ApiDownload::makeByteArray(QUrl(searchUrl), response));
+    auto netJob = makeShared<NetJob>("Flame::Search", APPLICATION->network());
+    auto searchUrl = FlameAPI().getSearchURL({ ModPlatform::ResourceType::MODPACK, nextSearchOffset, currentSearchTerm, sort,
+                                               m_filter->loaders, m_filter->versions, "", m_filter->categoryIds });
+
+    netJob->addNetAction(Net::ApiDownload::makeByteArray(QUrl(searchUrl.value()), response));
     jobPtr = netJob;
     jobPtr->start();
     QObject::connect(netJob.get(), &NetJob::succeeded, this, &ListModel::searchRequestFinished);
     QObject::connect(netJob.get(), &NetJob::failed, this, &ListModel::searchRequestFailed);
 }
 
-void ListModel::searchWithTerm(const QString& term, int sort)
+void ListModel::searchWithTerm(const QString& term, int sort, std::shared_ptr<ModFilterWidget::Filter> filter, bool filterChanged)
 {
-    if (currentSearchTerm == term && currentSearchTerm.isNull() == term.isNull() && currentSort == sort) {
+    if (currentSearchTerm == term && currentSearchTerm.isNull() == term.isNull() && currentSort == sort && !filterChanged) {
         return;
     }
     currentSearchTerm = term;
     currentSort = sort;
+    m_filter = filter;
     if (hasActiveSearchJob()) {
         jobPtr->abort();
         searchState = ResetRequested;

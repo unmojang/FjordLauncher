@@ -66,11 +66,10 @@ class AccountListPage : public QMainWindow, public BasePage {
         return icon;
     }
     QString id() const override { return "accounts"; }
-    QString helpPage() const override { return "Getting-Started#adding-an-account"; }
+    QString helpPage() const override { return "/getting-started/adding-an-account"; }
     void retranslate() override;
 
    public slots:
-    void on_actionAddMojang_triggered();
     void on_actionAddAuthlibInjector_triggered();
     void on_actionAddMicrosoft_triggered();
     void on_actionAddOffline_triggered();
@@ -78,8 +77,7 @@ class AccountListPage : public QMainWindow, public BasePage {
     void on_actionRefresh_triggered();
     void on_actionSetDefault_triggered();
     void on_actionNoDefault_triggered();
-    void on_actionUploadSkin_triggered();
-    void on_actionDeleteSkin_triggered();
+    void on_actionManageSkins_triggered();
 
     void listChanged();
 

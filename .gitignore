@@ -8,7 +8,6 @@ resources/CMakeFiles
 html/
 
 # Project Files
-*.orig
 *.pro.user
 CMakeLists.txt.user
 CMakeLists.txt.user.*

@@ -34,11 +34,28 @@
  */
 
 #pragma once
-#include <katabasis/Bits.h>
 #include <QByteArray>
 #include <QJsonObject>
 #include <QString>
 #include <QVector>
+
+#include <QDateTime>
+#include <QMap>
+#include <QString>
+#include <QVariantMap>
+
+enum class Validity { None, Assumed, Certain };
+
+struct Token {
+    QDateTime issueInstant;
+    QDateTime notAfter;
+    QString token;
+    QString refresh_token;
+    QVariantMap extra;
+
+    Validity validity = Validity::None;
+    bool persistent = true;
+};
 
 struct Skin {
     QString id;
@@ -59,7 +76,7 @@ struct Cape {
 struct MinecraftEntitlement {
     bool ownsMinecraft = false;
     bool canPlayMinecraft = false;
-    Katabasis::Validity validity = Katabasis::Validity::None;
+    Validity validity = Validity::None;
 };
 
 struct MinecraftProfile {
@@ -68,10 +85,10 @@ struct MinecraftProfile {
     Skin skin;
     QString currentCape;
     QMap<QString, Cape> capes;
-    Katabasis::Validity validity = Katabasis::Validity::None;
+    Validity validity = Validity::None;
 };
 
-enum class AccountType { MSA, Mojang, AuthlibInjector, Offline };
+enum class AccountType { MSA, AuthlibInjector, Offline };
 
 enum class AccountState { Unchecked, Offline, Working, Online, Disabled, Errored, Expired, Gone };
 
@@ -79,6 +96,7 @@ struct AccountData {
     QJsonObject saveState() const;
     bool resumeStateFromV3(QJsonObject data);
 
+    bool supportsSkinManagement() const;
     bool usesCustomApiServers() const;
     QString authServerUrl() const;
     QString accountServerUrl() const;
@@ -86,13 +104,13 @@ struct AccountData {
     QString servicesServerUrl() const;
     QString authlibInjectorUrl() const;
 
-    //! userName for Mojang accounts, gamertag for MSA
+    //! userName for authlib-injector accounts, gamertag for MSA
     QString accountDisplayString() const;
 
-    //! Only valid for Mojang accounts. MSA does not preserve this information
+    //! Only valid for authlib-injector accounts. MSA does not preserve this information
     QString userName() const;
 
-    //! Only valid for Mojang accounts.
+    //! Only valid for authlib-injector accounts.
     QString clientToken() const;
     void setClientToken(QString clientToken);
     void invalidateClientToken();
@@ -107,8 +125,6 @@ struct AccountData {
     QString lastError() const;
 
     AccountType type = AccountType::MSA;
-    bool legacy = false;
-    bool canMigrateToMSA = false;
 
     QString customAuthServerUrl;
     QString customAccountServerUrl;
@@ -118,15 +134,15 @@ struct AccountData {
     QString authlibInjectorMetadata;
 
     QString msaClientID;
-    Katabasis::Token msaToken;
-    Katabasis::Token userToken;
-    Katabasis::Token xboxApiToken;
-    Katabasis::Token mojangservicesToken;
+    Token msaToken;
+    Token userToken;
+    Token xboxApiToken;
+    Token mojangservicesToken;
 
-    Katabasis::Token yggdrasilToken;
+    Token yggdrasilToken;
     MinecraftProfile minecraftProfile;
     MinecraftEntitlement minecraftEntitlement;
-    Katabasis::Validity validity_ = Katabasis::Validity::None;
+    Validity validity_ = Validity::None;
 
     // runtime only information (not saved with the account)
     QString internalId;

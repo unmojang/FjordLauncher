@@ -2,6 +2,7 @@
 /*
  *  Prism Launcher - Minecraft Launcher
  *  Copyright (c) 2022 flowln <flowlnlnln@gmail.com>
+ *  Copyright (c) 2023 Trial97 <alexandru.tripon97@gmail.com>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -47,6 +48,7 @@
 
 #include "ModDetails.h"
 #include "Resource.h"
+#include "modplatform/ModIndex.h"
 
 class Mod : public Resource {
     Q_OBJECT
@@ -70,13 +72,17 @@ class Mod : public Resource {
     auto licenses() const -> const QList<ModLicense>&;
     auto issueTracker() const -> QString;
     auto metaurl() const -> QString;
+    auto side() const -> Metadata::ModSide;
+    auto loaders() const -> ModPlatform::ModLoaderTypes;
+    auto mcVersions() const -> QStringList;
+    auto releaseType() const -> ModPlatform::IndexedVersionType;
 
     /** Get the intneral path to the mod's icon file*/
     QString iconPath() const { return m_local_details.icon_file; }
     /** Gets the icon of the mod, converted to a QPixmap for drawing, and scaled to size. */
     [[nodiscard]] QPixmap icon(QSize size, Qt::AspectRatioMode mode = Qt::AspectRatioMode::IgnoreAspectRatio) const;
     /** Thread-safe. */
-    void setIcon(QImage new_image) const;
+    QPixmap setIcon(QImage new_image) const;
 
     auto metadata() -> std::shared_ptr<Metadata::ModStruct>;
     auto metadata() const -> const std::shared_ptr<Metadata::ModStruct>;
@@ -88,7 +94,7 @@ class Mod : public Resource {
 
     bool valid() const override;
 
-    [[nodiscard]] auto compare(Resource const& other, SortType type) const -> std::pair<int, bool> override;
+    [[nodiscard]] int compare(Resource const& other, SortType type) const override;
     [[nodiscard]] bool applyFilter(QRegularExpression filter) const override;
 
     // Delete all the files of this mod
@@ -105,7 +111,7 @@ class Mod : public Resource {
 
     struct {
         QPixmapCache::Key key;
-        bool was_ever_used = false;
-        bool was_read_attempt = false;
-    } mutable m_pack_image_cache_key;
+        bool wasEverUsed = false;
+        bool wasReadAttempt = false;
+    } mutable m_packImageCacheKey;
 };

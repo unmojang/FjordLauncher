@@ -60,13 +60,39 @@
      </property>
     </widget>
    </item>
+    <item>
+    <widget class="QLabel" name="loadingLabel">
+      <property name="font">
+      <font>
+        <pointsize>16</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+      </font>
+      </property>
+      <property name="text">
+      <string>Please wait...</string>
+      </property>
+      <property name="alignment">
+      <set>Qt::AlignCenter</set>
+      </property>
+      <property name="wordWrap">
+      <bool>true</bool>
+      </property>
+    </widget>
+   </item>
    <item>
-    <widget class="QProgressBar" name="progressBar">
-     <property name="value">
-      <number>24</number>
+    <widget class="QLabel" name="errorMessage">
+     <property name="text">
+      <string notr="true">Error message label placeholder.</string>
      </property>
-     <property name="textVisible">
-      <bool>false</bool>
+     <property name="textFormat">
+      <enum>Qt::RichText</enum>
+     </property>
+     <property name="textInteractionFlags">
+      <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse|Qt::TextBrowserInteraction|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
      </property>
     </widget>
    </item>

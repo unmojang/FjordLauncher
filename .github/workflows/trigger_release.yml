@@ -22,6 +22,7 @@ jobs:
       APPLE_NOTARIZE_APPLE_ID: ${{ secrets.APPLE_NOTARIZE_APPLE_ID }}
       APPLE_NOTARIZE_TEAM_ID: ${{ secrets.APPLE_NOTARIZE_TEAM_ID }}
       APPLE_NOTARIZE_PASSWORD: ${{ secrets.APPLE_NOTARIZE_PASSWORD }}
+      CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
       GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       GPG_PRIVATE_KEY_ID: ${{ secrets.GPG_PRIVATE_KEY_ID }}
 
@@ -37,7 +38,7 @@ jobs:
           submodules: "true"
           path: "FjordLauncher-source"
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       - name: Grab and store version
         run: |
           tag_name=$(echo ${{ github.ref }} | grep -oE "[^/]+$")
@@ -46,9 +47,7 @@ jobs:
         run: |
           mv ${{ github.workspace }}/FjordLauncher-source FjordLauncher-${{ env.VERSION }}
           mv FjordLauncher-Linux-Qt6-Portable*/FjordLauncher-portable.tar.gz FjordLauncher-Linux-Qt6-Portable-${{ env.VERSION }}.tar.gz
-          mv FjordLauncher-Linux-Qt6*/FjordLauncher.tar.gz FjordLauncher-Linux-Qt6-${{ env.VERSION }}.tar.gz
           mv FjordLauncher-Linux-Qt5-Portable*/FjordLauncher-portable.tar.gz FjordLauncher-Linux-Qt5-Portable-${{ env.VERSION }}.tar.gz
-          mv FjordLauncher-Linux-Qt5*/FjordLauncher.tar.gz FjordLauncher-Linux-Qt5-${{ env.VERSION }}.tar.gz
           mv FjordLauncher-*.AppImage/FjordLauncher-*.AppImage FjordLauncher-Linux-x86_64.AppImage
           mv FjordLauncher-*.AppImage.zsync/FjordLauncher-*.AppImage.zsync FjordLauncher-Linux-x86_64.AppImage.zsync
           mv FjordLauncher-macOS-Legacy*/FjordLauncher.zip FjordLauncher-macOS-Legacy-${{ env.VERSION }}.zip
@@ -84,7 +83,7 @@ jobs:
 
       - name: Create release
         id: create_release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag_name: ${{ github.ref }}
@@ -92,11 +91,9 @@ jobs:
           draft: true
           prerelease: false
           files: |
-            FjordLauncher-Linux-Qt5-${{ env.VERSION }}.tar.gz
             FjordLauncher-Linux-Qt5-Portable-${{ env.VERSION }}.tar.gz
             FjordLauncher-Linux-x86_64.AppImage
             FjordLauncher-Linux-x86_64.AppImage.zsync
-            FjordLauncher-Linux-Qt6-${{ env.VERSION }}.tar.gz
             FjordLauncher-Linux-Qt6-Portable-${{ env.VERSION }}.tar.gz
             FjordLauncher-Windows-MinGW-w64-${{ env.VERSION }}.zip
             FjordLauncher-Windows-MinGW-w64-Portable-${{ env.VERSION }}.zip

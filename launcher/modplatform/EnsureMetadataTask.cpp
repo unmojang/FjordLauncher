@@ -15,8 +15,6 @@
 #include "modplatform/modrinth/ModrinthAPI.h"
 #include "modplatform/modrinth/ModrinthPackIndex.h"
 
-static ModPlatform::ProviderCapabilities ProviderCaps;
-
 static ModrinthAPI modrinth_api;
 static FlameAPI flame_api;
 
@@ -44,6 +42,9 @@ EnsureMetadataTask::EnsureMetadataTask(QList<Mod*>& mods, QDir dir, ModPlatform:
         m_hashing_task->addTask(hash_task);
     }
 }
+EnsureMetadataTask::EnsureMetadataTask(QHash<QString, Mod*>& mods, QDir dir, ModPlatform::ResourceProvider prov)
+    : Task(nullptr), m_mods(mods), m_index_dir(dir), m_provider(prov), m_current_task(nullptr)
+{}
 
 Hashing::Hasher::Ptr EnsureMetadataTask::createNewHash(Mod* mod)
 {
@@ -162,10 +163,10 @@ void EnsureMetadataTask::executeTask()
     });
 
     if (m_mods.size() > 1)
-        setStatus(tr("Requesting metadata information from %1...").arg(ProviderCaps.readableName(m_provider)));
+        setStatus(tr("Requesting metadata information from %1...").arg(ModPlatform::ProviderCapabilities::readableName(m_provider)));
     else if (!m_mods.empty())
         setStatus(tr("Requesting metadata information from %1 for '%2'...")
-                      .arg(ProviderCaps.readableName(m_provider), m_mods.begin().value()->name()));
+                      .arg(ModPlatform::ProviderCapabilities::readableName(m_provider), m_mods.begin().value()->name()));
 
     m_current_task = version_task;
     version_task->start();
@@ -215,7 +216,7 @@ void EnsureMetadataTask::emitFail(Mod* m, QString key, RemoveFromList remove)
 
 Task::Ptr EnsureMetadataTask::modrinthVersionsTask()
 {
-    auto hash_type = ProviderCaps.hashType(ModPlatform::ResourceProvider::MODRINTH).first();
+    auto hash_type = ModPlatform::ProviderCapabilities::hashType(ModPlatform::ResourceProvider::MODRINTH).first();
 
     auto response = std::make_shared<QByteArray>();
     auto ver_task = modrinth_api.currentVersions(m_mods.keys(), hash_type, response);

@@ -102,7 +102,12 @@ AppImages are available in the [releases section](https://github.com/unmojang/Fj
 
 ## Building
 
-To build the launcher yourself, follow [the instructions on the Prism Launcher website](https://prismlauncher.org/wiki/development/build-instructions) but clone this repo instead.
+To build the launcher yourself, follow the instructions on the Prism Launcher website, but clone this repo instead:
+
+- [Windows](https://prismlauncher.org/wiki/development/build-instructions/windows/)
+- [Linux](https://prismlauncher.org/wiki/development/build-instructions/linux/)
+- [MacOS](https://prismlauncher.org/wiki/development/build-instructions/macos/)
+- [OpenBSD](https://prismlauncher.org/wiki/development/build-instructions/openbsd/)
 
 ## Notes
 

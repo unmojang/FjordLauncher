@@ -1,4 +1,11 @@
-{pkgs ? import <nixos-unstable> {}}:
+{
+  pkgs ? import <nixos-unstable> { },
+}:
 pkgs.mkShell {
-  nativeBuildInputs = with pkgs; [inkscape icoutils imagemagick nodePackages_latest.svgo];
+  nativeBuildInputs = with pkgs; [
+    inkscape
+    icoutils
+    imagemagick
+    nodePackages_latest.svgo
+  ];
 }

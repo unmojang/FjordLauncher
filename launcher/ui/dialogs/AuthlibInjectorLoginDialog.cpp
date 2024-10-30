@@ -20,15 +20,17 @@
 #include "ui/dialogs/CustomMessageBox.h"
 #include "ui_AuthlibInjectorLoginDialog.h"
 
-#include "CreateAuthlibInjectorAccount.h"
-#include "minecraft/auth/AccountTask.h"
+#include "Application.h"
+#include "GetAuthlibInjectorApiLocation.h"
 
 #include <QtWidgets/QPushButton>
 
 AuthlibInjectorLoginDialog::AuthlibInjectorLoginDialog(QWidget* parent) : QDialog(parent), ui(new Ui::AuthlibInjectorLoginDialog)
 {
     ui->setupUi(this);
-    ui->progressBar->setVisible(false);
+    ui->userTextBox->setFocus();
+    ui->loadingLabel->setVisible(false);
+    ui->errorMessage->setVisible(false);
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
     setAcceptDrops(true);
 
@@ -89,6 +91,7 @@ void AuthlibInjectorLoginDialog::dropEvent(QDropEvent* event)
 // Stage 1: User interaction
 void AuthlibInjectorLoginDialog::accept()
 {
+    ui->errorMessage->setVisible(false);
     auto fixedAuthlibInjectorUrl = AuthlibInjectorLoginDialog::fixUrl(ui->authlibInjectorTextBox->text());
 
     auto response = CustomMessageBox::selectable(this, QObject::tr("Confirm account creation"),
@@ -104,18 +107,21 @@ void AuthlibInjectorLoginDialog::accept()
         return;
 
     setUserInputsEnabled(false);
-    ui->progressBar->setVisible(true);
+    ui->loadingLabel->setVisible(true);
 
     // Get the authlib-injector API root
     auto netJob = NetJob::Ptr(new NetJob("Get authlib-injector API root", APPLICATION->network()));
-    auto username = ui->userTextBox->text();
-    m_createAuthlibInjectorAccountTask = CreateAuthlibInjectorAccount::make(fixedAuthlibInjectorUrl, m_account, username);
-    netJob->addNetAction(m_createAuthlibInjectorAccountTask);
+    netJob->setAskRetry(false);
+    netJob->setAutoRetryLimit(0);
 
-    m_createAuthlibInjectorAccountNetJob.reset(netJob);
-    connect(netJob.get(), &NetJob::succeeded, this, &AuthlibInjectorLoginDialog::onUrlTaskSucceeded);
-    connect(netJob.get(), &NetJob::failed, this, &AuthlibInjectorLoginDialog::onTaskFailed);
-    m_createAuthlibInjectorAccountNetJob->start();
+    auto username = ui->userTextBox->text();
+    m_apiLocationRequest = GetAuthlibInjectorApiLocation::make(fixedAuthlibInjectorUrl, m_account, username);
+    netJob->addNetAction(m_apiLocationRequest);
+
+    m_apiLocationTask.reset(netJob);
+    connect(netJob.get(), &NetJob::succeeded, this, &AuthlibInjectorLoginDialog::onApiLocationTaskSucceeded);
+    connect(netJob.get(), &NetJob::failed, this, &AuthlibInjectorLoginDialog::onApiLocationTaskFailed);
+    m_apiLocationTask->start();
 }
 
 void AuthlibInjectorLoginDialog::setUserInputsEnabled(bool enable)
@@ -143,6 +149,11 @@ void AuthlibInjectorLoginDialog::on_authlibInjectorTextBox_textEdited(const QStr
         ->setEnabled(!newText.isEmpty() && !ui->passTextBox->text().isEmpty() && !ui->authlibInjectorTextBox->text().isEmpty());
 }
 
+void AuthlibInjectorLoginDialog::onApiLocationTaskFailed(const QString& reason)
+{
+    onTaskFailed(m_apiLocationRequest->errorString());
+}
+
 void AuthlibInjectorLoginDialog::onTaskFailed(const QString& reason)
 {
     // Set message
@@ -155,21 +166,21 @@ void AuthlibInjectorLoginDialog::onTaskFailed(const QString& reason)
             processed += "<br />";
         }
     }
-    ui->label->setText(processed);
+    ui->errorMessage->setText(processed);
+    ui->errorMessage->setVisible(true);
 
     // Re-enable user-interaction
     setUserInputsEnabled(true);
-    ui->progressBar->setVisible(false);
+    ui->loadingLabel->setVisible(false);
 }
 
-void AuthlibInjectorLoginDialog::onUrlTaskSucceeded()
+void AuthlibInjectorLoginDialog::onApiLocationTaskSucceeded()
 {
-    m_account = m_createAuthlibInjectorAccountTask->getAccount();
-    m_loginTask = m_account->loginAuthlibInjector(ui->passTextBox->text());
+    m_account = m_apiLocationRequest->getAccount();
+    m_loginTask = m_account->login(false, ui->passTextBox->text());
     connect(m_loginTask.get(), &Task::failed, this, &AuthlibInjectorLoginDialog::onTaskFailed);
     connect(m_loginTask.get(), &Task::succeeded, this, &AuthlibInjectorLoginDialog::onTaskSucceeded);
     connect(m_loginTask.get(), &Task::status, this, &AuthlibInjectorLoginDialog::onTaskStatus);
-    connect(m_loginTask.get(), &Task::progress, this, &AuthlibInjectorLoginDialog::onTaskProgress);
     m_loginTask->start();
 }
 
@@ -180,13 +191,7 @@ void AuthlibInjectorLoginDialog::onTaskSucceeded()
 
 void AuthlibInjectorLoginDialog::onTaskStatus(const QString& status)
 {
-    ui->label->setText(status);
-}
-
-void AuthlibInjectorLoginDialog::onTaskProgress(qint64 current, qint64 total)
-{
-    ui->progressBar->setMaximum(total);
-    ui->progressBar->setValue(current);
+    ui->errorMessage->setText(status);
 }
 
 // Public interface

@@ -30,6 +30,10 @@ class ModrinthAPI : public NetworkResourceAPI {
 
     Task::Ptr getProjects(QStringList addonIds, std::shared_ptr<QByteArray> response) const override;
 
+    static Task::Ptr getModCategories(std::shared_ptr<QByteArray> response);
+    static QList<ModPlatform::Category> loadCategories(std::shared_ptr<QByteArray> response, QString projectType);
+    static QList<ModPlatform::Category> loadModCategories(std::shared_ptr<QByteArray> response);
+
    public:
     [[nodiscard]] auto getSortingMethods() const -> QList<ResourceAPI::SortingMethod> override;
 
@@ -41,7 +45,7 @@ class ModrinthAPI : public NetworkResourceAPI {
         for (auto loader :
              { ModPlatform::NeoForge, ModPlatform::Forge, ModPlatform::Fabric, ModPlatform::Quilt, ModPlatform::LiteLoader }) {
             if (types & loader) {
-                l << getModLoaderString(loader);
+                l << getModLoaderAsString(loader);
             }
         }
         return l;
@@ -56,6 +60,27 @@ class ModrinthAPI : public NetworkResourceAPI {
         return l.join(',');
     }
 
+    static auto getCategoriesFilters(QStringList categories) -> const QString
+    {
+        QStringList l;
+        for (auto cat : categories) {
+            l << QString("\"categories:%1\"").arg(cat);
+        }
+        return l.join(',');
+    }
+
+    static auto getSideFilters(QString side) -> const QString
+    {
+        if (side.isEmpty() || side == "both") {
+            return {};
+        }
+        if (side == "client")
+            return QString("\"client_side:required\",\"client_side:optional\"");
+        if (side == "server")
+            return QString("\"server_side:required\",\"server_side:optional\"");
+        return {};
+    }
+
    private:
     [[nodiscard]] static QString resourceTypeParameter(ModPlatform::ResourceType type)
     {
@@ -66,6 +91,8 @@ class ModrinthAPI : public NetworkResourceAPI {
                 return "resourcepack";
             case ModPlatform::ResourceType::SHADER_PACK:
                 return "shader";
+            case ModPlatform::ResourceType::MODPACK:
+                return "modpack";
             default:
                 qWarning() << "Invalid resource type for Modrinth API!";
                 break;
@@ -73,14 +100,23 @@ class ModrinthAPI : public NetworkResourceAPI {
 
         return "";
     }
+
     [[nodiscard]] QString createFacets(SearchArgs const& args) const
     {
         QStringList facets_list;
 
-        if (args.loaders.has_value())
+        if (args.loaders.has_value() && args.loaders.value() != 0)
             facets_list.append(QString("[%1]").arg(getModLoaderFilters(args.loaders.value())));
-        if (args.versions.has_value())
+        if (args.versions.has_value() && !args.versions.value().empty())
             facets_list.append(QString("[%1]").arg(getGameVersionsArray(args.versions.value())));
+        if (args.side.has_value()) {
+            auto side = getSideFilters(args.side.value());
+            if (!side.isEmpty())
+                facets_list.append(QString("[%1]").arg(side));
+        }
+        if (args.categoryIds.has_value() && !args.categoryIds->empty())
+            facets_list.append(QString("[%1]").arg(getCategoriesFilters(args.categoryIds.value())));
+
         facets_list.append(QString("[\"project_type:%1\"]").arg(resourceTypeParameter(args.type)));
 
         return QString("[%1]").arg(facets_list.join(','));
@@ -89,7 +125,7 @@ class ModrinthAPI : public NetworkResourceAPI {
    public:
     [[nodiscard]] inline auto getSearchURL(SearchArgs const& args) const -> std::optional<QString> override
     {
-        if (args.loaders.has_value()) {
+        if (args.loaders.has_value() && args.loaders.value() != 0) {
             if (!validateModLoaders(args.loaders.value())) {
                 qWarning() << "Modrinth - or our interface - does not support any the provided mod loaders!";
                 return {};
@@ -130,7 +166,7 @@ class ModrinthAPI : public NetworkResourceAPI {
             .arg(BuildConfig.MODRINTH_PROD_URL, args.pack.addonId.toString(), get_arguments.isEmpty() ? "" : "?", get_arguments.join('&'));
     };
 
-    auto getGameVersionsArray(std::list<Version> mcVersions) const -> QString
+    QString getGameVersionsArray(std::list<Version> mcVersions) const
     {
         QString s;
         for (auto& ver : mcVersions) {

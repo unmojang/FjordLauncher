@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 /*
  *  Prism Launcher - Minecraft Launcher
- *  Copyright (C) 2022 Tayou <git@tayou.org>
+ *  Copyright (C) 2024 Tayou <git@tayou.org>
  *  Copyright (C) 2023 TheKodeToad <TheKodeToad@proton.me>
  *
  *  This program is free software: you can redistribute it and/or modify
@@ -23,6 +23,8 @@
 #include <QDirIterator>
 #include <QIcon>
 #include <QImageReader>
+#include <QStyle>
+#include <QStyleFactory>
 #include "Exception.h"
 #include "ui/themes/BrightTheme.h"
 #include "ui/themes/CatPack.h"
@@ -34,6 +36,13 @@
 
 ThemeManager::ThemeManager()
 {
+    themeDebugLog() << "Determining System Widget Theme...";
+    const auto& style = QApplication::style();
+    m_defaultStyle = style->objectName();
+    themeDebugLog() << "System theme seems to be:" << m_defaultStyle;
+
+    m_defaultPalette = QApplication::palette();
+
     initializeThemes();
     initializeCatPacks();
 }
@@ -120,13 +129,24 @@ void ThemeManager::initializeIcons()
 void ThemeManager::initializeWidgets()
 {
     themeDebugLog() << "<> Initializing Widget Themes";
-    themeDebugLog() << "Loading Built-in Theme:" << addTheme(std::make_unique<SystemTheme>());
+    themeDebugLog() << "Loading Built-in Theme:" << addTheme(std::make_unique<SystemTheme>(m_defaultStyle, m_defaultPalette, true));
     auto darkThemeId = addTheme(std::make_unique<DarkTheme>());
     themeDebugLog() << "Loading Built-in Theme:" << darkThemeId;
     themeDebugLog() << "Loading Built-in Theme:" << addTheme(std::make_unique<BrightTheme>());
 
-    // TODO: need some way to differentiate same name themes in different subdirectories (maybe smaller grey text next to theme name in
-    // dropdown?)
+    themeDebugLog() << "<> Initializing System Widget Themes";
+    QStringList styles = QStyleFactory::keys();
+    for (auto& st : styles) {
+#ifdef Q_OS_WINDOWS
+        if (QSysInfo::productVersion() != "11" && st == "windows11") {
+            continue;
+        }
+#endif
+        themeDebugLog() << "Loading System Theme:" << addTheme(std::make_unique<SystemTheme>(st, m_defaultPalette, false));
+    }
+
+    // TODO: need some way to differentiate same name themes in different subdirectories
+    //  (maybe smaller grey text next to theme name in dropdown?)
 
     if (!m_applicationThemeFolder.mkpath("."))
         themeWarningLog() << "Couldn't create theme folder";
@@ -228,6 +248,8 @@ void ThemeManager::setApplicationTheme(const QString& name, bool initial)
         auto& theme = themeIter->second;
         themeDebugLog() << "applying theme" << theme->name();
         theme->apply(initial);
+
+        m_logColors = theme->logColorScheme();
     } else {
         themeWarningLog() << "Tried to set invalid theme:" << name;
     }
@@ -238,7 +260,11 @@ void ThemeManager::applyCurrentlySelectedTheme(bool initial)
     auto settings = APPLICATION->settings();
     setIconTheme(settings->get("IconTheme").toString());
     themeDebugLog() << "<> Icon theme set.";
-    setApplicationTheme(settings->get("ApplicationTheme").toString(), initial);
+    auto applicationTheme = settings->get("ApplicationTheme").toString();
+    if (applicationTheme == "") {
+        applicationTheme = m_defaultStyle;
+    }
+    setApplicationTheme(applicationTheme, initial);
     themeDebugLog() << "<> Application theme set.";
 }
 
@@ -313,4 +339,14 @@ void ThemeManager::initializeCatPacks()
             loadFiles(dir);
         }
     }
+}
+
+void ThemeManager::refresh()
+{
+    m_themes.clear();
+    m_icons.clear();
+    m_catPacks.clear();
+
+    initializeThemes();
+    initializeCatPacks();
 }

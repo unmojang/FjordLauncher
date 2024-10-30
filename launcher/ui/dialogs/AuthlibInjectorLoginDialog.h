@@ -22,8 +22,7 @@
 #include <QtWidgets/QDialog>
 
 #include <net/NetJob.h>
-#include "Application.h"
-#include "CreateAuthlibInjectorAccount.h"
+#include "GetAuthlibInjectorApiLocation.h"
 #include "minecraft/auth/MinecraftAccount.h"
 #include "tasks/Task.h"
 
@@ -47,11 +46,11 @@ class AuthlibInjectorLoginDialog : public QDialog {
    protected slots:
     void accept();
 
+    void onApiLocationTaskSucceeded();
+    void onApiLocationTaskFailed(const QString&);
     void onTaskFailed(const QString& reason);
-    void onUrlTaskSucceeded();
     void onTaskSucceeded();
     void onTaskStatus(const QString& status);
-    void onTaskProgress(qint64 current, qint64 total);
 
     void on_userTextBox_textEdited(const QString& newText);
     void on_passTextBox_textEdited(const QString& newText);
@@ -66,6 +65,6 @@ class AuthlibInjectorLoginDialog : public QDialog {
     Ui::AuthlibInjectorLoginDialog* ui;
     MinecraftAccountPtr m_account;
     Task::Ptr m_loginTask;
-    Task::Ptr m_createAuthlibInjectorAccountNetJob;
-    CreateAuthlibInjectorAccountPtr m_createAuthlibInjectorAccountTask;
+    Task::Ptr m_apiLocationTask;
+    GetAuthlibInjectorApiLocation::Ptr m_apiLocationRequest;
 };

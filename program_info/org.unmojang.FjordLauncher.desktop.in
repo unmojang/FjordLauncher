@@ -1,6 +1,6 @@
 [Desktop Entry]
 Version=1.0
-Name=Fjord Launcher
+Name=@Launcher_DisplayName@
 Comment=Discover, manage, and play Minecraft instances
 Type=Application
 Terminal=false
@@ -9,5 +9,5 @@ StartupNotify=true
 Icon=org.unmojang.FjordLauncher
 Categories=Game;ActionGame;AdventureGame;Simulation;
 Keywords=game;minecraft;mc;
-StartupWMClass=PrismLauncher
-MimeType=application/zip;application/x-modrinth-modpack+zip;x-scheme-handler/curseforge;
+StartupWMClass=@Launcher_CommonName@
+MimeType=application/zip;application/x-modrinth-modpack+zip;x-scheme-handler/curseforge;x-scheme-handler/@Launcher_APP_BINARY_NAME@;

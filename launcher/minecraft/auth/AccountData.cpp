@@ -43,7 +43,7 @@
 #include "BuildConfig.h"
 
 namespace {
-void tokenToJSONV3(QJsonObject& parent, Katabasis::Token t, const char* tokenName)
+void tokenToJSONV3(QJsonObject& parent, Token t, const char* tokenName)
 {
     if (!t.persistent) {
         return;
@@ -75,9 +75,9 @@ void tokenToJSONV3(QJsonObject& parent, Katabasis::Token t, const char* tokenNam
     }
 }
 
-Katabasis::Token tokenFromJSONV3(const QJsonObject& parent, const char* tokenName)
+Token tokenFromJSONV3(const QJsonObject& parent, const char* tokenName)
 {
-    Katabasis::Token out;
+    Token out;
     auto tokenObject = parent.value(tokenName).toObject();
     if (tokenObject.isEmpty()) {
         return out;
@@ -95,7 +95,7 @@ Katabasis::Token tokenFromJSONV3(const QJsonObject& parent, const char* tokenNam
     auto token = tokenObject.value("token");
     if (token.isString()) {
         out.token = token.toString();
-        out.validity = Katabasis::Validity::Assumed;
+        out.validity = Validity::Assumed;
     }
 
     auto refresh_token = tokenObject.value("refresh_token");
@@ -242,13 +242,13 @@ MinecraftProfile profileFromJSONV3(const QJsonObject& parent, const char* tokenN
             }
         }
     }
-    out.validity = Katabasis::Validity::Assumed;
+    out.validity = Validity::Assumed;
     return out;
 }
 
 void entitlementToJSONV3(QJsonObject& parent, MinecraftEntitlement p)
 {
-    if (p.validity == Katabasis::Validity::None) {
+    if (p.validity == Validity::None) {
         return;
     }
     QJsonObject out;
@@ -272,7 +272,7 @@ bool entitlementFromJSONV3(const QJsonObject& parent, MinecraftEntitlement& out)
         }
         out.canPlayMinecraft = canPlayMinecraftV.toBool(false);
         out.ownsMinecraft = ownsMinecraftV.toBool(false);
-        out.validity = Katabasis::Validity::Assumed;
+        out.validity = Validity::Assumed;
     }
     return true;
 }
@@ -290,8 +290,6 @@ bool AccountData::resumeStateFromV3(QJsonObject data)
     bool needsElyByMigration = false;
     if (typeS == "MSA") {
         type = AccountType::MSA;
-    } else if (typeS == "Mojang") {
-        type = AccountType::Mojang;
     } else if (typeS == "AuthlibInjector") {
         type = AccountType::AuthlibInjector;
     } else if (typeS == "Elyby") {
@@ -303,11 +301,6 @@ bool AccountData::resumeStateFromV3(QJsonObject data)
     } else {
         qWarning() << "Failed to parse account data: type is not recognized.";
         return false;
-    }
-
-    if (type == AccountType::Mojang) {
-        legacy = data.value("legacy").toBool(false);
-        canMigrateToMSA = data.value("canMigrateToMSA").toBool(false);
     }
 
     if (type == AccountType::AuthlibInjector) {
@@ -346,10 +339,10 @@ bool AccountData::resumeStateFromV3(QJsonObject data)
 
     minecraftProfile = profileFromJSONV3(data, "profile");
     if (!entitlementFromJSONV3(data, minecraftEntitlement)) {
-        if (minecraftProfile.validity != Katabasis::Validity::None) {
+        if (minecraftProfile.validity != Validity::None) {
             minecraftEntitlement.canPlayMinecraft = true;
             minecraftEntitlement.ownsMinecraft = true;
-            minecraftEntitlement.validity = Katabasis::Validity::Assumed;
+            minecraftEntitlement.validity = Validity::Assumed;
         }
     }
 
@@ -369,14 +362,6 @@ QJsonObject AccountData::saveState() const
         tokenToJSONV3(output, mojangservicesToken, "xrp-mc");
     } else if (type == AccountType::Offline) {
         output["type"] = "Offline";
-    } else if (type == AccountType::Mojang) {
-        if (legacy) {
-            output["legacy"] = true;
-        }
-        if (canMigrateToMSA) {
-            output["canMigrateToMSA"] = true;
-        }
-        output["type"] = "Mojang";
     } else if (type == AccountType::AuthlibInjector) {
         output["type"] = "AuthlibInjector";
         output["customAuthServerUrl"] = customAuthServerUrl;
@@ -396,6 +381,11 @@ QJsonObject AccountData::saveState() const
 bool AccountData::usesCustomApiServers() const
 {
     return type == AccountType::AuthlibInjector;
+}
+
+bool AccountData::supportsSkinManagement() const
+{
+    return type == AccountType::MSA;
 }
 
 QString AccountData::authServerUrl() const
@@ -458,7 +448,7 @@ QString AccountData::accessToken() const
 
 QString AccountData::clientToken() const
 {
-    if (type != AccountType::Mojang && type != AccountType::AuthlibInjector) {
+    if (type != AccountType::AuthlibInjector) {
         return QString();
     }
     return yggdrasilToken.extra["clientToken"].toString();
@@ -466,7 +456,7 @@ QString AccountData::clientToken() const
 
 void AccountData::setClientToken(QString clientToken)
 {
-    if (type != AccountType::Mojang && type != AccountType::AuthlibInjector) {
+    if (type != AccountType::AuthlibInjector) {
         return;
     }
     yggdrasilToken.extra["clientToken"] = clientToken;
@@ -482,7 +472,7 @@ void AccountData::generateClientTokenIfMissing()
 
 void AccountData::invalidateClientToken()
 {
-    if (type != AccountType::Mojang && type != AccountType::AuthlibInjector) {
+    if (type != AccountType::AuthlibInjector) {
         return;
     }
     yggdrasilToken.extra["clientToken"] = QUuid::createUuid().toString().remove(QRegularExpression("[{-}]"));
@@ -505,7 +495,6 @@ QString AccountData::profileName() const
 QString AccountData::accountDisplayString() const
 {
     switch (type) {
-        case AccountType::Mojang:
         case AccountType::AuthlibInjector: {
             return userName();
         }

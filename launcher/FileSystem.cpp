@@ -276,6 +276,9 @@ bool ensureFolderPathExists(const QFileInfo folderPath)
 {
     QDir dir;
     QString ensuredPath = folderPath.filePath();
+    if (folderPath.exists())
+        return true;
+
     bool success = dir.mkpath(ensuredPath);
     return success;
 }
@@ -647,6 +650,19 @@ void ExternalLinkFileProcess::runLinkFile()
     qDebug() << "Process exited";
 }
 
+bool moveByCopy(const QString& source, const QString& dest)
+{
+    if (!copy(source, dest)()) {  // copy
+        qDebug() << "Copy of" << source << "to" << dest << "failed!";
+        return false;
+    }
+    if (!deletePath(source)) {  // remove original
+        qDebug() << "Deletion of" << source << "failed!";
+        return false;
+    };
+    return true;
+}
+
 bool move(const QString& source, const QString& dest)
 {
     std::error_code err;
@@ -654,13 +670,14 @@ bool move(const QString& source, const QString& dest)
     ensureFilePathExists(dest);
     fs::rename(StringUtils::toStdString(source), StringUtils::toStdString(dest), err);
 
-    if (err) {
-        qWarning() << "Failed to move file:" << QString::fromStdString(err.message());
-        qDebug() << "Source file:" << source;
-        qDebug() << "Destination file:" << dest;
+    if (err.value() != 0) {
+        if (moveByCopy(source, dest))
+            return true;
+        qDebug() << "Move of" << source << "to" << dest << "failed!";
+        qWarning() << "Failed to move file:" << QString::fromStdString(err.message()) << QString::number(err.value());
+        return false;
     }
-
-    return err.value() == 0;
+    return true;
 }
 
 bool deletePath(QString path)
@@ -903,6 +920,10 @@ bool createShortcut(QString destination, QString target, QStringList args, QStri
 {
     if (destination.isEmpty()) {
         destination = PathCombine(getDesktopDir(), RemoveInvalidFilenameChars(name));
+    }
+    if (!ensureFilePathExists(destination)) {
+        qWarning() << "Destination path can't be created!";
+        return false;
     }
 #if defined(Q_OS_MACOS)
     // Create the Application
@@ -1677,4 +1698,30 @@ QString getPathNameInLocal8bit(const QString& file)
 }
 #endif
 
+QString getUniqueResourceName(const QString& filePath)
+{
+    auto newFileName = filePath;
+    if (!newFileName.endsWith(".disabled")) {
+        return newFileName;  // prioritize enabled mods
+    }
+    newFileName.chop(9);
+    if (!QFile::exists(newFileName)) {
+        return filePath;
+    }
+    QFileInfo fileInfo(filePath);
+    auto baseName = fileInfo.completeBaseName();
+    auto path = fileInfo.absolutePath();
+
+    int counter = 1;
+    do {
+        if (counter == 1) {
+            newFileName = FS::PathCombine(path, baseName + ".duplicate");
+        } else {
+            newFileName = FS::PathCombine(path, baseName + ".duplicate" + QString::number(counter));
+        }
+        counter++;
+    } while (QFile::exists(newFileName));
+
+    return newFileName;
+}
 }  // namespace FS

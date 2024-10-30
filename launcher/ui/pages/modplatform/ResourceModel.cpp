@@ -31,9 +31,9 @@ QHash<ResourceModel*, bool> ResourceModel::s_running_models;
 ResourceModel::ResourceModel(ResourceAPI* api) : QAbstractListModel(), m_api(api)
 {
     s_running_models.insert(this, true);
-#ifndef LAUNCHER_TEST
-    m_current_info_job.setMaxConcurrent(APPLICATION->settings()->get("NumberOfConcurrentDownloads").toInt());
-#endif
+    if (APPLICATION_DYN) {
+        m_current_info_job.setMaxConcurrent(APPLICATION->settings()->get("NumberOfConcurrentDownloads").toInt());
+    }
 }
 
 ResourceModel::~ResourceModel()
@@ -60,11 +60,15 @@ auto ResourceModel::data(const QModelIndex& index, int role) const -> QVariant
             return pack->description;
         }
         case Qt::DecorationRole: {
-            if (auto icon_or_none = const_cast<ResourceModel*>(this)->getIcon(const_cast<QModelIndex&>(index), pack->logoUrl);
-                icon_or_none.has_value())
-                return icon_or_none.value();
+            if (APPLICATION_DYN) {
+                if (auto icon_or_none = const_cast<ResourceModel*>(this)->getIcon(const_cast<QModelIndex&>(index), pack->logoUrl);
+                    icon_or_none.has_value())
+                    return icon_or_none.value();
 
-            return APPLICATION->getThemedIcon("screenshot-placeholder");
+                return APPLICATION->getThemedIcon("screenshot-placeholder");
+            } else {
+                return {};
+            }
         }
         case Qt::SizeHintRole:
             return QSize(0, 58);
@@ -317,8 +321,10 @@ std::optional<QIcon> ResourceModel::getIcon(QModelIndex& index, const QUrl& url)
     if (QPixmapCache::find(url.toString(), &pixmap))
         return { pixmap };
 
-    if (!m_current_icon_job)
+    if (!m_current_icon_job) {
         m_current_icon_job.reset(new NetJob("IconJob", APPLICATION->network()));
+        m_current_icon_job->setAskRetry(false);
+    }
 
     if (m_currently_running_icon_actions.contains(url))
         return {};
@@ -331,7 +337,7 @@ std::optional<QIcon> ResourceModel::getIcon(QModelIndex& index, const QUrl& url)
     auto icon_fetch_action = Net::ApiDownload::makeCached(url, cache_entry);
 
     auto full_file_path = cache_entry->getFullPath();
-    connect(icon_fetch_action.get(), &NetAction::succeeded, this, [=] {
+    connect(icon_fetch_action.get(), &Task::succeeded, this, [=] {
         auto icon = QIcon(full_file_path);
         QPixmapCache::insert(url.toString(), icon.pixmap(icon.actualSize({ 64, 64 })));
 
@@ -339,7 +345,7 @@ std::optional<QIcon> ResourceModel::getIcon(QModelIndex& index, const QUrl& url)
 
         emit dataChanged(index, index, { Qt::DecorationRole });
     });
-    connect(icon_fetch_action.get(), &NetAction::failed, this, [=] {
+    connect(icon_fetch_action.get(), &Task::failed, this, [=] {
         m_currently_running_icon_actions.remove(url);
         m_failed_icon_actions.insert(url);
     });
@@ -410,12 +416,17 @@ void ResourceModel::searchRequestSucceeded(QJsonDocument& doc)
         m_search_state = SearchState::CanFetchMore;
     }
 
+    QList<ModPlatform::IndexedPack::Ptr> filteredNewList;
+    for (auto p : newList)
+        if (checkFilters(p))
+            filteredNewList << p;
+
     // When you have a Qt build with assertions turned on, proceeding here will abort the application
-    if (newList.size() == 0)
+    if (filteredNewList.size() == 0)
         return;
 
-    beginInsertRows(QModelIndex(), m_packs.size(), m_packs.size() + newList.size() - 1);
-    m_packs.append(newList);
+    beginInsertRows(QModelIndex(), m_packs.size(), m_packs.size() + filteredNewList.size() - 1);
+    m_packs.append(filteredNewList);
     endInsertRows();
 }
 
@@ -558,4 +569,8 @@ void ResourceModel::removePack(const QString& rem)
         ver.is_currently_selected = false;
 }
 
+bool ResourceModel::checkVersionFilters(const ModPlatform::IndexedVersion& v)
+{
+    return (!optedOut(v));
+}
 }  // namespace ResourceDownload

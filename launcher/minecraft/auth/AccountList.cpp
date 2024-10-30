@@ -35,7 +35,7 @@
 
 #include "AccountList.h"
 #include "AccountData.h"
-#include "AccountTask.h"
+#include "tasks/Task.h"
 
 #include <QDir>
 #include <QFile>
@@ -334,17 +334,6 @@ QVariant AccountList::data(const QModelIndex& index, int role) const
 
                 case AuthServerColumn: {
                     return account->authlibInjectorUrl();
-                }
-
-                case MigrationColumn: {
-                    if (account->accountType() != AccountType::Mojang) {
-                        return tr("N/A", "Can Migrate");
-                    }
-                    if (account->canMigrate()) {
-                        return tr("Yes", "Can Migrate");
-                    } else {
-                        return tr("No", "Can Migrate");
-                    }
                 }
 
                 default:
@@ -660,8 +649,8 @@ void AccountList::tryNext()
             if (account->internalId() == accountId) {
                 m_currentTask = account->refresh();
                 if (m_currentTask) {
-                    connect(m_currentTask.get(), &AccountTask::succeeded, this, &AccountList::authSucceeded);
-                    connect(m_currentTask.get(), &AccountTask::failed, this, &AccountList::authFailed);
+                    connect(m_currentTask.get(), &Task::succeeded, this, &AccountList::authSucceeded);
+                    connect(m_currentTask.get(), &Task::failed, this, &AccountList::authFailed);
                     m_currentTask->start();
                     qDebug() << "RefreshSchedule: Processing account " << account->accountDisplayString() << " with internal ID "
                              << accountId;

@@ -38,9 +38,14 @@
 #include "MinecraftInstance.h"
 #include "Application.h"
 #include "BuildConfig.h"
+#include "QObjectPtr.h"
+#include "minecraft/launch/AutoInstallJava.h"
 #include "minecraft/launch/CreateGameFolders.h"
 #include "minecraft/launch/ExtractNatives.h"
 #include "minecraft/launch/PrintInstanceInfo.h"
+#include "minecraft/update/AssetUpdateTask.h"
+#include "minecraft/update/FMLLibrariesTask.h"
+#include "minecraft/update/LibrariesTask.h"
 #include "settings/Setting.h"
 #include "settings/SettingsObject.h"
 
@@ -51,13 +56,13 @@
 #include "pathmatcher/RegexpMatcher.h"
 
 #include "launch/LaunchTask.h"
+#include "launch/TaskStepWrapper.h"
 #include "launch/steps/CheckJava.h"
 #include "launch/steps/LookupServerAddress.h"
 #include "launch/steps/PostLaunchCommand.h"
 #include "launch/steps/PreLaunchCommand.h"
 #include "launch/steps/QuitAfterGameStop.h"
 #include "launch/steps/TextPrint.h"
-#include "launch/steps/Update.h"
 
 #include "minecraft/launch/ClaimAccount.h"
 #include "minecraft/launch/LauncherPartLaunch.h"
@@ -67,9 +72,6 @@
 #include "minecraft/launch/VerifyJavaInstall.h"
 
 #include "java/JavaUtils.h"
-
-#include "meta/Index.h"
-#include "meta/VersionList.h"
 
 #include "icons/IconList.h"
 
@@ -82,7 +84,6 @@
 
 #include "AssetsUtils.h"
 #include "MinecraftLoadAndCheck.h"
-#include "MinecraftUpdate.h"
 #include "PackProfile.h"
 #include "minecraft/gameoptions/GameOptions.h"
 #include "minecraft/update/FoldersTask.h"
@@ -134,25 +135,21 @@ void MinecraftInstance::loadSpecificSettings()
         return;
 
     // Java Settings
-    auto javaOverride = m_settings->registerSetting("OverrideJava", false);
     auto locationOverride = m_settings->registerSetting("OverrideJavaLocation", false);
     auto argsOverride = m_settings->registerSetting("OverrideJavaArgs", false);
-
-    // combinations
-    auto javaOrLocation = std::make_shared<OrSetting>("JavaOrLocationOverride", javaOverride, locationOverride);
-    auto javaOrArgs = std::make_shared<OrSetting>("JavaOrArgsOverride", javaOverride, argsOverride);
+    m_settings->registerSetting("AutomaticJava", false);
 
     if (auto global_settings = globalSettings()) {
-        m_settings->registerOverride(global_settings->getSetting("JavaPath"), javaOrLocation);
-        m_settings->registerOverride(global_settings->getSetting("JvmArgs"), javaOrArgs);
-        m_settings->registerOverride(global_settings->getSetting("IgnoreJavaCompatibility"), javaOrLocation);
+        m_settings->registerOverride(global_settings->getSetting("JavaPath"), locationOverride);
+        m_settings->registerOverride(global_settings->getSetting("JvmArgs"), argsOverride);
+        m_settings->registerOverride(global_settings->getSetting("IgnoreJavaCompatibility"), locationOverride);
 
         // special!
-        m_settings->registerPassthrough(global_settings->getSetting("JavaSignature"), javaOrLocation);
-        m_settings->registerPassthrough(global_settings->getSetting("JavaArchitecture"), javaOrLocation);
-        m_settings->registerPassthrough(global_settings->getSetting("JavaRealArchitecture"), javaOrLocation);
-        m_settings->registerPassthrough(global_settings->getSetting("JavaVersion"), javaOrLocation);
-        m_settings->registerPassthrough(global_settings->getSetting("JavaVendor"), javaOrLocation);
+        m_settings->registerPassthrough(global_settings->getSetting("JavaSignature"), locationOverride);
+        m_settings->registerPassthrough(global_settings->getSetting("JavaArchitecture"), locationOverride);
+        m_settings->registerPassthrough(global_settings->getSetting("JavaRealArchitecture"), locationOverride);
+        m_settings->registerPassthrough(global_settings->getSetting("JavaVersion"), locationOverride);
+        m_settings->registerPassthrough(global_settings->getSetting("JavaVendor"), locationOverride);
 
         // Window Size
         auto windowSetting = m_settings->registerSetting("OverrideWindow", false);
@@ -173,11 +170,12 @@ void MinecraftInstance::loadSpecificSettings()
         m_settings->registerOverride(global_settings->getSetting("UseNativeGLFW"), nativeLibraryWorkaroundsOverride);
         m_settings->registerOverride(global_settings->getSetting("CustomGLFWPath"), nativeLibraryWorkaroundsOverride);
 
-        // Peformance related options
+        // Performance related options
         auto performanceOverride = m_settings->registerSetting("OverridePerformance", false);
         m_settings->registerOverride(global_settings->getSetting("EnableFeralGamemode"), performanceOverride);
         m_settings->registerOverride(global_settings->getSetting("EnableMangoHud"), performanceOverride);
         m_settings->registerOverride(global_settings->getSetting("UseDiscreteGpu"), performanceOverride);
+        m_settings->registerOverride(global_settings->getSetting("UseZink"), performanceOverride);
 
         // Miscellaneous
         auto miscellaneousOverride = m_settings->registerSetting("OverrideMiscellaneous", false);
@@ -197,6 +195,7 @@ void MinecraftInstance::loadSpecificSettings()
     // Join server on launch, this does not have a global override
     m_settings->registerSetting("JoinServerOnLaunch", false);
     m_settings->registerSetting("JoinServerOnLaunchAddress", "");
+    m_settings->registerSetting("JoinWorldOnLaunch", "");
 
     // Use account for instance, this does not have a global override
     m_settings->registerSetting("UseAccountForInstance", false);
@@ -218,6 +217,7 @@ void MinecraftInstance::loadSpecificSettings()
 void MinecraftInstance::updateRuntimeContext()
 {
     m_runtimeContext.updateFromInstanceSettings(m_settings);
+    m_components->invalidateLaunchProfile();
 }
 
 QString MinecraftInstance::typeName() const
@@ -292,10 +292,10 @@ QString MinecraftInstance::gameRoot() const
     QFileInfo mcDir(FS::PathCombine(instanceRoot(), "minecraft"));
     QFileInfo dotMCDir(FS::PathCombine(instanceRoot(), ".minecraft"));
 
-    if (mcDir.exists() && !dotMCDir.exists())
-        return mcDir.filePath();
-    else
+    if (dotMCDir.exists() && !mcDir.exists())
         return dotMCDir.filePath();
+    else
+        return mcDir.filePath();
 }
 
 QString MinecraftInstance::binRoot() const
@@ -525,8 +525,7 @@ QStringList MinecraftInstance::javaArguments()
 
     if (javaVersion.isModular() && shouldApplyOnlineFixes())
         // allow reflective access to java.net - required by the skin fix
-        args << "--add-opens"
-             << "java.base/java.net=ALL-UNNAMED";
+        args << "--add-opens" << "java.base/java.net=ALL-UNNAMED";
 
     return args;
 }
@@ -655,7 +654,7 @@ QProcessEnvironment MinecraftInstance::createLaunchEnvironment()
             // dlsym variant is only needed for OpenGL and not included in the vulkan layer
             appendLib("libMangoHud_dlsym.so");
             appendLib("libMangoHud_opengl.so");
-            appendLib(mangoHudLib.fileName());
+            preloadList << mangoHudLibString;
         }
 
         env.insert("LD_PRELOAD", preloadList.join(QLatin1String(":")));
@@ -669,6 +668,13 @@ QProcessEnvironment MinecraftInstance::createLaunchEnvironment()
         env.insert("__NV_PRIME_RENDER_OFFLOAD", "1");
         env.insert("__VK_LAYER_NV_optimus", "NVIDIA_only");
         env.insert("__GLX_VENDOR_LIBRARY_NAME", "nvidia");
+    }
+
+    if (settings()->get("UseZink").toBool()) {
+        // taken from https://wiki.archlinux.org/title/OpenGL#OpenGL_over_Vulkan_(Zink)
+        env.insert("__GLX_VENDOR_LIBRARY_NAME", "mesa");
+        env.insert("MESA_LOADER_DRIVER_OVERRIDE", "zink");
+        env.insert("GALLIUM_DRIVER", "zink");
     }
 #endif
     return env;
@@ -696,7 +702,7 @@ static QString replaceTokensIn(QString text, QMap<QString, QString> with)
     return result;
 }
 
-QStringList MinecraftInstance::processMinecraftArgs(AuthSessionPtr session, MinecraftServerTargetPtr serverToJoin) const
+QStringList MinecraftInstance::processMinecraftArgs(AuthSessionPtr session, MinecraftTarget::Ptr targetToJoin) const
 {
     auto profile = m_components->getProfile();
     QString args_pattern = profile->getMinecraftArguments();
@@ -704,12 +710,16 @@ QStringList MinecraftInstance::processMinecraftArgs(AuthSessionPtr session, Mine
         args_pattern += " --tweakClass " + tweaker;
     }
 
-    if (serverToJoin && !serverToJoin->address.isEmpty()) {
-        if (profile->hasTrait("feature:is_quick_play_multiplayer")) {
-            args_pattern += " --quickPlayMultiplayer " + serverToJoin->address + ':' + QString::number(serverToJoin->port);
-        } else {
-            args_pattern += " --server " + serverToJoin->address;
-            args_pattern += " --port " + QString::number(serverToJoin->port);
+    if (targetToJoin) {
+        if (!targetToJoin->address.isEmpty()) {
+            if (profile->hasTrait("feature:is_quick_play_multiplayer")) {
+                args_pattern += " --quickPlayMultiplayer " + targetToJoin->address + ':' + QString::number(targetToJoin->port);
+            } else {
+                args_pattern += " --server " + targetToJoin->address;
+                args_pattern += " --port " + QString::number(targetToJoin->port);
+            }
+        } else if (!targetToJoin->world.isEmpty() && profile->hasTrait("feature:is_quick_play_singleplayer")) {
+            args_pattern += " --quickPlaySingleplayer " + targetToJoin->world;
         }
     }
 
@@ -753,7 +763,7 @@ QStringList MinecraftInstance::processMinecraftArgs(AuthSessionPtr session, Mine
     return parts;
 }
 
-QString MinecraftInstance::createLaunchScript(AuthSessionPtr session, MinecraftServerTargetPtr serverToJoin)
+QString MinecraftInstance::createLaunchScript(AuthSessionPtr session, MinecraftTarget::Ptr targetToJoin)
 {
     QString launchScript;
 
@@ -772,9 +782,13 @@ QString MinecraftInstance::createLaunchScript(AuthSessionPtr session, MinecraftS
         launchScript += "appletClass " + appletClass + "\n";
     }
 
-    if (serverToJoin && !serverToJoin->address.isEmpty()) {
-        launchScript += "serverAddress " + serverToJoin->address + "\n";
-        launchScript += "serverPort " + QString::number(serverToJoin->port) + "\n";
+    if (targetToJoin) {
+        if (!targetToJoin->address.isEmpty()) {
+            launchScript += "serverAddress " + targetToJoin->address + "\n";
+            launchScript += "serverPort " + QString::number(targetToJoin->port) + "\n";
+        } else if (!targetToJoin->world.isEmpty()) {
+            launchScript += "worldName " + targetToJoin->world + "\n";
+        }
     }
 
     // generic minecraft params
@@ -827,16 +841,15 @@ QString MinecraftInstance::createLaunchScript(AuthSessionPtr session, MinecraftS
     return launchScript;
 }
 
-QStringList MinecraftInstance::verboseDescription(AuthSessionPtr session, MinecraftServerTargetPtr serverToJoin)
+QStringList MinecraftInstance::verboseDescription(AuthSessionPtr session, MinecraftTarget::Ptr targetToJoin)
 {
     QStringList out;
-    out << "Main Class:"
-        << "  " + getMainClass() << "";
-    out << "Native path:"
-        << "  " + getNativePath() << "";
+    out << "Main Class:" << "  " + getMainClass() << "";
+    out << "Native path:" << "  " + getNativePath() << "";
 
     auto profile = m_components->getProfile();
 
+    // traits
     auto alltraits = traits();
     if (alltraits.size()) {
         out << "Traits:";
@@ -846,6 +859,7 @@ QStringList MinecraftInstance::verboseDescription(AuthSessionPtr session, Minecr
         out << "";
     }
 
+    // native libraries
     auto settings = this->settings();
     bool nativeOpenAL = settings->get("UseNativeOpenAL").toBool();
     bool nativeGLFW = settings->get("UseNativeGLFW").toBool();
@@ -881,6 +895,7 @@ QStringList MinecraftInstance::verboseDescription(AuthSessionPtr session, Minecr
         out << "";
     }
 
+    // mods and core mods
     auto printModList = [&](const QString& label, ModFolderModel& model) {
         if (model.size()) {
             out << QString("%1:").arg(label);
@@ -909,6 +924,7 @@ QStringList MinecraftInstance::verboseDescription(AuthSessionPtr session, Minecr
     printModList("Mods", *(loaderModList().get()));
     printModList("Core Mods", *(coreModList().get()));
 
+    // jar mods
     auto& jarMods = profile->getJarMods();
     if (jarMods.size()) {
         out << "Jar Mods:";
@@ -924,11 +940,13 @@ QStringList MinecraftInstance::verboseDescription(AuthSessionPtr session, Minecr
         out << "";
     }
 
-    auto params = processMinecraftArgs(nullptr, serverToJoin);
+    // minecraft arguments
+    auto params = processMinecraftArgs(nullptr, targetToJoin);
     out << "Params:";
     out << "  " + params.join(' ');
     out << "";
 
+    // window size
     QString windowParams;
     if (settings->get("LaunchMaximized").toBool()) {
         out << "Window size: max (if available)";
@@ -1060,21 +1078,21 @@ QString MinecraftInstance::getStatusbarDescription()
     return description;
 }
 
-Task::Ptr MinecraftInstance::createUpdateTask(Net::Mode mode)
+QList<LaunchStep::Ptr> MinecraftInstance::createUpdateTask()
 {
-    updateRuntimeContext();
-    switch (mode) {
-        case Net::Mode::Offline: {
-            return Task::Ptr(new MinecraftLoadAndCheck(this));
-        }
-        case Net::Mode::Online: {
-            return Task::Ptr(new MinecraftUpdate(this));
-        }
-    }
-    return nullptr;
+    return {
+        // create folders
+        makeShared<FoldersTask>(this),
+        // libraries download
+        makeShared<LibrariesTask>(this),
+        // FML libraries download and copy into the instance
+        makeShared<FMLLibrariesTask>(this),
+        // assets update
+        makeShared<AssetUpdateTask>(this),
+    };
 }
 
-shared_qobject_ptr<LaunchTask> MinecraftInstance::createLaunchTask(AuthSessionPtr session, MinecraftServerTargetPtr serverToJoin)
+shared_qobject_ptr<LaunchTask> MinecraftInstance::createLaunchTask(AuthSessionPtr session, MinecraftTarget::Ptr targetToJoin)
 {
     updateRuntimeContext();
     // FIXME: get rid of shared_from_this ...
@@ -1088,26 +1106,28 @@ shared_qobject_ptr<LaunchTask> MinecraftInstance::createLaunchTask(AuthSessionPt
         process->appendStep(makeShared<TextPrint>(pptr, "Minecraft folder is:\n" + gameRoot() + "\n\n", MessageLevel::Launcher));
     }
 
-    // check java
-    {
-        process->appendStep(makeShared<CheckJava>(pptr));
-    }
-
     // create the .minecraft folder and server-resource-packs (workaround for Minecraft bug MCL-3732)
     {
         process->appendStep(makeShared<CreateGameFolders>(pptr));
     }
 
-    if (!serverToJoin && settings()->get("JoinServerOnLaunch").toBool()) {
+    if (!targetToJoin && settings()->get("JoinServerOnLaunch").toBool()) {
         QString fullAddress = settings()->get("JoinServerOnLaunchAddress").toString();
-        serverToJoin.reset(new MinecraftServerTarget(MinecraftServerTarget::parse(fullAddress)));
+        if (!fullAddress.isEmpty()) {
+            targetToJoin.reset(new MinecraftTarget(MinecraftTarget::parse(fullAddress, false)));
+        } else {
+            QString world = settings()->get("JoinWorldOnLaunch").toString();
+            if (!world.isEmpty()) {
+                targetToJoin.reset(new MinecraftTarget(MinecraftTarget::parse(world, true)));
+            }
+        }
     }
 
-    if (serverToJoin && serverToJoin->port == 25565) {
+    if (targetToJoin && targetToJoin->port == 25565) {
         // Resolve server address to join on launch
         auto step = makeShared<LookupServerAddress>(pptr);
-        step->setLookupAddress(serverToJoin->address);
-        step->setOutputAddressPtr(serverToJoin);
+        step->setLookupAddress(targetToJoin->address);
+        step->setOutputAddressPtr(targetToJoin);
         process->appendStep(step);
     }
 
@@ -1118,14 +1138,26 @@ shared_qobject_ptr<LaunchTask> MinecraftInstance::createLaunchTask(AuthSessionPt
         process->appendStep(step);
     }
 
+    // load meta
+    {
+        auto mode = session->status != AuthSession::PlayableOffline ? Net::Mode::Online : Net::Mode::Offline;
+        process->appendStep(makeShared<TaskStepWrapper>(pptr, makeShared<MinecraftLoadAndCheck>(this, mode, pptr)));
+    }
+
+    // check java
+    {
+        process->appendStep(makeShared<AutoInstallJava>(pptr));
+        process->appendStep(makeShared<CheckJava>(pptr));
+    }
+
     // if we aren't in offline mode,.
     if (session->status != AuthSession::PlayableOffline) {
         if (!session->demo) {
             process->appendStep(makeShared<ClaimAccount>(pptr, session));
         }
-        process->appendStep(makeShared<Update>(pptr, Net::Mode::Online));
-    } else {
-        process->appendStep(makeShared<Update>(pptr, Net::Mode::Offline));
+        for (auto t : createUpdateTask()) {
+            process->appendStep(makeShared<TaskStepWrapper>(pptr, t));
+        }
     }
 
     // if there are any jar mods
@@ -1140,7 +1172,7 @@ shared_qobject_ptr<LaunchTask> MinecraftInstance::createLaunchTask(AuthSessionPt
 
     // print some instance info here...
     {
-        process->appendStep(makeShared<PrintInstanceInfo>(pptr, session, serverToJoin));
+        process->appendStep(makeShared<PrintInstanceInfo>(pptr, session, targetToJoin));
     }
 
     // extract native jars if needed
@@ -1163,7 +1195,7 @@ shared_qobject_ptr<LaunchTask> MinecraftInstance::createLaunchTask(AuthSessionPt
         auto step = makeShared<LauncherPartLaunch>(pptr);
         step->setWorkingDirectory(gameRoot());
         step->setAuthSession(session);
-        step->setServerToJoin(serverToJoin);
+        step->setTargetToJoin(targetToJoin);
         process->appendStep(step);
     }
 

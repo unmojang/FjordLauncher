@@ -154,6 +154,10 @@ void Technic::ListModel::performSearch()
             QString("%1search?build=%2&q=%3").arg(BuildConfig.TECHNIC_API_BASE_URL, BuildConfig.TECHNIC_API_BUILD, currentSearchTerm);
         searchMode = List;
     }
+    auto clientId = APPLICATION->settings()->get("TechnicClientID").toString();
+    if (!clientId.isEmpty()) {
+        searchUrl += "?cid=" + clientId;
+    }
     netJob->addNetAction(Net::ApiDownload::makeByteArray(QUrl(searchUrl), response));
     jobPtr = netJob;
     jobPtr->start();
@@ -292,6 +296,7 @@ void Technic::ListModel::requestLogo(QString logo, QString url)
 
     MetaEntryPtr entry = APPLICATION->metacache()->resolveEntry("TechnicPacks", QString("logos/%1").arg(logo));
     auto job = new NetJob(QString("Technic Icon Download %1").arg(logo), APPLICATION->network());
+    job->setAskRetry(false);
     job->addNetAction(Net::ApiDownload::makeCached(QUrl(url), entry));
 
     auto fullPath = entry->getFullPath();
