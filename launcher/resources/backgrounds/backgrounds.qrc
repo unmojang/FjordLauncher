@@ -29,5 +29,9 @@
         <file alias="polly-xmas">polly-xmas.png</file>
         <file alias="polly-bday">polly-bday.png</file>
         <file alias="polly-spooky">polly.png</file>
+        <file alias="spaceship-phoebe">spaceship-phoebe.png</file>
+        <file alias="spaceship-phoebe-xmas">spaceship-phoebe-xmas.png</file>
+        <file alias="spaceship-phoebe-bday">spaceship-phoebe-bday.png</file>
+        <file alias="spaceship-phoebe-spooky">spaceship-phoebe-spooky.png</file>
     </qresource>
 </RCC>
