@@ -1,4 +1,5 @@
 #include "YggdrasilStep.h"
+#include <QInputDialog>
 #include "Application.h"
 
 #include "net/RawHeaderProxy.h"
@@ -48,10 +49,9 @@ void YggdrasilStep::login(QString password)
     req.insert("username", m_data->userName());
     req.insert("password", password);
     req.insert("requestUser", false);
-    //
+
     // If we already have a client token, give it to the server.
     // Otherwise, let the server give us one.
-
     m_data->generateClientTokenIfMissing();
     req.insert("clientToken", m_data->clientToken());
 
@@ -79,19 +79,23 @@ void YggdrasilStep::refresh()
 
     /*
      * {
-     *  "clientToken": "client identifier"
-     *  "accessToken": "current access token to be refreshed"
-     *  "selectedProfile":                      // specifying this causes errors
-     *  {
-     *   "id": "profile ID"
-     *   "name": "profile name"
-     *  }
+     *  "clientToken": "client identifier",
+     *  "accessToken": "current access token to be refreshed",
+     *  "selectedProfile": {
+     *      "id": "profile ID",
+     *      "name": "profile name"
+     *  },
      *  "requestUser": true/false               // request the user structure
      * }
      */
+    QJsonObject selectedProfile;
+    selectedProfile.insert("id", m_data->profileId());
+    selectedProfile.insert("name", m_data->profileName());
+
     QJsonObject req;
     req.insert("clientToken", m_data->clientToken());
     req.insert("accessToken", m_data->accessToken());
+    req.insert("selectedProfile", selectedProfile);
     req.insert("requestUser", false);
 
     QJsonDocument doc(req);
@@ -238,17 +242,49 @@ void YggdrasilStep::processResponse(QJsonObject responseData)
     // Get UUID here since we need it for later
     // FIXME: Here is a simple workaround for now,, which uses the first available profile when selectedProfile is not provided
     auto profile = responseData.value("selectedProfile");
-    if (!profile.isObject()) {
+    if (profile.isObject()) {
+        m_didSelectProfile = false;
+    } else {
+        if (m_didSelectProfile) {
+            emit finished(AccountTaskState::STATE_FAILED_HARD, tr("Authentication server didn't save our selected profile."));
+        }
         auto profiles = responseData.value("availableProfiles");
         if (!profiles.isArray()) {
             emit finished(AccountTaskState::STATE_FAILED_HARD, tr("Authentication server didn't send available profiles."));
             return;
         } else {
-            if (profiles.toArray().isEmpty()) {
+            const auto& profilesArray = profiles.toArray();
+            if (profilesArray.isEmpty()) {
                 emit finished(AccountTaskState::STATE_FAILED_HARD, tr("Account has no available profile."));
                 return;
-            } else {
+            } else if (profilesArray.size() == 1) {
                 profile = profiles.toArray().first();
+            } else {
+                std::map<QString, QJsonValue> profileMap;
+                QStringList profileNames;
+
+                const auto& invalidProfileMessage = tr("Authentication server sent an invalid available profile.");
+                for (const auto& profileValue : profilesArray) {
+                    if (!profileValue.isObject()) {
+                        emit finished(AccountTaskState::STATE_FAILED_HARD, invalidProfileMessage);
+                    }
+                    const auto& profileNameValue = profileValue.toObject().value("name");
+                    if (!profileNameValue.isString()) {
+                        emit finished(AccountTaskState::STATE_FAILED_HARD, invalidProfileMessage);
+                    }
+                    const auto& profileName = profileNameValue.toString();
+                    profileMap.insert({ profileName, profileValue });
+                    profileNames.append(profileName);
+                }
+                bool ok;
+                const auto& profileName =
+                    QInputDialog::getItem(nullptr, "Select a player", "Select a player:", profileNames, 0, false, &ok);
+
+                if (!ok || profileName.isEmpty()) {
+                    emit finished(AccountTaskState::STATE_FAILED_SOFT, tr("Authentication cancelled."));
+                }
+                profile = profileMap[profileName];
+                m_didSelectProfile = true;
             }
         }
     }
@@ -265,6 +301,12 @@ void YggdrasilStep::processResponse(QJsonObject responseData)
     if (m_data->minecraftProfile.id.isEmpty()) {
         emit finished(AccountTaskState::STATE_FAILED_HARD, tr("Authentication server didn't send a UUID in selected profile."));
         return;
+    }
+
+    if (m_didSelectProfile) {
+        // The authlib-injector specification requires that we refresh immediately after the user has selected a profile:
+        // https://github.com/yushijinhun/authlib-injector/wiki/%E5%90%AF%E5%8A%A8%E5%99%A8%E6%8A%80%E6%9C%AF%E8%A7%84%E8%8C%83#%E8%B4%A6%E6%88%B7%E7%9A%84%E6%B7%BB%E5%8A%A0
+        return refresh();
     }
 
     emit finished(AccountTaskState::STATE_WORKING, "Logged in");

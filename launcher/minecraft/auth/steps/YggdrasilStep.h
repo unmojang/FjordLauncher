@@ -33,4 +33,5 @@ class YggdrasilStep : public AuthStep {
     std::shared_ptr<QByteArray> m_response;
     Net::Upload::Ptr m_request;
     NetJob::Ptr m_task;
+    bool m_didSelectProfile = false;
 };
