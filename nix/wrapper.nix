@@ -28,8 +28,8 @@
   udev,
   vulkan-loader,
   xrandr,
-  additionalLibs ? [],
-  additionalPrograms ? [],
+  additionalLibs ? [ ],
+  additionalPrograms ? [ ],
   controllerSupport ? stdenv.hostPlatform.isLinux,
   gamemodeSupport ? stdenv.hostPlatform.isLinux,
   jdks ? [
@@ -45,31 +45,32 @@ assert lib.assertMsg (
 ) "controllerSupport only has an effect on Linux.";
 assert lib.assertMsg (
   textToSpeechSupport -> stdenv.hostPlatform.isLinux
-) "textToSpeechSupport only has an effect on Linux."; let
-  fjordlauncher' = fjordlauncher-unwrapped.override {inherit msaClientID gamemodeSupport;};
+) "textToSpeechSupport only has an effect on Linux.";
+let
+  fjordlauncher' = fjordlauncher-unwrapped.override { inherit msaClientID gamemodeSupport; };
 in
-  symlinkJoin {
-    name = "fjordlauncher-${fjordlauncher'.version}";
+symlinkJoin {
+  name = "fjordlauncher-${fjordlauncher'.version}";
 
-    paths = [fjordlauncher'];
+  paths = [ fjordlauncher' ];
 
-    nativeBuildInputs = [kdePackages.wrapQtAppsHook];
+  nativeBuildInputs = [ kdePackages.wrapQtAppsHook ];
 
-    buildInputs =
-      [
-        kdePackages.qtbase
-        kdePackages.qtsvg
-      ]
-      ++ lib.optional (
-        lib.versionAtLeast kdePackages.qtbase.version "6" && stdenv.hostPlatform.isLinux
-      )
-      kdePackages.qtwayland;
+  buildInputs =
+    [
+      kdePackages.qtbase
+      kdePackages.qtsvg
+    ]
+    ++ lib.optional (
+      lib.versionAtLeast kdePackages.qtbase.version "6" && stdenv.hostPlatform.isLinux
+    ) kdePackages.qtwayland;
 
-    postBuild = ''
-      wrapQtAppsHook
-    '';
+  postBuild = ''
+    wrapQtAppsHook
+  '';
 
-    qtWrapperArgs = let
+  qtWrapperArgs =
+    let
       runtimeLibs =
         [
           (lib.getLib stdenv.cc.cc)
@@ -100,31 +101,28 @@ in
         ++ lib.optional controllerSupport libusb1
         ++ additionalLibs;
 
-      runtimePrograms =
-        [
-          mesa-demos
-          pciutils # need lspci
-          xrandr # needed for LWJGL [2.9.2, 3) https://github.com/LWJGL/lwjgl/issues/128
-        ]
-        ++ additionalPrograms;
+      runtimePrograms = [
+        mesa-demos
+        pciutils # need lspci
+        xrandr # needed for LWJGL [2.9.2, 3) https://github.com/LWJGL/lwjgl/issues/128
+      ] ++ additionalPrograms;
     in
-      ["--prefix FJORDLAUNCHER_JAVA_PATHS : ${lib.makeSearchPath "bin/java" jdks}"]
-      ++ lib.optionals stdenv.hostPlatform.isLinux [
-        "--set LD_LIBRARY_PATH ${addDriverRunpath.driverLink}/lib:${lib.makeLibraryPath runtimeLibs}"
-        "--prefix PATH : ${lib.makeBinPath runtimePrograms}"
-      ];
+    [ "--prefix FJORDLAUNCHER_JAVA_PATHS : ${lib.makeSearchPath "bin/java" jdks}" ]
+    ++ lib.optionals stdenv.hostPlatform.isLinux [
+      "--set LD_LIBRARY_PATH ${addDriverRunpath.driverLink}/lib:${lib.makeLibraryPath runtimeLibs}"
+      "--prefix PATH : ${lib.makeBinPath runtimePrograms}"
+    ];
 
-    meta = {
-      inherit
-        (fjordlauncher'.meta)
-        description
-        longDescription
-        homepage
-        changelog
-        license
-        maintainers
-        mainProgram
-        platforms
-        ;
-    };
-  }
+  meta = {
+    inherit (fjordlauncher'.meta)
+      description
+      longDescription
+      homepage
+      changelog
+      license
+      maintainers
+      mainProgram
+      platforms
+      ;
+  };
+}
