@@ -1,11 +1,5 @@
 # Fjord Launcher Nix Packaging
 
-## Installing a stable release (nixpkgs)
-
-Fjord Launcher is packaged in [nixpkgs](https://github.com/NixOS/nixpkgs/) since 22.11.
-
-See [Package variants](#package-variants) for a list of available packages.
-
 ## Installing a development release (flake)
 
 We use [cachix](https://cachix.org/) to cache our development and release builds.
@@ -205,7 +199,7 @@ nix-env -iA fjordlauncher.fjordlauncher
 
 ## Package variants
 
-Both Nixpkgs and this repository offer the following packages:
+This repository offers the following packages:
 
 - `fjordlauncher` - The preferred build, wrapped with everything necessary to run the launcher and Minecraft
 - `fjordlauncher-unwrapped` - A minimal build that allows for advanced customization of the launcher's runtime environment
