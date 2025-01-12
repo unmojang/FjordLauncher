@@ -72,7 +72,6 @@ Install from the MPR with [Mist](https://docs.makedeb.org/using-the-mpr/mist-the
 
 ```Shell
 mist install fjordlauncher
-mist install fjordlauncher-bin # binary package
 mist install fjordlauncher-git # build latest Git commit from source
 ```
 
