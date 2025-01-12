@@ -26,7 +26,7 @@
 class FetchFlameAPIKey : public Task {
     Q_OBJECT
    public:
-    explicit FetchFlameAPIKey(QObject* parent = nullptr);
+    explicit FetchFlameAPIKey();
 
     QString m_result;
 

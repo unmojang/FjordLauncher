@@ -24,7 +24,7 @@
 #include <ui/dialogs/CustomMessageBox.h>
 #include <ui/dialogs/ProgressDialog.h>
 
-FetchFlameAPIKey::FetchFlameAPIKey(QObject* parent) : Task{ parent } {}
+FetchFlameAPIKey::FetchFlameAPIKey() : Task{} {}
 
 // Here, we fetch the official CurseForge API key from the files of the
 // CurseForge app. We range-request the specific ~84KiB zlib block inside the
