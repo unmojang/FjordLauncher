@@ -8,12 +8,15 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QRegularExpression>
 #include <QString>
 
 #include "FileSystem.h"
 #include "Json.h"
 #include "minecraft/mod/ModDetails.h"
 #include "settings/INIFile.h"
+
+static QRegularExpression newlineRegex("\r\n|\n|\r");
 
 namespace ModUtils {
 
@@ -487,11 +490,11 @@ bool processZIP(Mod& mod, [[maybe_unused]] ProcessingLevel level)
                 }
 
                 // quick and dirty line-by-line parser
-                auto manifestLines = file.readAll().split('\n');
+                auto manifestLines = QString(file.readAll()).split(newlineRegex);
                 QString manifestVersion = "";
                 for (auto& line : manifestLines) {
-                    if (QString(line).startsWith("Implementation-Version: ")) {
-                        manifestVersion = QString(line).remove("Implementation-Version: ");
+                    if (line.startsWith("Implementation-Version: ", Qt::CaseInsensitive)) {
+                        manifestVersion = line.remove("Implementation-Version: ", Qt::CaseInsensitive);
                         break;
                     }
                 }
@@ -730,7 +733,7 @@ bool loadIconFile(const Mod& mod, QPixmap* pixmap)
 }  // namespace ModUtils
 
 LocalModParseTask::LocalModParseTask(int token, ResourceType type, const QFileInfo& modFile)
-    : Task(nullptr, false), m_token(token), m_type(type), m_modFile(modFile), m_result(new Result())
+    : Task(false), m_token(token), m_type(type), m_modFile(modFile), m_result(new Result())
 {}
 
 bool LocalModParseTask::abort()

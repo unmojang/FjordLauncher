@@ -20,7 +20,6 @@ class AuthFlow : public Task {
 
     explicit AuthFlow(AccountData* data,
                       Action action = Action::Refresh,
-                      QObject* parent = 0,
                       std::optional<QString> password = std::nullopt);
     virtual ~AuthFlow() = default;
 

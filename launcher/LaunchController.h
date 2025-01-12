@@ -49,7 +49,7 @@ class LaunchController : public Task {
    public:
     void executeTask() override;
 
-    LaunchController(QObject* parent = nullptr);
+    LaunchController();
     virtual ~LaunchController() = default;
 
     void setInstance(InstancePtr instance) { m_instance = instance; }

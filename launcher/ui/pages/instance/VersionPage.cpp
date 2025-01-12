@@ -243,7 +243,7 @@ void VersionPage::updateButtons(int row)
     ui->actionRemove->setEnabled(patch && patch->isRemovable());
     ui->actionMove_down->setEnabled(patch && patch->isMoveable());
     ui->actionMove_up->setEnabled(patch && patch->isMoveable());
-    ui->actionChange_version->setEnabled(patch && patch->isVersionChangeable());
+    ui->actionChange_version->setEnabled(patch && patch->isVersionChangeable(false));
     ui->actionEdit->setEnabled(patch && patch->isCustom());
     ui->actionCustomize->setEnabled(patch && patch->isCustomizable());
     ui->actionRevert->setEnabled(patch && patch->isRevertible());
@@ -435,7 +435,7 @@ void VersionPage::on_actionDownload_All_triggered()
     if (updateTasks.isEmpty()) {
         return;
     }
-    auto task = makeShared<SequentialTask>(this);
+    auto task = makeShared<SequentialTask>();
     for (auto t : updateTasks) {
         task->addTask(t);
     }

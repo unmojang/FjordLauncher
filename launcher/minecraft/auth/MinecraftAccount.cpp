@@ -55,7 +55,7 @@
 
 MinecraftAccount::MinecraftAccount(QObject* parent) : QObject(parent)
 {
-    data.internalId = QUuid::createUuid().toString(QUuid::Id128);
+    data.internalId = QUuid::createUuid().toString().remove(QRegularExpression("[{}-]"));
 }
 
 MinecraftAccountPtr MinecraftAccount::loadFromJsonV3(const QJsonObject& json)
@@ -138,7 +138,7 @@ shared_qobject_ptr<AuthFlow> MinecraftAccount::login(bool useDeviceCode, std::op
 {
     Q_ASSERT(m_currentTask.get() == nullptr);
 
-    m_currentTask.reset(new AuthFlow(&data, useDeviceCode ? AuthFlow::Action::DeviceCode : AuthFlow::Action::Login, this, password));
+    m_currentTask.reset(new AuthFlow(&data, useDeviceCode ? AuthFlow::Action::DeviceCode : AuthFlow::Action::Login, password));
     connect(m_currentTask.get(), &Task::succeeded, this, &MinecraftAccount::authSucceeded);
     connect(m_currentTask.get(), &Task::failed, this, &MinecraftAccount::authFailed);
     connect(m_currentTask.get(), &Task::aborted, this, [this] { authFailed(tr("Aborted")); });
@@ -152,7 +152,7 @@ shared_qobject_ptr<AuthFlow> MinecraftAccount::refresh()
         return m_currentTask;
     }
 
-    m_currentTask.reset(new AuthFlow(&data, AuthFlow::Action::Refresh, this));
+    m_currentTask.reset(new AuthFlow(&data, AuthFlow::Action::Refresh));
 
     connect(m_currentTask.get(), &Task::succeeded, this, &MinecraftAccount::authSucceeded);
     connect(m_currentTask.get(), &Task::failed, this, &MinecraftAccount::authFailed);

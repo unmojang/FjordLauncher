@@ -21,7 +21,7 @@
 
 #include <Application.h>
 
-AuthFlow::AuthFlow(AccountData* data, Action action, QObject* parent, const std::optional<QString> password) : Task(parent), m_data(data)
+AuthFlow::AuthFlow(AccountData* data, Action action, const std::optional<QString> password) : Task(), m_data(data)
 {
     if (data->type == AccountType::MSA) {
         if (action == Action::DeviceCode) {

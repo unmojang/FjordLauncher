@@ -72,7 +72,7 @@ auto stringEntry(toml::table table, QString entry_name) -> QString
 {
     auto node = table[StringUtils::toStdString(entry_name)];
     if (!node) {
-        qCritical() << "Failed to read str property '" + entry_name + "' in mod metadata.";
+        qWarning() << "Failed to read str property '" + entry_name + "' in mod metadata.";
         return {};
     }
 
@@ -83,7 +83,7 @@ auto intEntry(toml::table table, QString entry_name) -> int
 {
     auto node = table[StringUtils::toStdString(entry_name)];
     if (!node) {
-        qCritical() << "Failed to read int property '" + entry_name + "' in mod metadata.";
+        qWarning() << "Failed to read int property '" + entry_name + "' in mod metadata.";
         return {};
     }
 
@@ -186,11 +186,8 @@ void V1::updateModIndex(QDir& index_dir, Mod& mod)
     }
 
     toml::array loaders;
-    for (auto loader : { ModPlatform::NeoForge, ModPlatform::Forge, ModPlatform::Cauldron, ModPlatform::LiteLoader, ModPlatform::Fabric,
-                         ModPlatform::Quilt }) {
-        if (mod.loaders & loader) {
-            loaders.push_back(getModLoaderAsString(loader).toStdString());
-        }
+    for (auto loader : ModPlatform::modLoaderTypesToList(mod.loaders)) {
+        loaders.push_back(getModLoaderAsString(loader).toStdString());
     }
     toml::array mcVersions;
     for (auto version : mod.mcVersions) {

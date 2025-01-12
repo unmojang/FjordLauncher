@@ -444,6 +444,7 @@ bool FlameCreationTask::createInstance()
         setError(tr("Unable to resolve mod IDs:\n") + reason);
         loop.quit();
     });
+    connect(m_mod_id_resolver.get(), &Flame::FileResolvingTask::aborted, &loop, &QEventLoop::quit);
     connect(m_mod_id_resolver.get(), &Flame::FileResolvingTask::progress, this, &FlameCreationTask::setProgress);
     connect(m_mod_id_resolver.get(), &Flame::FileResolvingTask::status, this, &FlameCreationTask::setStatus);
     connect(m_mod_id_resolver.get(), &Flame::FileResolvingTask::stepProgress, this, &FlameCreationTask::propagateStepProgress);
@@ -676,7 +677,7 @@ void FlameCreationTask::validateZIPResources(QEventLoop& loop)
                 break;
         }
     }
-    auto task = makeShared<ConcurrentTask>(this, "CreateModMetadata", APPLICATION->settings()->get("NumberOfConcurrentTasks").toInt());
+    auto task = makeShared<ConcurrentTask>("CreateModMetadata", APPLICATION->settings()->get("NumberOfConcurrentTasks").toInt());
     auto results = m_mod_id_resolver->getResults().files;
     auto folder = FS::PathCombine(m_stagingPath, "minecraft", "mods", ".index");
     for (auto file : results) {
