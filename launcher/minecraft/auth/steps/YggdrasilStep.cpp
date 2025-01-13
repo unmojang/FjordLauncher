@@ -88,14 +88,17 @@ void YggdrasilStep::refresh()
      *  "requestUser": true/false               // request the user structure
      * }
      */
-    QJsonObject selectedProfile;
-    selectedProfile.insert("id", m_data->profileId());
-    selectedProfile.insert("name", m_data->profileName());
 
     QJsonObject req;
     req.insert("clientToken", m_data->clientToken());
     req.insert("accessToken", m_data->accessToken());
-    req.insert("selectedProfile", selectedProfile);
+
+    if (m_didSelectProfile) {
+        QJsonObject selectedProfile;
+        selectedProfile.insert("id", m_data->profileId());
+        selectedProfile.insert("name", m_data->profileName());
+        req.insert("selectedProfile", selectedProfile);
+    }
     req.insert("requestUser", false);
 
     QJsonDocument doc(req);
@@ -239,8 +242,7 @@ void YggdrasilStep::processResponse(QJsonObject responseData)
     m_data->yggdrasilToken.validity = Validity::Certain;
     m_data->yggdrasilToken.issueInstant = QDateTime::currentDateTimeUtc();
 
-    // Get UUID here since we need it for later
-    // FIXME: Here is a simple workaround for now,, which uses the first available profile when selectedProfile is not provided
+    // Select a profile
     auto profile = responseData.value("selectedProfile");
     if (profile.isObject()) {
         m_didSelectProfile = false;
