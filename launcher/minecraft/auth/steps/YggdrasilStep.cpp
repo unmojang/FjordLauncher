@@ -88,14 +88,17 @@ void YggdrasilStep::refresh()
      *  "requestUser": true/false               // request the user structure
      * }
      */
-    QJsonObject selectedProfile;
-    selectedProfile.insert("id", m_data->profileId());
-    selectedProfile.insert("name", m_data->profileName());
 
     QJsonObject req;
     req.insert("clientToken", m_data->clientToken());
     req.insert("accessToken", m_data->accessToken());
-    req.insert("selectedProfile", selectedProfile);
+
+    if (m_didSelectProfile) {
+        QJsonObject selectedProfile;
+        selectedProfile.insert("id", m_data->profileId());
+        selectedProfile.insert("name", m_data->profileName());
+        req.insert("selectedProfile", selectedProfile);
+    }
     req.insert("requestUser", false);
 
     QJsonDocument doc(req);
