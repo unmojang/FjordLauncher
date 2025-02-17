@@ -63,7 +63,6 @@ struct Art {
     int height;
     bool compressed;
     QString sha1;
-    int size;
     int64_t updated;
 };
 
@@ -137,7 +136,6 @@ struct Version {
     int installs;
     int plays;
     int64_t updated;
-    int64_t refreshed;
     Specs specs;
     QVector<VersionTarget> targets;
     QVector<VersionFile> files;

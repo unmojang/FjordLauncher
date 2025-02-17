@@ -60,7 +60,6 @@ static void loadArt(ModpacksCH::Art& a, QJsonObject& obj)
     a.height = Json::requireInteger(obj, "height");
     a.compressed = Json::requireBoolean(obj, "compressed");
     a.sha1 = Json::requireString(obj, "sha1");
-    a.size = Json::requireInteger(obj, "size");
     a.updated = Json::requireInteger(obj, "updated");
 }
 
@@ -94,7 +93,6 @@ void ModpacksCH::loadModpack(ModpacksCH::Modpack& m, QJsonObject& obj)
     m.installs = Json::requireInteger(obj, "installs");
     m.plays = Json::requireInteger(obj, "plays");
     m.updated = Json::requireInteger(obj, "updated");
-    m.refreshed = Json::requireInteger(obj, "refreshed");
     auto artArr = Json::requireArray(obj, "art");
     for (QJsonValueRef artRaw : artArr) {
         auto artObj = Json::requireObject(artRaw);
@@ -163,7 +161,6 @@ void ModpacksCH::loadVersion(ModpacksCH::Version& m, QJsonObject& obj)
     m.installs = Json::requireInteger(obj, "installs");
     m.plays = Json::requireInteger(obj, "plays");
     m.updated = Json::requireInteger(obj, "updated");
-    m.refreshed = Json::requireInteger(obj, "refreshed");
     auto specs = Json::requireObject(obj, "specs");
     loadSpecs(m.specs, specs);
     auto targetArr = Json::requireArray(obj, "targets");
