@@ -1117,6 +1117,7 @@ bool Application::createSetupWizard()
     bool validWidgets = m_themeManager->isValidApplicationTheme(settings()->get("ApplicationTheme").toString());
     bool validIcons = m_themeManager->isValidIconTheme(settings()->get("IconTheme").toString());
     bool login = !m_accounts->anyAccountIsValid() && capabilities() & Application::SupportsMSA;
+    login = false;
     bool themeInterventionRequired = !validWidgets || !validIcons;
     bool wizardRequired = javaRequired || languageRequired || pasteInterventionRequired || themeInterventionRequired || askjava || login;
     if (wizardRequired) {
@@ -1147,9 +1148,9 @@ bool Application::createSetupWizard()
             m_setupWizard->addPage(new ThemeWizardPage(m_setupWizard));
         }
 
-        // if (login) {
-        //     m_setupWizard->addPage(new LoginWizardPage(m_setupWizard));
-        // }
+        if (login) {
+            m_setupWizard->addPage(new LoginWizardPage(m_setupWizard));
+        }
         connect(m_setupWizard, &QDialog::finished, this, &Application::setupWizardFinished);
         m_setupWizard->show();
     }
