@@ -84,7 +84,16 @@ public final class OnlineModeFix {
 
         // sessionId has the form:
         // token:<accessToken>:<player UUID>
-        String accessToken = sessionId.split(":")[1];
+        // or, as of Minecraft release 1.3.1, it may be URL encoded:
+        // token%3A<accessToken>%3A<player UUID>
+        String accessToken;
+        if (sessionId.contains(":")) {
+            accessToken = sessionId.split(":")[1];
+        } else if (sessionId.contains("%3A")) {
+            accessToken = sessionId.split("%3A")[1];
+        } else {
+            throw new AssertionError("invalid sessionId");
+        }
 
         String uuid = null;
         uuid = MojangApi.getUuid(user, proxy);
