@@ -51,8 +51,11 @@ import java.util.Map;
 
 public final class OnlineModeFix {
     public static URLConnection openConnection(URL address, Proxy proxy) throws IOException {
-        // we start with "http://www.minecraft.net/game/joinserver.jsp?user=..."
-        if (!(address.getHost().equals("www.minecraft.net") && address.getPath().equals("/game/joinserver.jsp"))) {
+        // We start with "http://www.minecraft.net/game/joinserver.jsp?user=..."
+        // Or, from Beta 1.8 onward, "http://session.minecraft.net/game/joinserver.jsp?user=..."
+        String host = address.getHost();
+        if (!((host.equals("www.minecraft.net") || host.equals("session.minecraft.net")) &&
+              address.getPath().equals("/game/joinserver.jsp"))) {
             return null;
         }
 
