@@ -37,6 +37,8 @@
 #include "QObjectPtr.h"
 
 #include "minecraft/auth/Parsers.h"
+#include "minecraft/skins/AuthlibInjectorTextureDelete.h"
+#include "minecraft/skins/AuthlibInjectorTextureUpload.h"
 #include "minecraft/skins/CapeChange.h"
 #include "minecraft/skins/SkinDelete.h"
 #include "minecraft/skins/SkinList.h"
@@ -45,6 +47,7 @@
 
 #include "net/Download.h"
 #include "net/NetJob.h"
+#include "net/Upload.h"
 #include "tasks/Task.h"
 
 #include "ui/dialogs/CustomMessageBox.h"
@@ -162,6 +165,12 @@ QPixmap previewCape(QPixmap capeImage)
 
 void SkinManageDialog::setupCapes()
 {
+    // Capes are currently unsupported on authlib-injector accounts.
+    if (m_acct->accountType() == AccountType::AuthlibInjector) {
+        ui->capeCombo->setEnabled(false);
+        return;
+    }
+
     // FIXME: add a model for this, download/refresh the capes on demand
     auto& accountData = *m_acct->accountData();
     int index = 0;
@@ -252,10 +261,26 @@ void SkinManageDialog::accept()
         return;
     }
 
-    skinUpload->addNetAction(SkinUpload::make(m_acct, skin->getPath(), skin->getModelString()));
+    switch (m_acct->accountType()) {
+        case AccountType::MSA: {
+            skinUpload->addNetAction(SkinUpload::make(m_acct, skin->getPath(), skin->getModelString()));
+            break;
+        };
+        case AccountType::AuthlibInjector: {
+            const auto& variant = skin->getModel() == SkinModel::SLIM ? "slim" : "";
+            skinUpload->addNetAction(AuthlibInjectorTextureUpload::make(m_acct, skin->getPath(), variant));
+            break;
+        };
+        case AccountType::Offline: {
+            qDebug() << "Unhandled account type: Offline";
+            reject();
+            return;
+        };
+    }
 
+    const bool canChangeCapes = m_acct->accountType() != AccountType::AuthlibInjector;
     auto selectedCape = skin->getCapeId();
-    if (selectedCape != m_acct->accountData()->minecraftProfile.currentCape) {
+    if (canChangeCapes && selectedCape != m_acct->accountData()->minecraftProfile.currentCape) {
         skinUpload->addNetAction(CapeChange::make(m_acct, selectedCape));
     }
 
@@ -273,7 +298,23 @@ void SkinManageDialog::on_resetBtn_clicked()
 {
     ProgressDialog prog(this);
     NetJob::Ptr skinReset{ new NetJob(tr("Reset skin"), APPLICATION->network(), 1) };
-    skinReset->addNetAction(SkinDelete::make(m_acct));
+
+    switch (m_acct->accountType()) {
+        case AccountType::MSA: {
+            skinReset->addNetAction(SkinDelete::make(m_acct));
+            break;
+        };
+        case AccountType::AuthlibInjector: {
+            skinReset->addNetAction(AuthlibInjectorTextureDelete::make(m_acct, "skin"));
+            break;
+        };
+        case AccountType::Offline: {
+            qDebug() << "Unhandled account type: Offline";
+            reject();
+            return;
+        };
+    }
+
     skinReset->addTask(m_acct->refresh().staticCast<Task>());
     if (prog.execWithTask(skinReset.get()) != QDialog::Accepted) {
         CustomMessageBox::selectable(this, tr("Skin Delete"), tr("Failed to delete current skin!"), QMessageBox::Warning)->exec();
@@ -409,6 +450,8 @@ void SkinManageDialog::on_userBtn_clicked()
     if (user.isEmpty()) {
         return;
     }
+    const auto & account = m_acct;
+
     MinecraftProfile mcProfile;
     auto path = FS::PathCombine(m_list.getDir(), user + ".png");
 
@@ -421,7 +464,9 @@ void SkinManageDialog::on_userBtn_clicked()
     auto uuidLoop = makeShared<WaitTask>();
     auto profileLoop = makeShared<WaitTask>();
 
-    auto getUUID = Net::Download::makeByteArray("https://api.mojang.com/users/profiles/minecraft/" + user, uuidOut);
+    // authlib-injector only specifies the POST /profiles/minecraft route, so we have to use it.
+    const auto & payload = QJsonDocument(QJsonArray{user}).toJson(QJsonDocument::Compact);
+    auto getUUID = Net::Upload::makeByteArray(m_acct->accountServerUrl()+"/profiles/minecraft", uuidOut, payload);
     auto getProfile = Net::Download::makeByteArray(QUrl(), profileOut);
     auto downloadSkin = Net::Download::makeFile(QUrl(), path);
 
@@ -444,7 +489,7 @@ void SkinManageDialog::on_userBtn_clicked()
         failReason = tr("failed to download skin");
     });
 
-    connect(getUUID.get(), &Task::succeeded, this, [uuidLoop, uuidOut, job, getProfile, &failReason] {
+    connect(getUUID.get(), &Task::succeeded, this, [account, uuidLoop, uuidOut, job, getProfile, &failReason] {
         try {
             QJsonParseError parse_error{};
             QJsonDocument doc = QJsonDocument::fromJson(*uuidOut, &parse_error);
@@ -455,14 +500,15 @@ void SkinManageDialog::on_userBtn_clicked()
                 uuidLoop->quit();
                 return;
             }
-            const auto root = doc.object();
-            auto id = Json::ensureString(root, "id");
-            if (!id.isEmpty()) {
-                getProfile->setUrl("https://sessionserver.mojang.com/session/minecraft/profile/" + id);
-            } else {
+            const auto& root = doc.array();
+            if (root.size() != 1) {
                 failReason = tr("user id is empty");
                 job->abort();
             }
+
+            const auto& nameIdObject = root[0].toObject();
+            const auto& id = nameIdObject.value("id").toString();
+            getProfile->setUrl(account->sessionServerUrl()+"/session/minecraft/profile/"+id);
         } catch (const Exception& e) {
             qCritical() << "Couldn't load skin json:" << e.cause();
             failReason = tr("failed to parse get user UUID response");

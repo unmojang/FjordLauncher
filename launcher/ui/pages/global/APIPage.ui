@@ -274,7 +274,7 @@
              <bool>true</bool>
             </property>
             <property name="placeholderText">
-             <string>(Default)</string>
+             <string>(None)</string>
             </property>
            </widget>
           </item>

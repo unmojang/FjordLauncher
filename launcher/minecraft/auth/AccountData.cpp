@@ -133,6 +133,8 @@ void profileToJSONV3(QJsonObject& parent, MinecraftProfile p, const char* tokenN
         out["skin"] = skinObj;
     }
 
+    out["canUploadSkins"] = p.canUploadSkins;
+
     QJsonArray capesArray;
     for (auto& cape : p.capes) {
         QJsonObject capeObj;
@@ -193,6 +195,11 @@ MinecraftProfile profileFromJSONV3(const QJsonObject& parent, const char* tokenN
             qWarning() << "skin data is something unexpected";
             return MinecraftProfile();
         }
+    }
+
+    out.canUploadSkins = true;
+    if (tokenObject.value("canUploadSkins").isBool()) {
+        out.canUploadSkins = tokenObject.value("canUploadskins").toBool();
     }
 
     {
@@ -383,9 +390,9 @@ bool AccountData::usesCustomApiServers() const
     return type == AccountType::AuthlibInjector;
 }
 
-bool AccountData::supportsSkinManagement() const
+bool AccountData::canUploadSkins() const
 {
-    return type == AccountType::MSA;
+    return minecraftProfile.canUploadSkins;
 }
 
 QString AccountData::authServerUrl() const

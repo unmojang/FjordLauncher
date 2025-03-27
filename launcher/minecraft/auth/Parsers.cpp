@@ -188,6 +188,9 @@ bool parseMinecraftProfile(QByteArray& data, MinecraftProfile& output)
         output.skin = skinOut;
         break;
     }
+
+    output.canUploadSkins = true;
+
     auto capesArray = obj.value("capes").toArray();
 
     QString currentCape;
@@ -306,26 +309,38 @@ bool parseMinecraftProfileMojang(QByteArray& data, MinecraftProfile& output)
 
     auto propsArray = obj.value("properties").toArray();
     QByteArray texturePayload;
+    bool canUploadSkins = true;
     for (auto p : propsArray) {
         auto pObj = p.toObject();
         auto name = pObj.value("name");
-        if (!name.isString() || name.toString() != "textures") {
+        if (!name.isString()) {
             continue;
         }
 
-        auto value = pObj.value("value");
-        if (value.isString()) {
+        const auto& nameString = name.toString();
+        if (nameString == "textures") {
+            auto value = pObj.value("value");
+            if (value.isString()) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
-            texturePayload = QByteArray::fromBase64(value.toString().toUtf8(), QByteArray::AbortOnBase64DecodingErrors);
+                texturePayload = QByteArray::fromBase64(value.toString().toUtf8(), QByteArray::AbortOnBase64DecodingErrors);
 #else
-            texturePayload = QByteArray::fromBase64(value.toString().toUtf8());
+                texturePayload = QByteArray::fromBase64(value.toString().toUtf8());
 #endif
-        }
-
-        if (!texturePayload.isEmpty()) {
-            break;
+            }
+        } else if (nameString == "uploadableTextures") {
+            // https://github.com/yushijinhun/authlib-injector/wiki/Yggdrasil-%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%8A%80%E6%9C%AF%E8%A7%84%E8%8C%83#uploadabletextures-%E5%8F%AF%E4%B8%8A%E4%BC%A0%E7%9A%84%E6%9D%90%E8%B4%A8%E7%B1%BB%E5%9E%8B
+            const auto& value = pObj.value("value");
+            if (value.isString()) {
+                canUploadSkins = false;
+                for (const auto& textureType : value.toString().split(",")) {
+                    if (textureType == "skin") {
+                        canUploadSkins = true;
+                    }
+                }
+            }
         }
     }
+    output.canUploadSkins = canUploadSkins;
 
     if (texturePayload.isNull()) {
         qWarning() << "No texture payload data";
@@ -379,7 +394,6 @@ bool parseMinecraftProfileMojang(QByteArray& data, MinecraftProfile& output)
                 // we don't know the cape ID as it is not returned from the session server
                 // so just fake it - changing capes is probably locked anyway :(
                 capeOut.alias = "cape";
-                capeOut.id = "00000000-0000-0000-0000-000000000000";
             }
         }
     }

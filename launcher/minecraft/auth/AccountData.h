@@ -82,6 +82,7 @@ struct MinecraftEntitlement {
 struct MinecraftProfile {
     QString id;
     QString name;
+    bool canUploadSkins = true;
     Skin skin;
     QString currentCape;
     QMap<QString, Cape> capes;
@@ -96,7 +97,7 @@ struct AccountData {
     QJsonObject saveState() const;
     bool resumeStateFromV3(QJsonObject data);
 
-    bool supportsSkinManagement() const;
+    bool canUploadSkins() const;
     bool usesCustomApiServers() const;
     QString authServerUrl() const;
     QString accountServerUrl() const;

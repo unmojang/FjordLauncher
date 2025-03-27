@@ -51,8 +51,11 @@ import java.util.Map;
 
 public final class OnlineModeFix {
     public static URLConnection openConnection(URL address, Proxy proxy) throws IOException {
-        // we start with "http://www.minecraft.net/game/joinserver.jsp?user=..."
-        if (!(address.getHost().equals("www.minecraft.net") && address.getPath().equals("/game/joinserver.jsp"))) {
+        // We start with "http://www.minecraft.net/game/joinserver.jsp?user=..."
+        // Or, from Beta 1.8 onward, "http://session.minecraft.net/game/joinserver.jsp?user=..."
+        String host = address.getHost();
+        if (!((host.equals("www.minecraft.net") || host.equals("session.minecraft.net")) &&
+              address.getPath().equals("/game/joinserver.jsp"))) {
             return null;
         }
 
@@ -81,7 +84,16 @@ public final class OnlineModeFix {
 
         // sessionId has the form:
         // token:<accessToken>:<player UUID>
-        String accessToken = sessionId.split(":")[1];
+        // or, as of Minecraft release 1.3.1, it may be URL encoded:
+        // token%3A<accessToken>%3A<player UUID>
+        String accessToken;
+        if (sessionId.contains(":")) {
+            accessToken = sessionId.split(":")[1];
+        } else if (sessionId.contains("%3A")) {
+            accessToken = sessionId.split("%3A")[1];
+        } else {
+            throw new AssertionError("invalid sessionId");
+        }
 
         String uuid = null;
         uuid = MojangApi.getUuid(user, proxy);

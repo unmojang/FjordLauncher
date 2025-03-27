@@ -238,6 +238,8 @@ set(MINECRAFT_SOURCES
     minecraft/auth/AuthFlow.cpp
     minecraft/auth/AuthFlow.h
 
+    minecraft/auth/steps/AuthlibInjectorMetadataStep.cpp
+    minecraft/auth/steps/AuthlibInjectorMetadataStep.h
     minecraft/auth/steps/EntitlementsStep.cpp
     minecraft/auth/steps/EntitlementsStep.h
     minecraft/auth/steps/GetSkinStep.cpp
@@ -385,6 +387,10 @@ set(MINECRAFT_SOURCES
     minecraft/AssetsUtils.cpp
 
     # Minecraft skins
+    minecraft/skins/AuthlibInjectorTextureDelete.cpp
+    minecraft/skins/AuthlibInjectorTextureDelete.h
+    minecraft/skins/AuthlibInjectorTextureUpload.cpp
+    minecraft/skins/AuthlibInjectorTextureUpload.h
     minecraft/skins/CapeChange.cpp
     minecraft/skins/CapeChange.h
     minecraft/skins/SkinUpload.cpp
