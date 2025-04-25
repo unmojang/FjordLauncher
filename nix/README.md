@@ -38,9 +38,6 @@ Example:
       # Note that this may break the reproducibility mentioned above, and you might not be able to access the binary cache
       #
       # inputs.nixpkgs.follows = "nixpkgs";
-
-      # This is not required for Flakes
-      inputs.flake-compat.follows = "";
     };
   };
 
@@ -86,9 +83,6 @@ Example:
       # Note that this may break the reproducibility mentioned above, and you might not be able to access the binary cache
       #
       # inputs.nixpkgs.follows = "nixpkgs";
-
-      # This is not required for Flakes
-      inputs.flake-compat.follows = "";
     };
   };
 

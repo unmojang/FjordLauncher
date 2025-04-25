@@ -93,6 +93,11 @@ InstanceSettingsPage::InstanceSettingsPage(BaseInstance* inst, QWidget* parent)
         ui->serverJoinAddress->setEnabled(true);
         ui->serverJoinAddressButton->setStyleSheet("QRadioButton::indicator { width: 0px; height: 0px; }");
     }
+    connect(ui->javaPathTextBox, &QLineEdit::textChanged, [this](QString newValue) {
+        if (m_instance->settings()->get("JavaPath").toString() != newValue) {
+            m_instance->settings()->set("AutomaticJava", false);
+        }
+    });
 
     loadSettings();
 

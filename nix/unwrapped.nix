@@ -3,7 +3,7 @@
   stdenv,
   cmake,
   cmark,
-  apple-sdk_11,
+  darwin,
   extra-cmake-modules,
   gamemode,
   ghc_filesystem,
@@ -11,32 +11,54 @@
   kdePackages,
   libnbtplusplus,
   ninja,
-  nix-filter,
   self,
   stripJavaArchivesHook,
   tomlplusplus,
   zlib,
+
   msaClientID ? null,
   gamemodeSupport ? stdenv.hostPlatform.isLinux,
 }:
+
 assert lib.assertMsg (
   gamemodeSupport -> stdenv.hostPlatform.isLinux
 ) "gamemodeSupport is only available on Linux.";
+
+let
+  date =
+    let
+      # YYYYMMDD
+      date' = lib.substring 0 8 self.lastModifiedDate;
+      year = lib.substring 0 4 date';
+      month = lib.substring 4 2 date';
+      date = lib.substring 6 2 date';
+    in
+    if (self ? "lastModifiedDate") then
+      lib.concatStringsSep "-" [
+        year
+        month
+        date
+      ]
+    else
+      "unknown";
+in
+
 stdenv.mkDerivation {
   pname = "fjordlauncher-unwrapped";
-  version = self.shortRev or self.dirtyShortRev or "unknown";
+  version = "9.4-unstable-${date}";
 
-  src = nix-filter.lib {
-    root = self;
-    include = [
-      "buildconfig"
-      "cmake"
-      "launcher"
-      "libraries"
-      "program_info"
-      "tests"
-      ../COPYING.md
+  src = lib.fileset.toSource {
+    root = ../.;
+    fileset = lib.fileset.unions [
       ../CMakeLists.txt
+      ../COPYING.md
+
+      ../buildconfig
+      ../cmake
+      ../launcher
+      ../libraries
+      ../program_info
+      ../tests
     ];
   };
 
@@ -63,7 +85,7 @@ stdenv.mkDerivation {
       tomlplusplus
       zlib
     ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [ apple-sdk_11 ]
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [ darwin.apple_sdk.frameworks.Cocoa ]
     ++ lib.optional gamemodeSupport gamemode;
 
   hardeningEnable = lib.optionals stdenv.hostPlatform.isLinux [ "pie" ];

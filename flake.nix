@@ -15,28 +15,6 @@
       url = "github:PrismLauncher/libnbtplusplus";
       flake = false;
     };
-
-    nix-filter.url = "github:numtide/nix-filter";
-
-    /*
-      Inputs below this are optional and can be removed
-
-      ```
-      {
-        inputs.fjordlauncher = {
-          url = "github:unmojang/FjordLauncher";
-          inputs = {
-            flake-compat.follows = "";
-          };
-        };
-      }
-      ```
-    */
-
-    flake-compat = {
-      url = "github:edolstra/flake-compat";
-      flake = false;
-    };
   };
 
   outputs =
@@ -44,9 +22,8 @@
       self,
       nixpkgs,
       libnbtplusplus,
-      nix-filter,
-      ...
     }:
+
     let
       inherit (nixpkgs) lib;
 
@@ -58,27 +35,108 @@
       forAllSystems = lib.genAttrs systems;
       nixpkgsFor = forAllSystems (system: nixpkgs.legacyPackages.${system});
     in
+
     {
       checks = forAllSystems (
         system:
+
         let
-          checks' = nixpkgsFor.${system}.callPackage ./nix/checks.nix { inherit self; };
+          pkgs = nixpkgsFor.${system};
+          llvm = pkgs.llvmPackages_19;
         in
-        lib.filterAttrs (_: lib.isDerivation) checks'
+
+        {
+          formatting =
+            pkgs.runCommand "check-formatting"
+              {
+                nativeBuildInputs = with pkgs; [
+                  deadnix
+                  llvm.clang-tools
+                  markdownlint-cli
+                  nixfmt-rfc-style
+                  statix
+                ];
+              }
+              ''
+                cd ${self}
+
+                echo "Running clang-format...."
+                clang-format --dry-run --style='file' --Werror */**.{c,cc,cpp,h,hh,hpp}
+
+                echo "Running deadnix..."
+                deadnix --fail
+
+                echo "Running markdownlint..."
+                markdownlint --dot .
+
+                echo "Running nixfmt..."
+                find -type f -name '*.nix' -exec nixfmt --check {} +
+
+                echo "Running statix"
+                statix check .
+
+                touch $out
+              '';
+        }
       );
 
       devShells = forAllSystems (
         system:
+
         let
           pkgs = nixpkgsFor.${system};
+          llvm = pkgs.llvmPackages_19;
+
+          packages' = self.packages.${system};
+
+          # Re-use our package wrapper to wrap our development environment
+          qt-wrapper-env = packages'.fjordlauncher.overrideAttrs (old: {
+            name = "qt-wrapper-env";
+
+            # Required to use script-based makeWrapper below
+            strictDeps = true;
+
+            # We don't need/want the unwrapped Fjord package
+            paths = [ ];
+
+            nativeBuildInputs = old.nativeBuildInputs or [ ] ++ [
+              # Ensure the wrapper is script based so it can be sourced
+              pkgs.makeWrapper
+            ];
+
+            # Inspired by https://discourse.nixos.org/t/python-qt-woes/11808/10
+            buildCommand = ''
+              makeQtWrapper ${lib.getExe pkgs.runtimeShellPackage} "$out"
+              sed -i '/^exec/d' "$out"
+            '';
+          });
         in
+
         {
           default = pkgs.mkShell {
-            inputsFrom = [ self.packages.${system}.fjordlauncher-unwrapped ];
-            buildInputs = with pkgs; [
+            inputsFrom = [ packages'.fjordlauncher-unwrapped ];
+
+            packages = with pkgs; [
               ccache
-              ninja
+              llvm.clang-tools
             ];
+
+            cmakeBuildType = "Debug";
+            cmakeFlags = [ "-GNinja" ] ++ packages'.fjordlauncher.cmakeFlags;
+            dontFixCmake = true;
+
+            shellHook = ''
+              echo "Sourcing ${qt-wrapper-env}"
+              source ${qt-wrapper-env}
+
+              git submodule update --init --force
+
+              if [ ! -f compile_commands.json ]; then
+                cmakeConfigurePhase
+                cd ..
+                ln -s "$cmakeBuildDir"/compile_commands.json compile_commands.json
+              fi
+            '';
           };
         }
       );
@@ -89,7 +147,6 @@
         fjordlauncher-unwrapped = prev.callPackage ./nix/unwrapped.nix {
           inherit
             libnbtplusplus
-            nix-filter
             self
             ;
         };
@@ -99,6 +156,7 @@
 
       packages = forAllSystems (
         system:
+
         let
           pkgs = nixpkgsFor.${system};
 
@@ -111,6 +169,7 @@
             default = fjordPackages.fjordlauncher;
           };
         in
+
         # Only output them if they're available on the current system
         lib.filterAttrs (_: lib.meta.availableOn pkgs.stdenv.hostPlatform) packages
       );
@@ -118,16 +177,18 @@
       # We put these under legacyPackages as they are meant for CI, not end user consumption
       legacyPackages = forAllSystems (
         system:
+
         let
-          fjordPackages = self.packages.${system};
-          legacyPackages = self.legacyPackages.${system};
+          packages' = self.packages.${system};
+          legacyPackages' = self.legacyPackages.${system};
         in
+
         {
-          fjordlauncher-debug = fjordPackages.fjordlauncher.override {
-            fjordlauncher-unwrapped = legacyPackages.fjordlauncher-unwrapped-debug;
+          fjordlauncher-debug = packages'.fjordlauncher.override {
+            fjordlauncher-unwrapped = legacyPackages'.fjordlauncher-unwrapped-debug;
           };
 
-          fjordlauncher-unwrapped-debug = fjordPackages.fjordlauncher-unwrapped.overrideAttrs {
+          fjordlauncher-unwrapped-debug = packages'.fjordlauncher-unwrapped.overrideAttrs {
             cmakeBuildType = "Debug";
             dontStrip = true;
           };
