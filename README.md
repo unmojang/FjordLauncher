@@ -10,13 +10,7 @@ Fjord Launcher is a **fork** of [Prism Launcher](https://github.com/PrismLaunche
 
 ## Having a problem with the launcher?
 
-You **will not** open an issue in the Prism Launcher repo.
-
-You **will not** ask about Fjord Launcher in the Prism Launcher discord.
-
-You **will** ask in #fjord-launcher in our [Matrix space](https://matrix.to/#/#unmojang:matrix.org).
-
-You **will** open an issue [here](https://github.com/unmojang/FjordLauncher/issues).
+**Do not** open an issue in the Prism Launcher repo, and **do not** ask about Fjord Launcher in the Prism Launcher discord. Instead, ask in #fjord-launcher in our [Matrix space](https://matrix.to/#/#unmojang:matrix.org), or open an issue [here](https://github.com/unmojang/FjordLauncher/issues), in this repository.
 
 ## Installation
 
