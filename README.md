@@ -84,8 +84,8 @@ See [nix/README.md](nix/README.md) for details.
 Install from the [unmojang overlay](https://github.com/unmojang/unmojang-overlay):
 
 ```Shell
-eselect repository add unmojang-overlay git https://github.com/unmojang/unmojang-overlay
-emerge --sync unmojang-overlay
+eselect repository enable unmojang-overlay
+emaint sync -r unmojang-overlay
 emerge -av games-action/fjordlauncher
 ```
 
