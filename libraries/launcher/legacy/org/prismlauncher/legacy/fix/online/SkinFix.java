@@ -143,6 +143,12 @@ final class SkinFix {
             case "s3.amazonaws.com":
             case "skins.minecraft.net":
                 return stripIfPrefixed(address.getPath(), "/MinecraftSkins/");
+
+            case "betacraft.uk":
+                for (String prefix : new String[]{"/skin/", "/MinecraftSkins/"}) {
+                    String result = stripIfPrefixed(address.getPath(), prefix);
+                    if (result != null) return result;
+                }
         }
 
         return null;
@@ -158,6 +164,12 @@ final class SkinFix {
 
             case "s3.amazonaws.com":
             case "skins.minecraft.net":
+                return stripIfPrefixed(address.getPath(), "/MinecraftCloaks/");
+
+            case "betacraft.uk":
+                if (address.getPath().equals("/cloak/get.jsp"))
+                    return stripIfPrefixed(address.getQuery(), "user=");
+
                 return stripIfPrefixed(address.getPath(), "/MinecraftCloaks/");
         }
 
