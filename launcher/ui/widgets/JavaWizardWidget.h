@@ -4,6 +4,7 @@
 #include <BaseVersion.h>
 #include <QObjectPtr.h>
 #include <java/JavaChecker.h>
+#include <QCheckBox>
 #include <QIcon>
 
 class QLineEdit;
