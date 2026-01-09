@@ -160,9 +160,10 @@ class MinecraftAccount : public QObject, public Usable {
         switch (data.type) {
             case AccountType::AuthlibInjector: {
                 // This typeString gets passed to Minecraft; any Yggdrasil
-                // account should have the "mojang" type regardless of which
-                // servers are used.
-                return "mojang";
+                // account should have the "msa" type since using the
+                // "mojang" type results in the profile key not being set
+                // on 1.19.3-1.21.8, breaking enforce-secure-profile.
+                return "msa";
             } break;
             case AccountType::MSA: {
                 return "msa";
