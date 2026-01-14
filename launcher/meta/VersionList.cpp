@@ -158,8 +158,8 @@ Version::Ptr VersionList::getVersion(const QString& version)
 
 bool VersionList::hasVersion(QString version) const
 {
-    auto ver =
-        std::find_if(m_versions.constBegin(), m_versions.constEnd(), [&](Meta::Version::Ptr const& a) { return a->version() == version; });
+    auto ver = std::find_if(m_versions.constBegin(), m_versions.constEnd(),
+                            [version](Meta::Version::Ptr const& a) { return a->version() == version; });
     return (ver != m_versions.constEnd());
 }
 
@@ -169,7 +169,7 @@ void VersionList::setName(const QString& name)
     emit nameChanged(name);
 }
 
-void VersionList::setVersions(const QVector<Version::Ptr>& versions)
+void VersionList::setVersions(const QList<Version::Ptr>& versions)
 {
     beginResetModel();
     m_versions = versions;
@@ -265,7 +265,7 @@ void VersionList::setupAddedVersion(const int row, const Version::Ptr& version)
     disconnect(version.get(), &Version::typeChanged, this, nullptr);
 
     connect(version.get(), &Version::requiresChanged, this,
-            [this, row]() { emit dataChanged(index(row), index(row), QVector<int>() << RequiresRole); });
+            [this, row]() { emit dataChanged(index(row), index(row), QList<int>() << RequiresRole); });
     connect(version.get(), &Version::timeChanged, this,
             [this, row]() { emit dataChanged(index(row), index(row), { TimeRole, SortRole }); });
     connect(version.get(), &Version::typeChanged, this, [this, row]() { emit dataChanged(index(row), index(row), { TypeRole }); });
@@ -282,7 +282,7 @@ void VersionList::waitToLoad()
         return;
     QEventLoop ev;
     auto task = getLoadTask();
-    QObject::connect(task.get(), &Task::finished, &ev, &QEventLoop::quit);
+    connect(task.get(), &Task::finished, &ev, &QEventLoop::quit);
     task->start();
     ev.exec();
 }

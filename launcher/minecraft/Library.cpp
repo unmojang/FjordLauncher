@@ -65,7 +65,7 @@ void Library::getApplicableFiles(const RuntimeContext& runtimeContext,
 {
     bool local = isLocal();
     // Lambda function to get the absolute file path
-    auto actualPath = [&](QString relPath) {
+    auto actualPath = [this, local, overridePath](QString relPath) {
         relPath = FS::RemoveInvalidPathChars(relPath);
         QFileInfo out(FS::PathCombine(storagePrefix(), relPath));
         if (local && !overridePath.isEmpty()) {
@@ -115,7 +115,7 @@ QList<Net::NetRequest::Ptr> Library::getDownloads(const RuntimeContext& runtimeC
     bool local = isLocal();
 
     // Lambda function to check if a local file exists
-    auto check_local_file = [&](QString storage) {
+    auto check_local_file = [overridePath, &failedLocalFiles](QString storage) {
         QFileInfo fileinfo(storage);
         QString fileName = fileinfo.fileName();
         auto fullPath = FS::PathCombine(overridePath, fileName);
@@ -128,7 +128,7 @@ QList<Net::NetRequest::Ptr> Library::getDownloads(const RuntimeContext& runtimeC
     };
 
     // Lambda function to add a download request
-    auto add_download = [&](QString storage, QString url, QString sha1) {
+    auto add_download = [this, local, check_local_file, cache, stale, &out](QString storage, QString url, QString sha1) {
         if (local) {
             return check_local_file(storage);
         }
@@ -198,7 +198,7 @@ QList<Net::NetRequest::Ptr> Library::getDownloads(const RuntimeContext& runtimeC
             }
         }
     } else {
-        auto raw_dl = [&]() {
+        auto raw_dl = [this, raw_storage]() {
             if (!m_absoluteURL.isEmpty()) {
                 return m_absoluteURL;
             }
@@ -242,13 +242,13 @@ bool Library::isActive(const RuntimeContext& runtimeContext) const
     if (m_rules.empty()) {
         result = true;
     } else {
-        RuleAction ruleResult = Disallow;
+        Rule::Action ruleResult = Rule::Disallow;
         for (auto rule : m_rules) {
-            RuleAction temp = rule->apply(this, runtimeContext);
-            if (temp != Defer)
+            Rule::Action temp = rule.apply(runtimeContext);
+            if (temp != Rule::Defer)
                 ruleResult = temp;
         }
-        result = result && (ruleResult == Allow);
+        result = result && (ruleResult == Rule::Allow);
     }
     if (isNative()) {
         result = result && !getCompatibleNative(runtimeContext).isNull();

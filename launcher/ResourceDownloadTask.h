@@ -22,7 +22,7 @@
 #include "net/NetJob.h"
 #include "tasks/SequentialTask.h"
 
-#include "minecraft/mod/tasks/LocalModUpdateTask.h"
+#include "minecraft/mod/tasks/LocalResourceUpdateTask.h"
 #include "modplatform/ModIndex.h"
 
 class ResourceFolderModel;
@@ -33,10 +33,8 @@ class ResourceDownloadTask : public SequentialTask {
     explicit ResourceDownloadTask(ModPlatform::IndexedPack::Ptr pack,
                                   ModPlatform::IndexedVersion version,
                                   std::shared_ptr<ResourceFolderModel> packs,
-                                  bool is_indexed = true,
-                                  QString custom_target_folder = {});
+                                  bool is_indexed = true);
     const QString& getFilename() const { return m_pack_version.fileName; }
-    const QString& getCustomPath() const { return m_custom_target_folder; }
     const QVariant& getVersionID() const { return m_pack_version.fileId; }
     const ModPlatform::IndexedVersion& getVersion() const { return m_pack_version; }
     const ModPlatform::ResourceProvider& getProvider() const { return m_pack->provider; }
@@ -47,10 +45,9 @@ class ResourceDownloadTask : public SequentialTask {
     ModPlatform::IndexedPack::Ptr m_pack;
     ModPlatform::IndexedVersion m_pack_version;
     const std::shared_ptr<ResourceFolderModel> m_pack_model;
-    QString m_custom_target_folder;
 
     NetJob::Ptr m_filesNetJob;
-    LocalModUpdateTask::Ptr m_update_task;
+    LocalResourceUpdateTask::Ptr m_update_task;
 
     void downloadProgressChanged(qint64 current, qint64 total);
     void downloadFailed(QString reason);

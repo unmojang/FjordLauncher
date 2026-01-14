@@ -1,0 +1,12 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/">
+<<<<<<<< HEAD:program_info/fjordlauncher.qrc
+        <file>org.unmojang.FjordLauncher.svg</file>
+|||||||| 78e24962f:program_info/prismlauncher.qrc
+        <file>org.prismlauncher.PrismLauncher.svg</file>
+========
+        <file>@Launcher_AppID@.svg</file>
+>>>>>>>> prismlauncher/release-10.x:program_info/prismlauncher.qrc.in
+    </qresource>
+</RCC>

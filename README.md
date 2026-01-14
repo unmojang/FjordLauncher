@@ -10,7 +10,7 @@ Fjord Launcher Unlocked is a **fork** of Fjord Launcher, which is a fork of Pris
 
 ## Having a problem with the launcher?
 
-**Do not** open an issue in the Prism Launcher repo, and **do not** ask about Fjord Launcher in the Prism Launcher Discord server. Instead, ask in #fjord-launcher in their [Matrix space](https://matrix.to/#/#unmojang:matrix.org), or open an issue [here](https://github.com/unmojang/FjordLauncher/issues).
+**Do not** open an issue in the Prism Launcher repo, and **do not** ask about Fjord Launcher in the Prism Launcher Discord server. Instead, ask in #fjord-launcher in our [Matrix space](https://matrix.to/#/#unmojang:matrix.org), or open an issue [here](https://github.com/unmojang/FjordLauncher/issues), in this repository.
 
 ## Installation
 
@@ -43,7 +43,7 @@ There are builds for macOS in the [releases section](https://github.com/hero-per
 ### Flatpak
 
 ```Shell
-flatpak remote-add --user --if-not-exists hero-persson https://hero-persson.github.io/unmojang-flatpak/index.flatpakrepo
+flatpak remote-add --user --if-not-exists unmojang https://unmojang.github.io/unmojang-flatpak/index.flatpakrepo
 flatpak install org.unmojang.FjordLauncher
 ```
 
@@ -66,18 +66,23 @@ nix run github:hero-persson/FjordLauncherUnlocked
 
 See [nix/README.md](nix/README.md) for details.
 
+### Gentoo
+
+Install from the [unmojang overlay](https://github.com/unmojang/unmojang-overlay):
+
+```Shell
+eselect repository add unmojang-overlay git https://github.com/unmojang/unmojang-overlay
+emerge --sync unmojang-overlay
+emerge -av games-action/fjordlauncher
+```
+
 ### Other Linux
 
 AppImages are available in the [releases section](https://github.com/hero-persson/FjordLauncherUnlocked/releases/latest).
 
 ## Building
 
-To build the launcher yourself, follow the instructions on the Prism Launcher website, but clone this repo instead:
-
-- [Windows](https://prismlauncher.org/wiki/development/build-instructions/windows/)
-- [Linux](https://prismlauncher.org/wiki/development/build-instructions/linux/)
-- [MacOS](https://prismlauncher.org/wiki/development/build-instructions/macos/)
-- [OpenBSD](https://prismlauncher.org/wiki/development/build-instructions/openbsd/)
+To build the launcher yourself, follow the [instructions on the Prism Launcher website](https://prismlauncher.org/wiki/development/build-instructions), but clone this repo instead.
 
 ## Notes
 

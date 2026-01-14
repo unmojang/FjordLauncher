@@ -108,19 +108,11 @@ MSAStep::MSAStep(AccountData* data, bool silent) : AuthStep(data), m_silent(sile
     const auto& scope = "service::user.auth.xboxlive.com::MBI_SSL";
     m_oauth2.setScope(scope);
     // QOAuth2AuthorizationCodeFlow doesn't pass a "scope" when refreshing access tokens, but Microsoft expects it.
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    m_oauth2.setModifyParametersFunction([&](QAbstractOAuth::Stage stage, QVariantMap* parameters) {
-        if (stage == QAbstractOAuth::Stage::RefreshingAccessToken) {
-            (*parameters)["scope"] = scope;
-        }
-    });
-#else
     m_oauth2.setModifyParametersFunction([&](QAbstractOAuth::Stage stage, QMultiMap<QString, QVariant>* parameters) {
         if (stage == QAbstractOAuth::Stage::RefreshingAccessToken) {
             (*parameters).insert("scope", scope);
         }
     });
-#endif
     m_oauth2.setClientIdentifier(m_clientId);
     m_oauth2.setNetworkAccessManager(APPLICATION->network().get());
 
@@ -183,13 +175,8 @@ void MSAStep::perform()
         m_oauth2.setRefreshToken(m_data->msaToken.refresh_token);
         m_oauth2.refreshAccessToken();
     } else {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)  // QMultiMap param changed in 6.0
         m_oauth2.setModifyParametersFunction(
             [](QAbstractOAuth::Stage stage, QMultiMap<QString, QVariant>* map) { map->insert("prompt", "select_account"); });
-#else
-        m_oauth2.setModifyParametersFunction(
-            [](QAbstractOAuth::Stage stage, QMap<QString, QVariant>* map) { map->insert("prompt", "select_account"); });
-#endif
 
         *m_data = AccountData();
         m_data->msaClientID = m_clientId;

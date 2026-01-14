@@ -61,14 +61,15 @@ class ModFilterWidget : public QTabWidget {
         std::list<Version> versions;
         std::list<ModPlatform::IndexedVersionType> releases;
         ModPlatform::ModLoaderTypes loaders;
-        QString side;
+        ModPlatform::Side side;
         bool hideInstalled;
         QStringList categoryIds;
+        bool openSource;
 
         bool operator==(const Filter& other) const
         {
             return hideInstalled == other.hideInstalled && side == other.side && loaders == other.loaders && versions == other.versions &&
-                   releases == other.releases && categoryIds == other.categoryIds;
+                   releases == other.releases && categoryIds == other.categoryIds && openSource == other.openSource;
         }
         bool operator!=(const Filter& other) const { return !(*this == other); }
 
@@ -80,9 +81,17 @@ class ModFilterWidget : public QTabWidget {
 
             return versions.empty();
         }
+
+        bool checkModpackFilters(const ModPlatform::IndexedVersion& v)
+        {
+            return ((!loaders || !v.loaders || loaders & v.loaders) &&  // loaders
+                    (releases.empty() ||                                // releases
+                     std::find(releases.cbegin(), releases.cend(), v.version_type) != releases.cend()) &&
+                    checkMcVersions({ v.mcVersion }));  // gameVersion}
+        }
     };
 
-    static unique_qobject_ptr<ModFilterWidget> create(MinecraftInstance* instance, bool extended, QWidget* parent = nullptr);
+    static std::unique_ptr<ModFilterWidget> create(MinecraftInstance* instance, bool extended);
     virtual ~ModFilterWidget();
 
     auto getFilter() -> std::shared_ptr<Filter>;
@@ -95,7 +104,7 @@ class ModFilterWidget : public QTabWidget {
     void setCategories(const QList<ModPlatform::Category>&);
 
    private:
-    ModFilterWidget(MinecraftInstance* instance, bool extendedSupport, QWidget* parent = nullptr);
+    ModFilterWidget(MinecraftInstance* instance, bool extendedSupport);
 
     void loadVersionList();
     void prepareBasicFilter();
@@ -107,6 +116,9 @@ class ModFilterWidget : public QTabWidget {
     void onSideFilterChanged();
     void onHideInstalledFilterChanged();
     void onShowAllVersionsChanged();
+    void onOpenSourceFilterChanged();
+    void onReleaseFilterChanged();
+    void onShowMoreClicked();
 
    private:
     Ui::ModFilterWidget* ui;

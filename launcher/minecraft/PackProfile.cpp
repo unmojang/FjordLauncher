@@ -40,10 +40,6 @@
 #include "Application.h"
 
 #include <Version.h>
-#include <qlogging.h>
-#include <quazip/quazip.h>
-#include <quazip/quazipdir.h>
-#include <quazip/quazipfile.h>
 #include <QCryptographicHash>
 #include <QDebug>
 #include <QDir>
@@ -74,6 +70,7 @@
 #include "PackProfile_p.h"
 #include "modplatform/ModIndex.h"
 
+#include "archive/ArchiveReader.h"
 #include "minecraft/Logging.h"
 
 #include "ui/dialogs/CustomMessageBox.h"
@@ -137,18 +134,18 @@ static ComponentPtr componentFromJsonV1(PackProfile* parent, const QString& comp
     auto uid = Json::requireString(obj.value("uid"));
     auto filePath = componentJsonPattern.arg(uid);
     auto component = makeShared<Component>(parent, uid);
-    component->m_version = Json::ensureString(obj.value("version"));
-    component->m_dependencyOnly = Json::ensureBoolean(obj.value("dependencyOnly"), false);
-    component->m_important = Json::ensureBoolean(obj.value("important"), false);
+    component->m_version = obj.value("version").toString();
+    component->m_dependencyOnly = obj.value("dependencyOnly").toBool();
+    component->m_important = obj.value("important").toBool();
 
     // cached
     // TODO @RESILIENCE: ignore invalid values/structure here?
-    component->m_cachedVersion = Json::ensureString(obj.value("cachedVersion"));
-    component->m_cachedName = Json::ensureString(obj.value("cachedName"));
+    component->m_cachedVersion = obj.value("cachedVersion").toString();
+    component->m_cachedName = obj.value("cachedName").toString();
     Meta::parseRequires(obj, &component->m_cachedRequires, "cachedRequires");
     Meta::parseRequires(obj, &component->m_cachedConflicts, "cachedConflicts");
-    component->m_cachedVolatile = Json::ensureBoolean(obj.value("volatile"), false);
-    bool disabled = Json::ensureBoolean(obj.value("disabled"), false);
+    component->m_cachedVolatile = obj.value("volatile").toBool();
+    bool disabled = obj.value("disabled").toBool();
     component->setEnabled(!disabled);
     return component;
 }
@@ -524,13 +521,9 @@ QVariant PackProfile::data(const QModelIndex& index, int role) const
 
     switch (role) {
         case Qt::CheckStateRole: {
-            switch (column) {
-                case NameColumn: {
-                    return patch->isEnabled() ? Qt::Checked : Qt::Unchecked;
-                }
-                default:
-                    return QVariant();
-            }
+            if (column == NameColumn)
+                return patch->isEnabled() ? Qt::Checked : Qt::Unchecked;
+            return QVariant();
         }
         case Qt::DisplayRole: {
             switch (column) {
@@ -656,11 +649,7 @@ void PackProfile::move(const int index, const MoveDirection direction)
         return;
     }
     beginMoveRows(QModelIndex(), index, index, QModelIndex(), togap);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 13, 0)
     d->components.swapItemsAt(index, theirIndex);
-#else
-    d->components.swap(index, theirIndex);
-#endif
     endMoveRows();
     invalidateLaunchProfile();
     scheduleSave();
@@ -759,7 +748,7 @@ bool PackProfile::removeComponent_internal(ComponentPtr patch)
     }
 
     // FIXME: we need a generic way of removing local resources, not just jar mods...
-    auto preRemoveJarMod = [&](LibraryPtr jarMod) -> bool {
+    auto preRemoveJarMod = [this](LibraryPtr jarMod) -> bool {
         if (!jarMod->isLocal()) {
             return true;
         }
@@ -898,25 +887,22 @@ bool PackProfile::installCustomJar_internal(QString filepath)
 
 std::optional<Manifest> getJarManifest(const QFileInfo& fileinfo)
 {
-    QuaZip zip(fileinfo.filePath());
-    if (!zip.open(QuaZip::mdUnzip)) {
-        return std::nullopt;
-    }
+    MMCZip::ArchiveReader reader{ fileinfo.absoluteFilePath() };
 
     std::optional<Manifest> manifest;
-    QuaZipFile file(&zip);
-    if (zip.setCurrentFile("META-INF/MANIFEST.MF") && file.open(QIODevice::ReadOnly)) {
+
+    const QString manifest_path{"META-INF/MANIFEST.MF"};
+    if (reader.collectFiles(true) && reader.exists(manifest_path)) {
+        const auto & manifest_file = reader.goToFile(manifest_path);
         try {
-            const auto& file_bytes = file.readAll();
+            const auto & file_bytes = manifest_file->readAll();
             std::string file_contents(file_bytes.constData(), file_bytes.size());
             std::istringstream iss{ file_contents };
             manifest = Manifest(iss, fileinfo.fileName().toStdString());
         } catch (std::exception& ex) {
             qDebug() << "Error parsing META/MANIFEST.MF inside " << fileinfo.path() << ":" << ex.what();
         }
-        file.close();
     }
-    zip.close();
     return manifest;
 }
 

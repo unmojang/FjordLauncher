@@ -211,4 +211,3 @@ The following parameters can be overridden:
 - `jdks` (default: `[ jdk21 jdk17 jdk8 ]`) Java runtimes added to `FJORDLAUNCHER_JAVA_PATHS` variable
 - `msaClientID` (default: `null`, requires full rebuild!) Client ID used for Microsoft Authentication
 - `textToSpeechSupport` (default: `isLinux`) Turn on/off support for text-to-speech on Linux (macOS will always have this)
-- `withWaylandGLFW` (default: `isLinux`) Build with support for native Wayland via a custom GLFW

@@ -49,18 +49,14 @@ void PreLaunchCommand::executeTask()
 {
     auto cmd = m_parent->substituteVariables(m_command);
     emit logLine(tr("Running Pre-Launch command: %1").arg(cmd), MessageLevel::Launcher);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     auto args = QProcess::splitCommand(cmd);
     const QString program = args.takeFirst();
     m_process.start(program, args);
-#else
-    m_process.start(cmd);
-#endif
 }
 
 void PreLaunchCommand::on_state(LoggedProcess::State state)
 {
-    auto getError = [&]() { return tr("Pre-Launch command failed with code %1.\n\n").arg(m_process.exitCode()); };
+    auto getError = [this]() { return tr("Pre-Launch command failed with code %1.\n\n").arg(m_process.exitCode()); };
     switch (state) {
         case LoggedProcess::Aborted:
         case LoggedProcess::Crashed:

@@ -38,12 +38,11 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QRegularExpression>
 #include <QUuid>
 #include "BuildConfig.h"
 
 namespace {
-void tokenToJSONV3(QJsonObject& parent, Token t, const char* tokenName)
+void tokenToJSONV3(QJsonObject& parent, const Token& t, const char* tokenName)
 {
     if (!t.persistent) {
         return;
@@ -184,6 +183,7 @@ MinecraftProfile profileFromJSONV3(const QJsonObject& parent, const char* tokenN
         }
         out.skin.id = idV.toString();
         out.skin.url = urlV.toString();
+        out.skin.url.replace("http://textures.minecraft.net", "https://textures.minecraft.net");
         out.skin.variant = variantV.toString();
 
         // data for skin is optional
@@ -225,6 +225,7 @@ MinecraftProfile profileFromJSONV3(const QJsonObject& parent, const char* tokenN
             Cape cape;
             cape.id = idV.toString();
             cape.url = urlV.toString();
+            cape.url.replace("http://textures.minecraft.net", "https://textures.minecraft.net");
             cape.alias = aliasV.toString();
 
             // data for cape is optional.

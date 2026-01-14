@@ -210,6 +210,7 @@ bool parseMinecraftProfile(QByteArray& data, MinecraftProfile& output)
         if (!getString(capeObj.value("url"), capeOut.url)) {
             continue;
         }
+        capeOut.url.replace("http://textures.minecraft.net", "https://textures.minecraft.net");
         if (!getString(capeObj.value("alias"), capeOut.alias)) {
             continue;
         }
@@ -321,11 +322,7 @@ bool parseMinecraftProfileMojang(QByteArray& data, MinecraftProfile& output)
         if (nameString == "textures") {
             auto value = pObj.value("value");
             if (value.isString()) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
                 texturePayload = QByteArray::fromBase64(value.toString().toUtf8(), QByteArray::AbortOnBase64DecodingErrors);
-#else
-                texturePayload = QByteArray::fromBase64(value.toString().toUtf8());
-#endif
             }
         } else if (nameString == "uploadableTextures") {
             // https://github.com/yushijinhun/authlib-injector/wiki/Yggdrasil-%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%8A%80%E6%9C%AF%E8%A7%84%E8%8C%83#uploadabletextures-%E5%8F%AF%E4%B8%8A%E4%BC%A0%E7%9A%84%E6%9D%90%E8%B4%A8%E7%B1%BB%E5%9E%8B
@@ -377,6 +374,7 @@ bool parseMinecraftProfileMojang(QByteArray& data, MinecraftProfile& output)
                     qWarning() << "Skin url is not a string";
                     return false;
                 }
+                skinOut.url.replace("http://textures.minecraft.net", "https://textures.minecraft.net");
 
                 auto maybeMeta = skin.find("metadata");
                 if (maybeMeta != skin.end() && maybeMeta->isObject()) {
@@ -390,6 +388,7 @@ bool parseMinecraftProfileMojang(QByteArray& data, MinecraftProfile& output)
                     qWarning() << "Cape url is not a string";
                     return false;
                 }
+                capeOut.url.replace("http://textures.minecraft.net", "https://textures.minecraft.net");
 
                 // we don't know the cape ID as it is not returned from the session server
                 // so just fake it - changing capes is probably locked anyway :(
