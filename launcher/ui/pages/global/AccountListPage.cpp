@@ -49,6 +49,7 @@
 #include "ui/dialogs/CustomMessageBox.h"
 #include "ui/dialogs/MSALoginDialog.h"
 
+
 #include "Application.h"
 
 AccountListPage::AccountListPage(QWidget* parent) : QMainWindow(parent), ui(new Ui::AccountListPage)
@@ -162,11 +163,13 @@ void AccountListPage::on_actionAddMicrosoft_triggered()
 void AccountListPage::on_actionAddOffline_triggered()
 {
 
+    ChooseOfflineNameDialog dialog(tr("Please enter your desired username to add your offline account."), this);
+    if (dialog.exec() != QDialog::Accepted) {
+        return;
+    }
 
-    MinecraftAccountPtr account =
-        OfflineLoginDialog::newAccount(this, tr("Please enter your desired username to add your offline account."));
-
-    if (account) {
+    if (const MinecraftAccountPtr account = MinecraftAccount::createOffline(dialog.getUsername())) {
+        account->login()->start();  // The task will complete here.
         m_accounts->addAccount(account);
         if (m_accounts->count() == 1) {
             m_accounts->setDefaultAccount(account);
