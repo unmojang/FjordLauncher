@@ -82,11 +82,10 @@ See [nix/README.md](nix/README.md) for details.
 
 ### Gentoo
 
-Install from the [unmojang overlay](https://github.com/unmojang/unmojang-overlay):
+Install from the [GURU repository](https://wiki.gentoo.org/wiki/Project:GURU/Information_for_End_Users):
 
 ```Shell
-eselect repository enable unmojang-overlay
-emaint sync -r unmojang-overlay
+echo 'games-action/fjordlauncher' >> /etc/portage/package.accept_keywords
 emerge -av games-action/fjordlauncher
 ```
 
