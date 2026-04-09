@@ -136,6 +136,7 @@ struct AccountData {
     QString msaClientID;
     Token msaToken;
     Token userToken;
+    Token xboxApiToken;
     Token mojangservicesToken;
 
     Token yggdrasilToken;

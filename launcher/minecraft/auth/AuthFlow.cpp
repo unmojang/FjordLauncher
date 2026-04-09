@@ -34,6 +34,7 @@ AuthFlow::AuthFlow(AccountData* data, Action action, const std::optional<QString
             m_steps.append(oauthStep);
         }
         m_steps.append(makeShared<XboxUserStep>(m_data));
+        m_steps.append(makeShared<XboxAuthorizationStep>(m_data, &m_data->xboxApiToken, "http://xboxlive.com", "Xbox"));
         m_steps.append(
             makeShared<XboxAuthorizationStep>(m_data, &m_data->mojangservicesToken, "rp://api.minecraftservices.com/", "Mojang"));
         m_steps.append(makeShared<LauncherLoginStep>(m_data));
