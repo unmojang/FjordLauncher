@@ -390,7 +390,7 @@ QVariant AccountList::headerData(int section, [[maybe_unused]] Qt::Orientation o
         case Qt::DisplayRole:
             switch (section) {
                 case ProfileNameColumn:
-                    return tr("Username");
+                    return tr("Player name");
                 case NameColumn:
                     return tr("Account");
                 case TypeColumn:
@@ -406,9 +406,9 @@ QVariant AccountList::headerData(int section, [[maybe_unused]] Qt::Orientation o
         case Qt::ToolTipRole:
             switch (section) {
                 case ProfileNameColumn:
-                    return tr("Minecraft username associated with the account.");
+                    return tr("Minecraft player name of the account.");
                 case NameColumn:
-                    return tr("User name of the account.");
+                    return tr("Username of the account.");
                 case TypeColumn:
                     return tr("Type of the account (MSA or Offline)");
                 case StatusColumn:

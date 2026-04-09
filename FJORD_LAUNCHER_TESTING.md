@@ -31,10 +31,6 @@ Before releasing a new version of Fjord Launcher, the following items should be 
     b. [ ] Log in to an authlib-injector multiplayer server
     c. [ ] Edit instance &rarr; Version &rarr; select authlib-injector &rarr; Remove. Click "Add Agents", manually select an authlib-injector JAR, launch the instance, log into an authlib-injector multiplayer server
 
-6. FTB
-
-    a. [ ] Add Instance &rarr; FTB, select a modpack, click "OK"
-
-7. About page
+6. About page
 
     a. [ ] Help &rarr; "About Fjord Launcher" should show correct launcher name and `$major.$minor.$patch.$downstream` release number
