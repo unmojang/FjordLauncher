@@ -17,14 +17,14 @@ body:
   attributes:
     label: Suggestion
     description: What do you want Fjord Launcher to do?
-    placeholder: I want the parrot button to squawk.
+    placeholder: I want the cat button to meow.
   validations:
     required: true
 - type: input
   attributes:
     label: Benefit
     description: Why do you need Fjord Launcher to do this?
-    placeholder: so that I can always hear a parrot when I need to.
+    placeholder: so that I can always hear a cat when I need to.
   validations:
     required: true
 - type: checkboxes

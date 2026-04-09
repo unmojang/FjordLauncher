@@ -665,7 +665,7 @@ void AccountList::tryNext()
                     connect(m_currentTask.get(), &Task::succeeded, this, &AccountList::authSucceeded);
                     connect(m_currentTask.get(), &Task::failed, this, &AccountList::authFailed);
                     m_currentTask->start();
-                    qDebug() << "RefreshSchedule: Processing account" << account->accountDisplayString() << "with internal ID"
+                    qDebug() << "RefreshSchedule: Processing account" << account->profileName() << "with internal ID"
                              << accountId;
                     return;
                 }
