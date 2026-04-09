@@ -53,6 +53,8 @@
 #include <QInputDialog>
 #include <QList>
 #include <QPushButton>
+#include <QSet>
+#include <QUrl>
 #include <utility>
 
 #include "BuildConfig.h"
@@ -376,7 +378,7 @@ void LaunchController::launchInstance()
         return;
     }
 
-    auto *inst = dynamic_cast<MinecraftInstance*>(m_instance);
+    auto* inst = dynamic_cast<MinecraftInstance*>(m_instance);
     if (m_accountToUse->usesCustomApiServers() && !inst->shouldApplyOnlineFixes()) {
         bool authlibInjectorInstalled = false;
         const auto& agents = inst->getPackProfile()->getProfile()->getAgents();
@@ -488,8 +490,19 @@ void LaunchController::launchInstance()
         online_mode = "online";
 
         // Prepend Server Status
-        const QStringList servers = { "login.live.com", "session.minecraft.net", "textures.minecraft.net", "api.mojang.com" };
-
+        QStringList servers = { "login.live.com", "session.minecraft.net", "textures.minecraft.net", "api.mojang.com" };
+        if (m_accountToUse->usesCustomApiServers()) {
+            QSet<QString> hosts;
+            for (const auto& urlStr :
+                 { m_accountToUse->authServerUrl(), m_accountToUse->accountServerUrl(), m_accountToUse->sessionServerUrl(),
+                   m_accountToUse->servicesServerUrl(), m_accountToUse->authlibInjectorUrl() }) {
+                QUrl url(urlStr);
+                if (url.isValid() && !url.host().isEmpty()) {
+                    hosts.insert(url.host());
+                }
+            }
+            servers = hosts.values();
+        }
         m_launcher->prependStep(makeShared<PrintServers>(m_launcher, servers));
     } else {
         online_mode = m_actualLaunchMode == LaunchMode::Demo ? "demo" : "offline";
