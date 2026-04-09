@@ -203,8 +203,6 @@ void YggdrasilStep::onRequestDone(QByteArray* response)
             AccountTaskState::STATE_FAILED_SOFT,
             tr("An unknown error occurred when trying to communicate with the authentication server: %1").arg(m_request->errorString()));
     }
-
-    YggdrasilStep::processResponse(doc.object());
 }
 
 void YggdrasilStep::processResponse(QJsonObject responseData)
