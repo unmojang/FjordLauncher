@@ -249,6 +249,7 @@ void LauncherPage::applySettings()
     // Mods
     s->set("ModMetadataDisabled", !ui->metadataEnableBtn->isChecked());
     s->set("ModDependenciesDisabled", !ui->dependenciesEnableBtn->isChecked());
+    s->set("ShowModIncompat", ui->showModIncompatCheckBox->isChecked());
     s->set("SkipModpackUpdatePrompt", !ui->modpackUpdatePromptBtn->isChecked());
 
     // authlib-injector
@@ -301,6 +302,7 @@ void LauncherPage::loadSettings()
     ui->metadataEnableBtn->setChecked(!s->get("ModMetadataDisabled").toBool());
     ui->metadataWarningLabel->setHidden(ui->metadataEnableBtn->isChecked());
     ui->dependenciesEnableBtn->setChecked(!s->get("ModDependenciesDisabled").toBool());
+    ui->showModIncompatCheckBox->setChecked(s->get("ShowModIncompat").toBool());
     ui->modpackUpdatePromptBtn->setChecked(!s->get("SkipModpackUpdatePrompt").toBool());
 
     // Missing authlib-injector behavior

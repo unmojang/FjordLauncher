@@ -55,7 +55,6 @@ class AccountList : public QAbstractListModel {
     enum VListColumns {
         // TODO: Add icon column.
         ProfileNameColumn = 0,
-        NameColumn,
         TypeColumn,
         StatusColumn,
         AuthServerColumn,
@@ -79,6 +78,7 @@ class AccountList : public QAbstractListModel {
 
     void addAccount(MinecraftAccountPtr account);
     void removeAccount(QModelIndex index);
+    void moveAccount(QModelIndex index, int delta);
     int findAccountByProfileId(const QString& profileId) const;
     MinecraftAccountPtr getAccountByInternalId(const QString& accountId) const;
     MinecraftAccountPtr getAccountByProfileName(const QString& profileName) const;

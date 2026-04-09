@@ -129,6 +129,8 @@ class MinecraftAccount : public QObject, public Usable {
 
     QString profileName() const { return data.profileName(); }
 
+    QString displayName() const;
+
     bool isActive() const;
 
     AccountType accountType() const noexcept { return data.type; }
@@ -177,7 +179,7 @@ class MinecraftAccount : public QObject, public Usable {
         }
     }
 
-    QPixmap getFace() const;
+    QPixmap getFace(int width = 64, int height = 64) const;
 
     //! Returns the current state of the account
     AccountState accountState() const;

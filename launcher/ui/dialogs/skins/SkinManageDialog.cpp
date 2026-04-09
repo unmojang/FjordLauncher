@@ -34,6 +34,7 @@
 #include <QUrl>
 
 #include "Application.h"
+#include "settings/SettingsObject.h"
 #include "DesktopServices.h"
 #include "Json.h"
 #include "QObjectPtr.h"
@@ -514,16 +515,13 @@ void SkinManageDialog::on_userBtn_clicked()
     NetJob::Ptr job{ new NetJob(tr("Download user skin"), APPLICATION->network(), 1) };
     job->setAskRetry(false);
 
-    auto uuidOut = std::make_shared<QByteArray>();
-    auto profileOut = std::make_shared<QByteArray>();
-
     auto uuidLoop = makeShared<WaitTask>();
     auto profileLoop = makeShared<WaitTask>();
 
     // authlib-injector only specifies the POST /profiles/minecraft route, so we have to use it.
     const auto & payload = QJsonDocument(QJsonArray{user}).toJson(QJsonDocument::Compact);
-    auto getUUID = Net::Upload::makeByteArray(m_acct->accountServerUrl()+"/profiles/minecraft", uuidOut, payload);
-    auto getProfile = Net::Download::makeByteArray(QUrl(), profileOut);
+    auto [getUUID, uuidOut] = Net::Upload::makeByteArray(m_acct->accountServerUrl()+"/profiles/minecraft", payload);
+    auto [getProfile, profileOut] = Net::Download::makeByteArray(QUrl());
     auto downloadSkin = Net::Download::makeFile(QUrl(), path);
 
     QString failReason;

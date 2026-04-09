@@ -24,20 +24,20 @@ void YggdrasilMinecraftProfileStep::perform()
     QUrl url = QUrl(m_data->sessionServerUrl() + "/session/minecraft/profile/" + m_data->minecraftProfile.id);
     auto headers = QList<Net::HeaderPair>{ { "Content-Type", "application/json" }, { "Accept", "application/json" } };
 
-    m_response.reset(new QByteArray());
-    m_request = Net::Download::makeByteArray(url, m_response);
-    m_request->addHeaderProxy(new Net::RawHeaderProxy(headers));
+    auto [request, response] = Net::Download::makeByteArray(url);
+    m_request = request;
+    m_request->addHeaderProxy(std::make_unique<Net::RawHeaderProxy>(headers));
 
     m_task.reset(new NetJob("MinecraftProfileStep", APPLICATION->network()));
     m_task->setAskRetry(false);
     m_task->addNetAction(m_request);
 
-    connect(m_task.get(), &Task::finished, this, &YggdrasilMinecraftProfileStep::onRequestDone);
+    connect(m_task.get(), &Task::finished, this, [this, response] { onRequestDone(response); });
 
     m_task->start();
 }
 
-void YggdrasilMinecraftProfileStep::onRequestDone()
+void YggdrasilMinecraftProfileStep::onRequestDone(QByteArray* response)
 {
     if (m_request->error() == QNetworkReply::ContentNotFoundError) {
         // NOTE: Succeed even if we do not have a profile. This is a valid account state.
@@ -52,7 +52,7 @@ void YggdrasilMinecraftProfileStep::onRequestDone()
         qWarning() << " Error string:       " << m_request->errorString();
 
         qWarning() << " Response:";
-        qWarning() << QString::fromUtf8(*m_response);
+        qWarning() << QString::fromUtf8(*response);
 
         if (Net::isApplicationError(m_request->error())) {
             emit finished(AccountTaskState::STATE_FAILED_SOFT,
@@ -63,7 +63,7 @@ void YggdrasilMinecraftProfileStep::onRequestDone()
         }
         return;
     }
-    if (!Parsers::parseMinecraftProfileMojang(*m_response, m_data->minecraftProfile)) {
+    if (!Parsers::parseMinecraftProfileMojang(*response, m_data->minecraftProfile)) {
         m_data->minecraftProfile = MinecraftProfile();
         emit finished(AccountTaskState::STATE_FAILED_SOFT, tr("Minecraft Java profile response could not be parsed"));
         return;

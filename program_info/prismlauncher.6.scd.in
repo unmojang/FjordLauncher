@@ -1,14 +1,14 @@
-fjordlauncher(6)
+@Launcher_APP_BINARY_NAME@(6)
 
 
 # NAME
 
-fjordlauncher - a launcher and instance manager for Minecraft.
+@Launcher_APP_BINARY_NAME@ - a launcher and instance manager for Minecraft.
 
 
 # SYNOPSIS
 
-*fjordlauncher* [OPTIONS...]
+*@Launcher_APP_BINARY_NAME@* [OPTIONS...]
 
 
 # DESCRIPTION
@@ -69,20 +69,14 @@ variables, besides other common Qt variables:
 
 # BUGS
 
-https://github.com/unmojang/FjordLauncher/issues
+@Launcher_BUG_TRACKER_URL@
 
 # RESOURCES
 
-GitHub: https://github.com/unmojang/FjordLauncher
+GitHub: @Launcher_Git@
+
+Main website: https://@Launcher_Domain@
 
 # AUTHORS
 
-MultiMC Contributors
-
-PolyMC Contributors
-
-PollyMC Contributors
-
-Prism Launcher Contributors
-
-Fjord Launcher Contributors
+@Launcher_Authors@

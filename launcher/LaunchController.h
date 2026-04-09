@@ -36,7 +36,6 @@
 #pragma once
 #include <BaseInstance.h>
 #include <tools/BaseProfiler.h>
-#include <QObject>
 
 #include "minecraft/MinecraftInstance.h"
 #include "minecraft/PackProfile.h"
@@ -44,23 +43,24 @@
 #include "minecraft/launch/MinecraftTarget.h"
 
 class InstanceWindow;
+
+enum class LaunchDecision { Undecided, Continue, Abort };
+
 class LaunchController : public Task {
     Q_OBJECT
    public:
     void executeTask() override;
 
     LaunchController();
-    virtual ~LaunchController() = default;
+    ~LaunchController() override = default;
 
-    void setInstance(InstancePtr instance) { m_instance = instance; }
+    void setInstance(BaseInstance* instance) { m_instance = instance; }
 
-    InstancePtr instance() { return m_instance; }
+    BaseInstance* instance() const { return m_instance; }
 
-    void setOnline(bool online) { m_online = online; }
+    void setLaunchMode(const LaunchMode mode) { m_wantedLaunchMode = mode; }
 
     void setOfflineName(const QString& offlineName) { m_offlineName = offlineName; }
-
-    void setDemo(bool demo) { m_demo = demo; }
 
     void setProfiler(BaseProfilerFactory* profiler) { m_profiler = profiler; }
 
@@ -70,7 +70,7 @@ class LaunchController : public Task {
 
     void setAccountToUse(MinecraftAccountPtr accountToUse) { m_accountToUse = std::move(accountToUse); }
 
-    QString id() { return m_instance->id(); }
+    QString id() const { return m_instance->id(); }
 
     bool abort() override;
 
@@ -78,27 +78,28 @@ class LaunchController : public Task {
     void login();
     void launchInstance();
     void decideAccount();
-    bool askPlayDemo();
-    QString askOfflineName(QString playerName, bool demo, bool* ok = nullptr);
-    bool reauthenticateAccount(MinecraftAccountPtr account);
+    LaunchDecision decideLaunchMode();
+    bool askPlayDemo() const;
+    QString askOfflineName(const QString& playerName, bool* ok = nullptr) const;
+    bool reauthenticateAccount(const MinecraftAccountPtr& account, const QString& reason);
 
    private slots:
     void readyForLaunch();
 
     void onSucceeded();
     void onFailed(QString reason);
-    void onProgressRequested(Task* task);
+    void onProgressRequested(Task* task) const;
 
    private:
+    LaunchMode m_wantedLaunchMode = LaunchMode::Normal;
+    LaunchMode m_actualLaunchMode = LaunchMode::Normal;
     BaseProfilerFactory* m_profiler = nullptr;
-    bool m_online = true;
     QString m_offlineName;
-    bool m_demo = false;
-    InstancePtr m_instance;
+    BaseInstance* m_instance = nullptr;
     QWidget* m_parentWidget = nullptr;
     InstanceWindow* m_console = nullptr;
     MinecraftAccountPtr m_accountToUse = nullptr;
-    AuthSessionPtr m_session;
-    shared_qobject_ptr<LaunchTask> m_launcher;
-    MinecraftTarget::Ptr m_targetToJoin;
+    AuthSessionPtr m_session = nullptr;
+    LaunchTask* m_launcher = nullptr;
+    MinecraftTarget::Ptr m_targetToJoin = nullptr;
 };

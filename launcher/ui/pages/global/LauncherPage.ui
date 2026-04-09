@@ -41,9 +41,9 @@
       <property name="geometry">
        <rect>
         <x>0</x>
-        <y>0</y>
+        <y>-149</y>
         <width>746</width>
-        <height>1194</height>
+        <height>1222</height>
        </rect>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -252,7 +252,10 @@
           <item row="3" column="0">
            <widget class="QLabel" name="labelJavaDir">
             <property name="text">
-             <string>&amp;Java:</string>
+             <string>&amp;Auto Java Download:</string>
+            </property>
+            <property name="toolTip">
+             <string>Folder where Prism Launcher stores automatically downloaded Java versions. Do NOT set this to your system Java installation.</string>
             </property>
             <property name="buddy">
              <cstring>javaDirTextBox</cstring>
@@ -415,6 +418,16 @@
             </property>
             <property name="text">
              <string>Install dependencies automatically</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="showModIncompatCheckBox">
+            <property name="toolTip">
+             <string>Currently this just shows mods which are not marked as compatible with the current Minecraft version.</string>
+            </property>
+            <property name="text">
+             <string>Detect and show mod incompatibilities (experimental)</string>
             </property>
            </widget>
           </item>
@@ -687,7 +700,7 @@
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="sortingModeGroup"/>
   <buttongroup name="renamingBehaviorGroup"/>
+  <buttongroup name="sortingModeGroup"/>
  </buttongroups>
 </ui>

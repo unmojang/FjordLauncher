@@ -37,6 +37,7 @@
 
 #include <QAbstractOAuth2>
 #include <QNetworkRequest>
+#include <QNetworkReply>
 #include <QOAuthHttpServerReplyHandler>
 #include <QOAuthOobReplyHandler>
 
@@ -142,7 +143,7 @@ MSAStep::MSAStep(AccountData* data, bool silent) : AuthStep(data), m_silent(sile
         }
     });
     m_oauth2.setClientIdentifier(m_clientId);
-    m_oauth2.setNetworkAccessManager(APPLICATION->network().get());
+    m_oauth2.setNetworkAccessManager(APPLICATION->network());
 
     connect(&m_oauth2, &QOAuth2AuthorizationCodeFlow::granted, this, [this] {
         m_data->msaClientID = m_oauth2.clientIdentifier();

@@ -46,9 +46,8 @@
 #include "ui/dialogs/BlockedModsDialog.h"
 
 #include <QWidget>
-#include <memory>
 
-namespace ModpacksCH {
+namespace FTB {
 
 class PackInstallTask final : public InstanceTask {
     Q_OBJECT
@@ -63,7 +62,7 @@ class PackInstallTask final : public InstanceTask {
     void executeTask() override;
 
    private slots:
-    void onManifestDownloadSucceeded();
+    void onManifestDownloadSucceeded(QByteArray* responsePtr);
     void onResolveModsSucceeded();
     void onCreateInstanceSucceeded();
     void onModDownloadSucceeded();
@@ -81,21 +80,19 @@ class PackInstallTask final : public InstanceTask {
 
    private:
     NetJob::Ptr m_net_job = nullptr;
-    shared_qobject_ptr<Flame::FileResolvingTask> m_mod_id_resolver_task = nullptr;
+    shared_qobject_ptr<Flame::FileResolvingTask> m_modIdResolverTask = nullptr;
 
-    QList<int> m_file_id_map;
-
-    std::shared_ptr<QByteArray> m_response = std::make_shared<QByteArray>();
+    QList<int> m_fileIds;
 
     Modpack m_pack;
-    QString m_version_name;
+    QString m_versionName;
     Version m_version;
 
-    QMap<QString, QString> m_files_to_copy;
-    QList<BlockedMod> m_blocked_mods;
+    QMap<QString, QString> m_filesToCopy;
+    QList<BlockedMod> m_blockedMods;
 
     // FIXME: nuke
     QWidget* m_parent;
 };
 
-}  // namespace ModpacksCH
+}  // namespace FTB

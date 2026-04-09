@@ -40,7 +40,10 @@
 
 #include <QWidget>
 
+#include "Application.h"
+#include "tasks/Task.h"
 #include "ui/pages/BasePage.h"
+#include "ui/pages/modplatform/ModpackProviderBasePage.h"
 
 namespace Ui {
 class FtbPage;
@@ -48,7 +51,7 @@ class FtbPage;
 
 class NewInstanceDialog;
 
-class FtbPage : public QWidget, public BasePage {
+class FtbPage : public QWidget, public ModpackProviderBasePage {
     Q_OBJECT
 
    public:
@@ -66,24 +69,29 @@ class FtbPage : public QWidget, public BasePage {
 
     bool eventFilter(QObject* watched, QEvent* event) override;
 
+    /** Programatically set the term in the search bar. */
+    virtual void setSearchTerm(QString) override;
+    /** Get the current term in the search bar. */
+    [[nodiscard]] virtual QString getSerachTerm() const override;
+
    private:
     void suggestCurrent();
 
    private slots:
     void triggerSearch();
 
-    void onSortingSelectionChanged(QString data);
+    void onSortingSelectionChanged(QString selected);
     void onSelectionChanged(QModelIndex first, QModelIndex second);
-    void onVersionSelectionChanged(QString data);
+    void onVersionSelectionChanged(QString selected);
 
    private:
-    Ui::FtbPage* ui = nullptr;
-    NewInstanceDialog* dialog = nullptr;
-    Ftb::ListModel* listModel = nullptr;
-    Ftb::FilterModel* filterModel = nullptr;
+    Ui::FtbPage* m_ui = nullptr;
+    NewInstanceDialog* m_dialog = nullptr;
+    Ftb::ListModel* m_listModel = nullptr;
+    Ftb::FilterModel* m_filterModel = nullptr;
 
-    ModpacksCH::Modpack selected;
-    QString selectedVersion;
+    FTB::Modpack m_selected;
+    QString m_selectedVersion;
 
-    bool initialised{ false };
+    bool m_initialised{ false };
 };

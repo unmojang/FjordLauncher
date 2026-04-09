@@ -5,10 +5,18 @@ on:
     tags:
       - "*"
 
+permissions: {}
+
 jobs:
   build_release:
     name: Build Release
     uses: ./.github/workflows/build.yml
+    permissions:
+      contents: read
+      # Required for Azure Trusted Signing
+      id-token: write
+      # Required for vcpkg binary cache
+      packages: write
     with:
       build-type: Release
       environment: Release
@@ -16,7 +24,9 @@ jobs:
 
   create_release:
     needs: build_release
-    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    runs-on: ubuntu-slim
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
@@ -26,7 +36,7 @@ jobs:
           submodules: "true"
           path: "FjordLauncher-source"
       - name: Download artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
       - name: Grab and store version
         run: |
           tag_name=$(echo ${{ github.ref }} | grep -oE "[^/]+$")
@@ -41,6 +51,7 @@ jobs:
           mv FjordLauncher-*.AppImage/FjordLauncher-*-aarch64.AppImage FjordLauncher-Linux-aarch64.AppImage
           mv FjordLauncher-*.AppImage.zsync/FjordLauncher-*-aarch64.AppImage.zsync FjordLauncher-Linux-aarch64.AppImage.zsync
           mv FjordLauncher-macOS*/FjordLauncher.zip FjordLauncher-macOS-${{ env.VERSION }}.zip
+          mv FjordLauncher-macOS*/FjordLauncher.dmg FjordLauncher-macOS-${{ env.VERSION }}.dmg
 
           tar --exclude='.git' -czf FjordLauncher-${{ env.VERSION }}.tar.gz FjordLauncher-${{ env.VERSION }}
 
@@ -111,4 +122,5 @@ jobs:
             FjordLauncher-Windows-MSVC-Portable-${{ env.VERSION }}.zip
             FjordLauncher-Windows-MSVC-Setup-${{ env.VERSION }}.exe
             FjordLauncher-macOS-${{ env.VERSION }}.zip
+            FjordLauncher-macOS-${{ env.VERSION }}.dmg
             FjordLauncher-${{ env.VERSION }}.tar.gz

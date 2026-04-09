@@ -62,9 +62,8 @@ AccountListPage::AccountListPage(QWidget* parent) : QMainWindow(parent), ui(new 
 
     m_accounts = APPLICATION->accounts();
 
-    ui->listView->setModel(m_accounts.get());
+    ui->listView->setModel(m_accounts);
     ui->listView->header()->setSectionResizeMode(AccountList::VListColumns::ProfileNameColumn, QHeaderView::Stretch);
-    ui->listView->header()->setSectionResizeMode(AccountList::VListColumns::NameColumn, QHeaderView::Stretch);
     ui->listView->header()->setSectionResizeMode(AccountList::VListColumns::TypeColumn, QHeaderView::ResizeToContents);
     ui->listView->header()->setSectionResizeMode(AccountList::VListColumns::StatusColumn, QHeaderView::ResizeToContents);
     ui->listView->header()->setSectionResizeMode(AccountList::VListColumns::AuthServerColumn, QHeaderView::ResizeToContents);
@@ -80,9 +79,9 @@ AccountListPage::AccountListPage(QWidget* parent) : QMainWindow(parent), ui(new 
     connect(ui->listView, &VersionListView::activated, this,
             [this](const QModelIndex& index) { m_accounts->setDefaultAccount(m_accounts->at(index.row())); });
 
-    connect(m_accounts.get(), &AccountList::listChanged, this, &AccountListPage::listChanged);
-    connect(m_accounts.get(), &AccountList::listActivityChanged, this, &AccountListPage::listChanged);
-    connect(m_accounts.get(), &AccountList::defaultAccountChanged, this, &AccountListPage::listChanged);
+    connect(m_accounts, &AccountList::listChanged, this, &AccountListPage::listChanged);
+    connect(m_accounts, &AccountList::listActivityChanged, this, &AccountListPage::listChanged);
+    connect(m_accounts, &AccountList::defaultAccountChanged, this, &AccountListPage::listChanged);
 
     updateButtonStates();
 
@@ -240,11 +239,18 @@ void AccountListPage::updateButtonStates()
     bool accountIsReady = false;
     bool accountIsOnline = false;
     bool accountCanUploadSkins = false;
+    bool accountCanMoveUp = false;
+    bool accountCanMoveDown = false;
     if (hasSelection) {
         QModelIndex selected = selection.first();
         MinecraftAccountPtr account = selected.data(AccountList::PointerRole).value<MinecraftAccountPtr>();
         accountIsReady = !account->isActive();
         accountIsOnline = account->accountType() != AccountType::Offline;
+
+        accountCanMoveUp = selected.row() > 0;
+        int indexOfLast = m_accounts->count() - 1;
+        accountCanMoveDown = selected.row() < indexOfLast;
+
         accountCanUploadSkins = account->canUploadSkins();
     }
     ui->actionRemove->setEnabled(accountIsReady);
@@ -259,6 +265,8 @@ void AccountListPage::updateButtonStates()
         ui->actionNoDefault->setEnabled(true);
         ui->actionNoDefault->setChecked(false);
     }
+    ui->actionMoveUp->setEnabled(accountCanMoveUp);
+    ui->actionMoveDown->setEnabled(accountCanMoveDown);
     ui->listView->resizeColumnToContents(3);
 }
 
@@ -270,5 +278,23 @@ void AccountListPage::on_actionManageSkins_triggered()
         MinecraftAccountPtr account = selected.data(AccountList::PointerRole).value<MinecraftAccountPtr>();
         SkinManageDialog dialog(this, account);
         dialog.exec();
+    }
+}
+
+void AccountListPage::on_actionMoveUp_triggered()
+{
+    QModelIndexList selection = ui->listView->selectionModel()->selectedIndexes();
+    if (selection.size() > 0) {
+        QModelIndex selected = selection.first();
+        m_accounts->moveAccount(selected, -1);
+    }
+}
+
+void AccountListPage::on_actionMoveDown_triggered()
+{
+    QModelIndexList selection = ui->listView->selectionModel()->selectedIndexes();
+    if (selection.size() > 0) {
+        QModelIndex selected = selection.first();
+        m_accounts->moveAccount(selected, 1);
     }
 }

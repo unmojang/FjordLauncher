@@ -112,7 +112,7 @@ struct AccountData {
 
     //! Only valid for authlib-injector accounts.
     QString clientToken() const;
-    void setClientToken(QString clientToken);
+    void setClientToken(const QString & clientToken);
     void invalidateClientToken();
     void generateClientTokenIfMissing();
 
@@ -136,7 +136,6 @@ struct AccountData {
     QString msaClientID;
     Token msaToken;
     Token userToken;
-    Token xboxApiToken;
     Token mojangservicesToken;
 
     Token yggdrasilToken;

@@ -22,26 +22,26 @@ void AuthlibInjectorMetadataStep::perform()
 
     QUrl url{m_data->customAuthlibInjectorUrl};
 
-    m_response.reset(new QByteArray());
-    m_request = Net::Download::makeByteArray(url, m_response);
+    auto [request, response] = Net::Download::makeByteArray(url);
+    m_request = request;
 
     m_task.reset(new NetJob("AuthlibInjectorMetadataStep", APPLICATION->network()));
     m_task->setAskRetry(false);
     m_task->setAutoRetryLimit(0);
     m_task->addNetAction(m_request);
 
-    connect(m_task.get(), &Task::finished, this, &AuthlibInjectorMetadataStep::onRequestDone);
+    connect(m_task.get(), &Task::finished, this, [this, response] { onRequestDone(response); });
 
     m_task->start();
 }
 
-void AuthlibInjectorMetadataStep::onRequestDone()
+void AuthlibInjectorMetadataStep::onRequestDone(QByteArray* response)
 {
-    if (m_request->error() == QNetworkReply::NoError && m_response->size() > 0) {
+    if (m_request->error() == QNetworkReply::NoError && response->size() > 0) {
         QJsonParseError jsonError;
-        QJsonDocument doc = QJsonDocument::fromJson(*m_response, &jsonError);
+        QJsonDocument doc = QJsonDocument::fromJson(*response, &jsonError);
         if (jsonError.error == QJsonParseError::NoError) {
-            m_data->authlibInjectorMetadata = m_response->toBase64();
+            m_data->authlibInjectorMetadata = response->toBase64();
             emit finished(AccountTaskState::STATE_WORKING, tr("Got authlib-injector metadata."));
             return;
         }

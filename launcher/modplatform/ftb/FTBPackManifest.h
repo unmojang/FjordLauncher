@@ -42,7 +42,7 @@
 #include <QUrl>
 #include <QVector>
 
-namespace ModpacksCH {
+namespace FTB {
 
 struct Specs {
     int id;
@@ -63,6 +63,7 @@ struct Art {
     int height;
     bool compressed;
     QString sha1;
+    int size;
     int64_t updated;
 };
 
@@ -97,6 +98,7 @@ struct Modpack {
     QVector<Author> authors;
     QVector<VersionInfo> versions;
     QVector<Tag> tags;
+    QString safeName;
 };
 
 struct VersionTarget {
@@ -136,6 +138,7 @@ struct Version {
     int installs;
     int plays;
     int64_t updated;
+    int64_t refreshed;
     Specs specs;
     QVector<VersionTarget> targets;
     QVector<VersionFile> files;
@@ -149,6 +152,6 @@ struct VersionChangelog {
 void loadModpack(Modpack& m, QJsonObject& obj);
 
 void loadVersion(Version& m, QJsonObject& obj);
-}  // namespace ModpacksCH
+}  // namespace FTB
 
-Q_DECLARE_METATYPE(ModpacksCH::Modpack)
+Q_DECLARE_METATYPE(FTB::Modpack)

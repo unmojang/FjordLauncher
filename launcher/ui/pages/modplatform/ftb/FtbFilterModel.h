@@ -41,9 +41,9 @@ class FilterModel : public QSortFilterProxyModel {
     bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
 
    private:
-    QMap<QString, Sorting> sortings;
-    Sorting currentSorting;
-    QString searchTerm{ "" };
+    QMap<QString, Sorting> m_sortings;
+    Sorting m_currentSorting;
+    QString m_searchTerm{ "" };
 };
 
 }  // namespace Ftb

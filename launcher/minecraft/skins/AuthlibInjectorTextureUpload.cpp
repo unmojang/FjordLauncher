@@ -38,7 +38,7 @@
 #include <QHttpMultiPart>
 
 #include "FileSystem.h"
-#include "net/ByteArraySink.h"
+#include "net/DummySink.h"
 #include "net/RawHeaderProxy.h"
 
 AuthlibInjectorTextureUpload::AuthlibInjectorTextureUpload(QString path, std::optional<QString> skin_variant) : NetRequest(), m_path(path), m_skin_variant(skin_variant)
@@ -75,8 +75,8 @@ AuthlibInjectorTextureUpload::Ptr AuthlibInjectorTextureUpload::make(MinecraftAc
     QString textureType = skin_variant.has_value() ? "skin" : "cape";
     up->m_url = QUrl(account->accountServerUrl() + "/user/profile/" + account->profileId() + "/" + textureType);
     up->setObjectName(QString("BYTES:") + up->m_url.toString());
-    up->m_sink.reset(new Net::ByteArraySink(std::make_shared<QByteArray>()));
-    up->addHeaderProxy(new Net::RawHeaderProxy(QList<Net::HeaderPair>{
+    up->m_sink.reset(new Net::DummySink());
+    up->addHeaderProxy(std::make_unique<Net::RawHeaderProxy>(QList<Net::HeaderPair>{
         { "Authorization", QString("Bearer %1").arg(token).toLocal8Bit() },
     }));
     return up;

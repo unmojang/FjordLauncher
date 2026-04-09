@@ -6,7 +6,7 @@
 
 ClaimAccount::ClaimAccount(LaunchTask* parent, AuthSessionPtr session) : LaunchStep(parent)
 {
-    if (session->status == AuthSession::Status::PlayableOnline && !session->demo) {
+    if (session->launchMode == LaunchMode::Normal) {
         auto accounts = APPLICATION->accounts();
         m_account = accounts->getAccountByInternalId(session->account_id);
     }
@@ -15,9 +15,9 @@ ClaimAccount::ClaimAccount(LaunchTask* parent, AuthSessionPtr session) : LaunchS
 void ClaimAccount::executeTask()
 {
     if (m_account) {
-        lock.reset(new UseLock(m_account));
-        emitSucceeded();
+        lock.reset(new UseLock(m_account.get()));
     }
+    emitSucceeded();
 }
 
 void ClaimAccount::finalize()

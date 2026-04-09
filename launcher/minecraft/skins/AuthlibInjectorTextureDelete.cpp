@@ -35,7 +35,7 @@
 
 #include "AuthlibInjectorTextureDelete.h"
 
-#include "net/ByteArraySink.h"
+#include "net/DummySink.h"
 #include "net/RawHeaderProxy.h"
 
 AuthlibInjectorTextureDelete::AuthlibInjectorTextureDelete(QString textureType) : NetRequest(), m_textureType(textureType)
@@ -54,8 +54,8 @@ AuthlibInjectorTextureDelete::Ptr AuthlibInjectorTextureDelete::make(MinecraftAc
     auto up = makeShared<AuthlibInjectorTextureDelete>(textureType);
     QString token = account->accessToken();
     up->m_url = QUrl(account->accountServerUrl() + "/user/profile/" + account->profileId() + "/" + textureType);
-    up->m_sink.reset(new Net::ByteArraySink(std::make_shared<QByteArray>()));
-    up->addHeaderProxy(new Net::RawHeaderProxy(QList<Net::HeaderPair>{
+    up->m_sink.reset(new Net::DummySink());
+    up->addHeaderProxy(std::make_unique<Net::RawHeaderProxy>(QList<Net::HeaderPair>{
         { "Authorization", QString("Bearer %1").arg(token).toLocal8Bit() },
     }));
     return up;

@@ -53,7 +53,7 @@ static bool unzipNatives(QString source, QString targetFolder, bool applyJnilibH
             name = replaceSuffix(name, ".jnilib", ".dylib");
         }
         QString absFilePath = directory.absoluteFilePath(name);
-        return f->writeFile(ext, absFilePath);
+        return f->writeFile(ext, absFilePath, directory);
     });
 }
 
@@ -65,7 +65,6 @@ void ExtractNatives::executeTask()
         emitSucceeded();
         return;
     }
-    auto settings = instance->settings();
 
     auto outputPath = instance->getNativePath();
     FS::ensureFolderPathExists(outputPath);

@@ -58,16 +58,16 @@ void YggdrasilStep::login(QString password)
     QJsonDocument doc(req);
     QByteArray requestData = doc.toJson();
 
-    m_response.reset(new QByteArray());
-    m_request = Net::Upload::makeByteArray(url, m_response, requestData);
-    m_request->addHeaderProxy(new Net::RawHeaderProxy(headers));
+    auto [request, response] = Net::Upload::makeByteArray(url, requestData);
+    m_request = request;
+    m_request->addHeaderProxy(std::make_unique<Net::RawHeaderProxy>(headers));
 
     m_task.reset(new NetJob("YggdrasilStep", APPLICATION->network()));
     m_task->setAskRetry(false);
     m_task->setAutoRetryLimit(0);
     m_task->addNetAction(m_request);
 
-    connect(m_task.get(), &Task::finished, this, &YggdrasilStep::onRequestDone);
+    connect(m_task.get(), &Task::finished, this, [this, response] { onRequestDone(response); });
 
     m_task->start();
 }
@@ -104,21 +104,21 @@ void YggdrasilStep::refresh()
     QJsonDocument doc(req);
     QByteArray requestData = doc.toJson();
 
-    m_response.reset(new QByteArray());
-    m_request = Net::Upload::makeByteArray(url, m_response, requestData);
-    m_request->addHeaderProxy(new Net::RawHeaderProxy(headers));
+    auto [request, response] = Net::Upload::makeByteArray(url, requestData);
+    m_request = request;
+    m_request->addHeaderProxy(std::make_unique<Net::RawHeaderProxy>(headers));
 
     m_task.reset(new NetJob("YggdrasilStep", APPLICATION->network()));
     m_task->setAskRetry(false);
     m_task->setAutoRetryLimit(0);
     m_task->addNetAction(m_request);
 
-    connect(m_task.get(), &Task::finished, this, &YggdrasilStep::onRequestDone);
+    connect(m_task.get(), &Task::finished, this, [this, response] { onRequestDone(response); });
 
     m_task->start();
 }
 
-void YggdrasilStep::onRequestDone()
+void YggdrasilStep::onRequestDone(QByteArray* response)
 {
     qDebug() << "Yggdrasil request done";
     switch (m_request->error()) {
@@ -163,7 +163,7 @@ void YggdrasilStep::onRequestDone()
     // Sometimes the auth server will give more information and an error code.
     // Check the response code.
     QJsonParseError jsonError;
-    QJsonDocument doc = QJsonDocument::fromJson(*m_response, &jsonError);
+    QJsonDocument doc = QJsonDocument::fromJson(*response, &jsonError);
     // Check the response code.
     int responseCode = m_request->replyStatusCode();
 
@@ -172,15 +172,15 @@ void YggdrasilStep::onRequestDone()
         // anyways.
         // Also, sometimes an empty reply indicates success. If there was no data received,
         // pass an empty json object to the processResponse function.
-        if (jsonError.error == QJsonParseError::NoError || m_response->size() == 0) {
-            processResponse(m_response->size() > 0 ? doc.object() : QJsonObject());
+        if (jsonError.error == QJsonParseError::NoError || response->size() == 0) {
+            processResponse(response->size() > 0 ? doc.object() : QJsonObject());
             return;
         } else {
             emit finished(AccountTaskState::STATE_FAILED_SOFT,
                           tr("Failed to parse authentication server response JSON response: %1 at offset %2.")
                               .arg(jsonError.errorString())
                               .arg(jsonError.offset));
-            qCritical() << *m_response;
+            qCritical() << *response;
         }
         return;
     }

@@ -20,7 +20,7 @@ class YggdrasilStep : public AuthStep {
     QString describe() override;
 
    private slots:
-    void onRequestDone();
+    void onRequestDone(QByteArray* response);
 
    private:
     void login(QString password);
@@ -30,7 +30,6 @@ class YggdrasilStep : public AuthStep {
     void processError(QJsonObject responseData);
 
     std::optional<QString> m_password;
-    std::shared_ptr<QByteArray> m_response;
     Net::Upload::Ptr m_request;
     NetJob::Ptr m_task;
     bool m_didSelectProfile = false;

@@ -336,7 +336,6 @@ bool AccountData::resumeStateFromV3(QJsonObject data)
         }  // leave msaClientID empty if it doesn't exist or isn't a string
         msaToken = tokenFromJSONV3(data, "msa");
         userToken = tokenFromJSONV3(data, "utoken");
-        xboxApiToken = tokenFromJSONV3(data, "xrp-main");
         mojangservicesToken = tokenFromJSONV3(data, "xrp-mc");
     }
 
@@ -366,7 +365,6 @@ QJsonObject AccountData::saveState() const
         output["msa-client-id"] = msaClientID;
         tokenToJSONV3(output, msaToken, "msa");
         tokenToJSONV3(output, userToken, "utoken");
-        tokenToJSONV3(output, xboxApiToken, "xrp-main");
         tokenToJSONV3(output, mojangservicesToken, "xrp-mc");
     } else if (type == AccountType::Offline) {
         output["type"] = "Offline";
@@ -400,51 +398,46 @@ QString AccountData::authServerUrl() const
 {
     if (usesCustomApiServers()) {
         return customAuthServerUrl;
-    } else {
-        return BuildConfig.MOJANG_AUTH_BASE;
     }
+    return BuildConfig.MOJANG_AUTH_BASE;
 }
 
 QString AccountData::accountServerUrl() const
 {
     if (usesCustomApiServers()) {
         return customAccountServerUrl;
-    } else {
-        return BuildConfig.MOJANG_ACCOUNT_BASE;
     }
+    return BuildConfig.MOJANG_ACCOUNT_BASE;
 }
 
 QString AccountData::sessionServerUrl() const
 {
     if (usesCustomApiServers()) {
         return customSessionServerUrl;
-    } else {
-        return BuildConfig.MOJANG_SESSION_BASE;
     }
+    return BuildConfig.MOJANG_SESSION_BASE;
 }
 
 QString AccountData::authlibInjectorUrl() const
 {
     if (usesCustomApiServers()) {
         return customAuthlibInjectorUrl;
-    } else {
-        return QString();
     }
+    return QString();
 }
 
 QString AccountData::servicesServerUrl() const
 {
     if (usesCustomApiServers()) {
         return customServicesServerUrl;
-    } else {
-        return BuildConfig.MOJANG_SERVICES_BASE;
     }
+    return BuildConfig.MOJANG_SERVICES_BASE;
 }
 
 QString AccountData::userName() const
 {
     if (type == AccountType::MSA) {
-        return QString();
+        return {};
     }
     return yggdrasilToken.extra["userName"].toString();
 }
@@ -462,7 +455,7 @@ QString AccountData::clientToken() const
     return yggdrasilToken.extra["clientToken"].toString();
 }
 
-void AccountData::setClientToken(QString clientToken)
+void AccountData::setClientToken(const QString & clientToken)
 {
     if (type != AccountType::AuthlibInjector) {
         return;
@@ -494,10 +487,10 @@ QString AccountData::profileId() const
 QString AccountData::profileName() const
 {
     if (minecraftProfile.name.size() == 0) {
-        return QObject::tr("No profile (%1)").arg(accountDisplayString());
-    } else {
-        return minecraftProfile.name;
+        return QObject::tr("No Minecraft profile");
     }
+
+    return minecraftProfile.name;
 }
 
 QString AccountData::accountDisplayString() const
@@ -510,9 +503,6 @@ QString AccountData::accountDisplayString() const
             return QObject::tr("<Offline>");
         }
         case AccountType::MSA: {
-            if (xboxApiToken.extra.contains("gtg")) {
-                return xboxApiToken.extra["gtg"].toString();
-            }
             return "Xbox profile missing";
         }
         default: {

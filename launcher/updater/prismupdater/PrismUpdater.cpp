@@ -40,16 +40,6 @@
 #include <QProgressDialog>
 #include <memory>
 
-#include <sys.h>
-
-#if defined Q_OS_WIN32
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <windows.h>
-#include "console/WindowsConsole.h"
-#endif
-
 #include <filesystem>
 namespace fs = std::filesystem;
 
@@ -86,12 +76,6 @@ void appDebugOutput(QtMsgType type, const QMessageLogContext& context, const QSt
 
 PrismUpdaterApp::PrismUpdaterApp(int& argc, char** argv) : QApplication(argc, argv)
 {
-#if defined Q_OS_WIN32
-    // attach the parent console if stdout not already captured
-    if (AttachWindowsConsole()) {
-        consoleAttached = true;
-    }
-#endif
     setOrganizationName(BuildConfig.LAUNCHER_NAME);
     setOrganizationDomain(BuildConfig.LAUNCHER_DOMAIN);
     setApplicationName(BuildConfig.LAUNCHER_NAME + "Updater");
@@ -200,12 +184,13 @@ PrismUpdaterApp::PrismUpdaterApp(int& argc, char** argv) : QApplication(argc, ar
         logFile = std::unique_ptr<QFile>(new QFile(logBase.arg(0)));
         if (!logFile->open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
             showFatalErrorMessage(tr("The launcher data folder is not writable!"),
-                                  tr("The updater couldn't create a log file - the data folder is not writable.\n"
+                                  tr("The updater couldn't create a log file - %1.\n"
                                      "\n"
                                      "Make sure you have write permissions to the data folder.\n"
-                                     "(%1)\n"
+                                     "(%2)\n"
                                      "\n"
                                      "The updater cannot continue until you fix this problem.")
+                                      .arg(logFile->errorString())
                                       .arg(m_dataPath));
             return;
         }
@@ -293,7 +278,7 @@ PrismUpdaterApp::PrismUpdaterApp(int& argc, char** argv) : QApplication(argc, ar
     }
 
     {  // network
-        m_network = makeShared<QNetworkAccessManager>(new QNetworkAccessManager());
+        m_network = std::make_unique<QNetworkAccessManager>();
         qDebug() << "Detecting proxy settings...";
         QNetworkProxy proxy = QNetworkProxy::applicationProxy();
         m_network->setProxy(proxy);
@@ -386,16 +371,6 @@ PrismUpdaterApp::~PrismUpdaterApp()
     qDebug() << "updater shutting down";
     // Shut down logger by setting the logger function to nothing
     qInstallMessageHandler(nullptr);
-
-#if defined Q_OS_WIN32
-    // Detach from Windows console
-    if (consoleAttached) {
-        fclose(stdout);
-        fclose(stdin);
-        fclose(stderr);
-        FreeConsole();
-    }
-#endif
 }
 
 void PrismUpdaterApp::fail(const QString& reason)
@@ -798,7 +773,7 @@ QFileInfo PrismUpdaterApp::downloadAsset(const GitHubReleaseAsset& asset)
 
     qDebug() << "downloading" << file_url << "to" << out_file_path;
     auto download = Net::Download::makeFile(file_url, out_file_path);
-    download->setNetwork(m_network);
+    download->setNetwork(m_network.get());
     auto progress_dialog = ProgressDialog();
     progress_dialog.adjustSize();
 
@@ -1171,20 +1146,19 @@ void PrismUpdaterApp::downloadReleasePage(const QString& api_url, int page)
 {
     int per_page = 30;
     auto page_url = QString("%1?per_page=%2&page=%3").arg(api_url).arg(QString::number(per_page)).arg(QString::number(page));
-    auto response = std::make_shared<QByteArray>();
-    auto download = Net::Download::makeByteArray(page_url, response);
-    download->setNetwork(m_network);
+    auto [download, response] = Net::Download::makeByteArray(page_url);
+    download->setNetwork(m_network.get());
     m_current_url = page_url;
 
-    auto github_api_headers = new Net::RawHeaderProxy();
+    auto github_api_headers = std::make_unique<Net::RawHeaderProxy>();
     github_api_headers->addHeaders({
         { "Accept", "application/vnd.github+json" },
         { "X-GitHub-Api-Version", "2022-11-28" },
     });
-    download->addHeaderProxy(github_api_headers);
+    download->addHeaderProxy(std::move(github_api_headers));
 
     connect(download.get(), &Net::Download::succeeded, this, [this, response, per_page, api_url, page]() {
-        int num_found = parseReleasePage(response.get());
+        int num_found = parseReleasePage(response);
         if (!(num_found < per_page)) {  // there may be more, fetch next page
             downloadReleasePage(api_url, page + 1);
         } else {
