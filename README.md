@@ -1,12 +1,12 @@
 # <img src="./program_info/org.unmojang.FjordLauncher.svg" alt="Fjord Launcher logo" width="96"/> Fjord Launcher
 
-Fjord Launcher is a **fork** of [Prism Launcher](https://github.com/PrismLauncher/PrismLauncher). It was based on [PollyMC](https://github.com/fn2006/PollyMC), which is now unmaintained. It is **not** endorsed by or affiliated with Prism Launcher or PollyMC.
+Fjord Launcher is a soft **fork** of [Prism Launcher](https://github.com/PrismLauncher/PrismLauncher) with the goal of adding support for alternative authentication servers such as [Drasl](https://github.com/unmojang/drasl), [Ely.by](https://ely.by/), and [Blessing Skin](https://github.com/bs-community/blessing-skin-server). An early version of Fjord Launcher's patchset was proposed to Prism Launcher in [PrismLauncher/PrismLauncher#543](https://github.com/PrismLauncher/PrismLauncher/pull/543). It received positive feedback, but the maintainers did not reach agreement about whether it should be merged.
 
-## Advantages of this fork over Prism Launcher
+I plan to someday try again to upstream these changes, since I believe most Prism Launcher users and developers agree that alternative authentication servers should be supported, with appropriate safeguards against piracy.
 
-- [Support for alternative auth servers](doc/alternative-auth-servers.md)
+**Akin to Prism Launcher, Fjord Launcher requires adding a Microsoft account before adding an offline or authlib-injector account.**
 
-- Ability to download FTB modpacks from within the launcher
+See [doc/alternative-auth-servers.md](doc/alternative-auth-servers.md) for a non-exhaustive list of alternative authentication servers.
 
 ## Having a problem with the launcher?
 
