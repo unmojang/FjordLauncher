@@ -8,6 +8,9 @@
   </developer>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-only</project_license>
+  <description>
+    <p>Prism Launcher fork with support for alternative auth servers.</p>
+  </description>
   <releases>
     <release version="@Launcher_VERSION_NAME@" date="@Launcher_BUILD_TIMESTAMP@"></release>
   </releases>
