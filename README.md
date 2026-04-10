@@ -61,15 +61,6 @@ paru -S fjordlauncher-git # build latest Git commit from source
 
 The `fjordlauncher-bin` AUR package is broken; see [https://github.com/unmojang/FjordLauncher/issues/20](https://github.com/unmojang/FjordLauncher/issues/20).
 
-### Debian/Ubuntu
-
-Install from the MPR with [Mist](https://docs.makedeb.org/using-the-mpr/mist-the-mpr-cli/#installing-mist):
-
-```Shell
-mist install fjordlauncher
-mist install fjordlauncher-git # build latest Git commit from source
-```
-
 ### Nix
 
 This repository contains a Nix flake:
