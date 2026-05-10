@@ -49,7 +49,7 @@
 #include "Application.h"
 #include "BuildConfig.h"
 #include "DesktopServices.h"
-#include "settings/MissingAuthlibInjectorBehavior.h"
+#include "settings/MissingYggdrasilAgentBehavior.h"
 #include "settings/SettingsObject.h"
 #include "ui/themes/ITheme.h"
 #include "ui/themes/ThemeManager.h"
@@ -73,9 +73,11 @@ LauncherPage::LauncherPage(QWidget* parent) : QWidget(parent), ui(new Ui::Launch
     ui->sortingModeGroup->setId(ui->sortByNameBtn, Sort_Name);
     ui->sortingModeGroup->setId(ui->sortLastLaunchedBtn, Sort_LastLaunch);
 
-    ui->missingAIComboBox->addItem("Always ask", MissingAuthlibInjectorBehavior::Ask);
-    ui->missingAIComboBox->addItem("Ignore missing authlib-injector", MissingAuthlibInjectorBehavior::Ignore);
-    ui->missingAIComboBox->addItem("Automatically install authlib-injector", MissingAuthlibInjectorBehavior::Install);
+    ui->missingYggdrasilComboBox->addItem(tr("Always ask"), (int)MissingYggdrasilAgentBehavior::Ask);
+    ui->missingYggdrasilComboBox->addItem(tr("Ignore missing agent"), (int)MissingYggdrasilAgentBehavior::Ignore);
+    ui->missingYggdrasilComboBox->addItem(tr("Automatically install authlib-injector"),
+                                          (int)MissingYggdrasilAgentBehavior::InstallAuthlibInjector);
+    ui->missingYggdrasilComboBox->addItem(tr("Automatically install Loki"), (int)MissingYggdrasilAgentBehavior::InstallLoki);
 
     loadSettings();
 
@@ -252,8 +254,8 @@ void LauncherPage::applySettings()
     s->set("ShowModIncompat", ui->showModIncompatCheckBox->isChecked());
     s->set("SkipModpackUpdatePrompt", !ui->modpackUpdatePromptBtn->isChecked());
 
-    // authlib-injector
-    s->set("MissingAuthlibInjectorBehavior", ui->missingAIComboBox->currentData().toInt());
+    // Yggdrasil agent
+    s->set("MissingYggdrasilAgentBehavior", ui->missingYggdrasilComboBox->currentData().toInt());
 }
 void LauncherPage::loadSettings()
 {
@@ -305,13 +307,13 @@ void LauncherPage::loadSettings()
     ui->showModIncompatCheckBox->setChecked(s->get("ShowModIncompat").toBool());
     ui->modpackUpdatePromptBtn->setChecked(!s->get("SkipModpackUpdatePrompt").toBool());
 
-    // Missing authlib-injector behavior
-    int missingAI = s->get("MissingAuthlibInjectorBehavior").toInt();
-    int missingAIIndex = ui->missingAIComboBox->findData(missingAI);
-    if (missingAIIndex == -1) {
-        missingAIIndex = ui->missingAIComboBox->findData(MissingAuthlibInjectorBehavior::Ask);
+    // Missing Yggdrasil agent behavior
+    int missingYggdrasil = s->get("MissingYggdrasilAgentBehavior").toInt();
+    int missingYggdrasilIndex = ui->missingYggdrasilComboBox->findData(missingYggdrasil);
+    if (missingYggdrasilIndex == -1) {
+        missingYggdrasilIndex = ui->missingYggdrasilComboBox->findData((int)MissingYggdrasilAgentBehavior::Ask);
     }
-    ui->missingAIComboBox->setCurrentIndex(missingAIIndex);
+    ui->missingYggdrasilComboBox->setCurrentIndex(missingYggdrasilIndex);
 }
 
 void LauncherPage::retranslate()

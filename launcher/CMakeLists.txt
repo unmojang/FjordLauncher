@@ -441,7 +441,7 @@ set(SETTINGS_SOURCES
     settings/Setting.h
     settings/SettingsObject.cpp
     settings/SettingsObject.h
-    settings/MissingAuthlibInjectorBehavior.h
+    settings/MissingYggdrasilAgentBehavior.h
 )
 
 set(JAVA_SOURCES
@@ -1115,6 +1115,8 @@ SET(LAUNCHER_SOURCES
     ui/dialogs/ChooseProviderDialog.cpp
     ui/dialogs/ResourceUpdateDialog.cpp
     ui/dialogs/ResourceUpdateDialog.h
+    ui/dialogs/InstallAgentDialog.cpp
+    ui/dialogs/InstallAgentDialog.h
     ui/dialogs/InstallLoaderDialog.cpp
     ui/dialogs/InstallLoaderDialog.h
     ui/dialogs/ChooseOfflineNameDialog.cpp

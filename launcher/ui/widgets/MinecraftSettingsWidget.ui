@@ -786,6 +786,61 @@ It is most likely you will need to change the path - please refer to the mod's w
             </widget>
            </item>
            <item>
+            <widget class="QGroupBox" name="yggdrasilAgentGroupBox">
+             <property name="title">
+              <string>&amp;Yggdrasil Agent</string>
+             </property>
+             <property name="checkable">
+              <bool>false</bool>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_yggdrasil">
+              <item>
+               <widget class="QCheckBox" name="yggdrasilAgentAutoUpdateCheck">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatically check for and apply upgrades to the Yggdrasil agent on launch.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Automatic updates</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="yggdrasilAgentDebugCheck">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable debug logging for the Yggdrasil agent.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Debug mode</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="yggdrasilAgentAntiFeatureCheck">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Controls whether server blocklist, telemetry, and other Minecraft restrictions are enforced.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Minecraft anti-features</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="lokiDisableURLFactoryCheck">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Disables Loki&apos;s URL factory. This reduces coverage but can prevent crashes in certain situations. Only enable this if you are experiencing a URL factory-related crash.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
+                <property name="text">
+                 <string>Disable URL factory (Loki only)</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
             <spacer name="verticalSpacer">
              <property name="orientation">
               <enum>Qt::Vertical</enum>

@@ -634,15 +634,15 @@
         </widget>
        </item>
        <item>
-         <widget class="QGroupBox" name="authlibInjectorBox">
+         <widget class="QGroupBox" name="yggdrasilAgentBox">
           <property name="title">
-          <string>Missing authlib-injector behavior</string>
+          <string>Missing Yggdrasil agent behavior</string>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout">
+          <layout class="QVBoxLayout" name="verticalLayout_9">
           <item>
-          <widget class="QComboBox" name="missingAIComboBox">
+          <widget class="QComboBox" name="missingYggdrasilComboBox">
           <property name="toolTip">
-              <string>What to do when using an authlib-injector account with an instance that does not have authlib-injector installed</string>
+              <string>What to do when using an account with custom API servers with an instance that does not have a Yggdrasil agent (Loki or authlib-injector) installed</string>
           </property>
           </widget>
           </item>

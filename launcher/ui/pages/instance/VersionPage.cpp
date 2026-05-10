@@ -55,6 +55,7 @@
 #include "VersionPage.h"
 #include "meta/JsonFormat.h"
 #include "tasks/SequentialTask.h"
+#include "ui/dialogs/InstallAgentDialog.h"
 #include "ui/dialogs/InstallLoaderDialog.h"
 #include "ui_VersionPage.h"
 
@@ -123,7 +124,7 @@ void VersionPage::retranslate()
 
 void VersionPage::openedImpl()
 {
-    auto const setting_name = QString("WideBarVisibility_%1").arg(id());
+    const auto setting_name = QString("WideBarVisibility_%1").arg(id());
     m_wide_bar_setting = APPLICATION->settings()->getOrRegisterSetting(setting_name);
 
     ui->toolBar->setVisibilityState(QByteArray::fromBase64(m_wide_bar_setting->get().toString().toUtf8()));
@@ -447,33 +448,32 @@ void VersionPage::on_actionDownload_All_triggered()
     m_container->refreshContainer();
 }
 
-void VersionPage::openInstallAuthlibInjector()
+void VersionPage::on_actionInstall_Agent_triggered()
 {
-    auto vlist = APPLICATION->metadataIndex()->get("moe.yushi.authlibinjector");
-    if (!vlist) {
-        return;
-    }
-    VersionSelectDialog vselect(vlist.get(), tr("Select authlib-injector version"), this);
-    vselect.setEmptyString(tr("No authlib-injector versions are currently available."));
-    vselect.setEmptyErrorString(tr("Couldn't load or download the authlib-injector version lists!"));
+    auto* sel = current().get();
+    bool agentWasSelected = sel && (sel->getID() == "org.unmojang.loki" || sel->getID() == "moe.yushi.authlibinjector");
 
-    auto currentVersion = m_profile->getComponentVersion("moe.yushi.authlibinjector");
-    if (!currentVersion.isEmpty()) {
-        vselect.setCurrentVersion(currentVersion);
-    }
+    InstallAgentDialog dialog(m_inst->getPackProfile(), this);
+    dialog.exec();
+    m_container->refreshContainer();
 
-    if (vselect.exec() && vselect.selectedVersion()) {
-        auto vsn = vselect.selectedVersion();
-        m_profile->setComponentVersion("moe.yushi.authlibinjector", vsn->descriptor());
-        m_profile->resolve(Net::Mode::Online);
-        preselect(m_profile->rowCount(QModelIndex()) - 1);
-        m_container->refreshContainer();
+    // If agent we're replacing was selected, select the replacement agent
+    if (agentWasSelected) {
+        auto scrollToAgent = [&](const char* uid) -> bool {
+            for (int i = 0; i < m_profile->rowCount(QModelIndex()); i++) {
+                if (m_profile->getComponent(i)->getID() == uid) {
+                    auto idx = m_profile->index(i);
+                    ui->packageView->selectionModel()->setCurrentIndex(idx,
+                                                                       QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+                    ui->packageView->scrollTo(idx);
+                    return true;
+                }
+            }
+            return false;
+        };
+        if (!scrollToAgent("org.unmojang.loki"))
+            scrollToAgent("moe.yushi.authlibinjector");
     }
-}
-
-void VersionPage::on_actionInstall_AuthlibInjector_triggered()
-{
-    openInstallAuthlibInjector();
 }
 
 void VersionPage::on_actionInstall_Loader_triggered()
