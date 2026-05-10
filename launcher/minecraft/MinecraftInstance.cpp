@@ -234,6 +234,13 @@ void MinecraftInstance::loadSpecificSettings()
         auto legacySettings = m_settings->registerSetting("OverrideLegacySettings", false);
         m_settings->registerOverride(global_settings->getSetting("OnlineFixes"), legacySettings);
 
+        // Yggdrasil agent options
+        auto yggdrasilAgentSettings = m_settings->registerSetting("OverrideYggdrasilAgent", false);
+        m_settings->registerOverride(global_settings->getSetting("YggdrasilAgentAutoUpdate"), yggdrasilAgentSettings);
+        m_settings->registerOverride(global_settings->getSetting("YggdrasilAgentDebugMode"), yggdrasilAgentSettings);
+        m_settings->registerOverride(global_settings->getSetting("YggdrasilAgentAntiFeatures"), yggdrasilAgentSettings);
+        m_settings->registerOverride(global_settings->getSetting("LokiDisableURLFactory"), yggdrasilAgentSettings);
+
         auto envSetting = m_settings->registerSetting("OverrideEnv", false);
         m_settings->registerOverride(global_settings->getSetting("Env"), envSetting);
 
@@ -649,27 +656,61 @@ QStringList MinecraftInstance::processAuthArgs(AuthSessionPtr session) const
     QStringList args;
     QString v = m_components->getProfile()->getMinecraftVersion();
 
-    if (session->uses_custom_api_servers) {
-        bool using_authlib_injector = false;
-        auto agents = m_components->getProfile()->getAgents();
-        for (const auto & agent : agents) {
+    bool using_loki = false;
+    auto agents = m_components->getProfile()->getAgents();
+    auto* self = const_cast<MinecraftInstance*>(this);
+    bool yggdrasilDebug = self->settings()->get("YggdrasilAgentDebugMode").toBool();
+    bool antiFeatures = self->settings()->get("YggdrasilAgentAntiFeatures").toBool();
+    bool disableURLFactory = self->settings()->get("LokiDisableURLFactory").toBool();
+
+    // Loki can be safely applied on MS/offline accounts, if we omit =(authlib-injector URL)
+    for (const auto& agent : agents) {
+        if (agent.library->artifactPrefix() == "org.unmojang:Loki") {
+            QStringList jar, temp1, temp2, temp3;
+            agent.library->getApplicableFiles(runtimeContext(), jar, temp1, temp2, temp3, getLocalLibraryPath());
+            QString argument;
+            if (session->uses_custom_api_servers) {
+                argument = agent.argument.isEmpty() ? session->authlib_injector_url : agent.argument;
+            }
+            args << "-javaagent:" + jar[0] + (argument.isEmpty() ? "" : "=" + argument);
+            if (yggdrasilDebug) {
+                args << "-DLoki.debug=true";
+            }
+            if (antiFeatures) {
+                args << "-DLoki.enable_patchy=true";
+                args << "-DLoki.enable_snooper=true";
+                args << "-DLoki.chat_restrictions=true";
+            }
+            if (disableURLFactory) {
+                args << "-DLoki.disable_factory=true";
+            }
+            using_loki = true;
+            break;
+        }
+    }
+
+    if (session->uses_custom_api_servers && !using_loki) {
+        bool found_authlib_injector = false;
+        for (const auto& agent : agents) {
             if (agent.library->artifactPrefix() == "moe.yushi:authlibinjector") {
                 QStringList jar, temp1, temp2, temp3;
                 agent.library->getApplicableFiles(runtimeContext(), jar, temp1, temp2, temp3, getLocalLibraryPath());
                 QString argument{ agent.argument };
-                if (argument.isEmpty()) {
+                if (argument.isEmpty())
                     argument = session->authlib_injector_url;
-                }
                 args << "-javaagent:" + jar[0] + (argument.isEmpty() ? "" : "=" + argument);
                 if (session->authlib_injector_metadata != "") {
                     args << "-Dauthlibinjector.yggdrasil.prefetched=" + session->authlib_injector_metadata;
                 }
-                using_authlib_injector = true;
+                if (yggdrasilDebug) {
+                    args << "-Dauthlibinjector.debug=verbose";
+                }
+                args << "-Dauthlibinjector.mojangAntiFeatures=" + QString(antiFeatures ? "enabled" : "disabled");
+                found_authlib_injector = true;
                 break;
             }
         }
-        if (!using_authlib_injector) {
-            qDebug() << "authlib-injector not found, setting -Dminecraft.api.*.host system properties.";
+        if (!found_authlib_injector) {
             args << "-Dminecraft.api.env=custom";
             args << "-Dminecraft.api.auth.host=" + session->auth_server_url;
             args << "-Dminecraft.api.account.host=" + session->account_server_url;

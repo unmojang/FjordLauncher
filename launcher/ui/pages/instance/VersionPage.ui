@@ -91,7 +91,7 @@
    <addaction name="actionEdit"/>
    <addaction name="actionRevert"/>
    <addaction name="separator"/>
-   <addaction name="actionInstall_AuthlibInjector"/>
+   <addaction name="actionInstall_Agent"/>
    <addaction name="actionInstall_Loader"/>
    <addaction name="actionAdd_to_Minecraft_jar"/>
    <addaction name="actionReplace_Minecraft_jar"/>
@@ -160,12 +160,12 @@
     <string>Revert the selected component to default.</string>
    </property>
   </action>
-  <action name="actionInstall_AuthlibInjector">
+  <action name="actionInstall_Agent">
    <property name="text">
-    <string>Install authlib-injector</string>
+    <string>Install Yggdrasil Agent</string>
    </property>
    <property name="toolTip">
-    <string>Install the authlib-injector package.</string>
+    <string>Install a Yggdrasil agent.</string>
    </property>
   </action>
   <action name="actionInstall_Loader">

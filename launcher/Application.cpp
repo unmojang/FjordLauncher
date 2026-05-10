@@ -117,7 +117,7 @@
 #include "tools/MCEditTool.h"
 
 #include "settings/INISettingsObject.h"
-#include "settings/MissingAuthlibInjectorBehavior.h"
+#include "settings/MissingYggdrasilAgentBehavior.h"
 #include "settings/Setting.h"
 
 #include "meta/Index.h"
@@ -765,7 +765,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         m_settings->registerSetting("UserAskedAboutAutomaticJavaDownload", false);
 
         // Legacy settings
-        m_settings->registerSetting("OnlineFixes", true);
+        m_settings->registerSetting("OnlineFixes", false);
 
         // Native library workarounds
         m_settings->registerSetting("UseNativeOpenAL", false);
@@ -791,8 +791,14 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         m_settings->registerSetting("SkipModpackUpdatePrompt", false);
         m_settings->registerSetting("ShowModIncompat", false);
 
-        // Missing authlib-injector behavior
-        m_settings->registerSetting("MissingAuthlibInjectorBehavior", MissingAuthlibInjectorBehavior::Ask);
+        // Missing Yggdrasil agent behavior
+        m_settings->registerSetting("MissingYggdrasilAgentBehavior", (int)MissingYggdrasilAgentBehavior::Ask);
+
+        // Yggdrasil agent options
+        m_settings->registerSetting("YggdrasilAgentAutoUpdate", false);
+        m_settings->registerSetting("YggdrasilAgentDebugMode", false);
+        m_settings->registerSetting("YggdrasilAgentAntiFeatures", false);
+        m_settings->registerSetting("LokiDisableURLFactory", false);
 
         // Minecraft offline player name
         m_settings->registerSetting("LastOfflinePlayerName", "");

@@ -902,11 +902,11 @@ std::optional<Manifest> getJarManifest(const QFileInfo& fileinfo)
 
     std::optional<Manifest> manifest;
 
-    const QString manifest_path{"META-INF/MANIFEST.MF"};
+    const QString manifest_path{ "META-INF/MANIFEST.MF" };
     if (reader.collectFiles(true) && reader.exists(manifest_path)) {
-        const auto & manifest_file = reader.goToFile(manifest_path);
+        const auto& manifest_file = reader.goToFile(manifest_path);
         try {
-            const auto & file_bytes = manifest_file->readAll();
+            const auto& file_bytes = manifest_file->readAll();
             std::string file_contents(file_bytes.constData(), file_bytes.size());
             std::istringstream iss{ file_contents };
             manifest = Manifest(iss, fileinfo.fileName().toStdString());
@@ -952,8 +952,15 @@ bool PackProfile::installAgents_internal(QStringList filepaths)
         if (manifest.has_value()) {
             const auto& attrs = manifest->getMainAttributes();
 
-            if (auto ac = attrs.find("Agent-Class"); ac != attrs.end()) {
-                const auto& agentClass = ac->second;
+            std::string agentClass;
+            for (const char* key : { "Agent-Class", "Premain-Class" }) {
+                if (auto it = attrs.find(key); it != attrs.end()) {
+                    agentClass = it->second;
+                    break;
+                }
+            }
+
+            if (!agentClass.empty()) {
                 if (auto ma = AGENT_CLASS_TO_MANAGED_AGENT.find(agentClass); ma != AGENT_CLASS_TO_MANAGED_AGENT.end()) {
                     const auto& artifactPrefix = QString::fromStdString(ma->second);
                     QString version = "1";
@@ -970,7 +977,7 @@ bool PackProfile::installAgents_internal(QStringList filepaths)
         agent->setDisplayName(sourceInfo.completeBaseName());
         agent->setHint("local");
 
-        versionFile->agents.append(Agent{agent, QString()});
+        versionFile->agents.append(Agent{ agent, QString() });
 
         versionFile->name = targetName;
         versionFile->uid = targetId;
