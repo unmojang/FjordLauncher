@@ -462,6 +462,7 @@ void LaunchController::launchInstance()
                     authlibSupported ? msgBox.addButton(tr("Install authlib-injector"), QMessageBox::ActionRole) : nullptr;
                 auto* installLokiBtn = msgBox.addButton(tr("Install Loki"), QMessageBox::ActionRole);
 
+                msgBox.setDefaultButton(installAuthlibBtn);
                 msgBox.setEscapeButton(cancelBtn);
 
                 auto* checkBox = new QCheckBox(tr("Always do the same for all instances without asking"), m_parentWidget);
