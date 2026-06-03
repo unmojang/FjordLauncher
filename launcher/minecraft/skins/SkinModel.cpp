@@ -36,23 +36,24 @@ static void setAlpha(QImage& image, const QRect& region, const int alpha)
 
 static void doNotchTransparencyHack(QImage& image)
 {
-    for (int y = 0; y < 32; y++) {
+    int s = image.width() / 64;
+    for (int y = 0; y < 32 * s; y++) {
         QRgb* line = reinterpret_cast<QRgb*>(image.scanLine(y));
-        for (int x = 32; x < 64; x++) {
+        for (int x = 32 * s; x < 64 * s; x++) {
             if (qAlpha(line[x]) < 128) {
                 return;
             }
         }
     }
 
-    setAlpha(image, { 32, 0, 32, 32 }, 0);
+    setAlpha(image, { 32 * s, 0, 32 * s, 32 * s }, 0);
 }
 
 static QImage improveSkin(QImage skin)
 {
     int height = skin.height();
     int width = skin.width();
-    if (width != 64 || (height != 32 && height != 64)) {  // this is no minecraft skin
+    if (width < 64 || width % 64 != 0 || (height != width && height != width / 2)) {
         return skin;
     }
     // It seems some older skins may use this format, which can't be drawn onto
@@ -62,18 +63,19 @@ static QImage improveSkin(QImage skin)
         skin = skin.convertToFormat(QImage::Format_ARGB32);
     }
 
-    auto isLegacy = height == 32;  // old format
+    int s = width / 64;
+    auto isLegacy = height == width / 2;  // old format
     if (isLegacy) {
-        auto newSkin = QImage(QSize(64, 64), skin.format());
+        auto newSkin = QImage(QSize(width, width), skin.format());
         newSkin.fill(Qt::transparent);
         QPainter p(&newSkin);
         p.drawImage(0, 0, skin);
 
-        auto copyRect = [&p, &newSkin](int startX, int startY, int offsetX, int offsetY, int sizeX, int sizeY) {
-            QImage region = newSkin.copy(startX, startY, sizeX, sizeY);
+        auto copyRect = [&p, &newSkin, s](int startX, int startY, int offsetX, int offsetY, int sizeX, int sizeY) {
+            QImage region = newSkin.copy(startX * s, startY * s, sizeX * s, sizeY * s);
             region = region.mirrored(true, false);
 
-            p.drawImage(startX + offsetX, startY + offsetY, region);
+            p.drawImage((startX + offsetX) * s, (startY + offsetY) * s, region);
         };
         static const struct {
             int x;
@@ -101,7 +103,7 @@ static QImage improveSkin(QImage skin)
     };
 
     for (const auto& p : opaqueParts) {
-        setAlpha(skin, p, 255);
+        setAlpha(skin, QRect(p.x() * s, p.y() * s, p.width() * s, p.height() * s), 255);
     }
     return skin;
 }
@@ -117,48 +119,51 @@ static QImage generatePreviews(QImage texture, bool slim)
     preview.fill(Qt::transparent);
     QPainter paint(&preview);
 
+    // Scale factor for HD skins
+    int s = texture.width() / 64;
+
     // head
-    paint.drawImage(4, 2, texture.copy(8, 8, 8, 8));
-    paint.drawImage(4, 2, texture.copy(40, 8, 8, 8));
+    paint.drawImage(QRect(4, 2, 8, 8), texture.copy(8 * s, 8 * s, 8 * s, 8 * s));
+    paint.drawImage(QRect(4, 2, 8, 8), texture.copy(40 * s, 8 * s, 8 * s, 8 * s));
     // torso
-    paint.drawImage(4, 10, texture.copy(20, 20, 8, 12));
-    paint.drawImage(4, 10, texture.copy(20, 36, 8, 12));
+    paint.drawImage(QRect(4, 10, 8, 12), texture.copy(20 * s, 20 * s, 8 * s, 12 * s));
+    paint.drawImage(QRect(4, 10, 8, 12), texture.copy(20 * s, 36 * s, 8 * s, 12 * s));
     // right leg
-    paint.drawImage(4, 22, texture.copy(4, 20, 4, 12));
-    paint.drawImage(4, 22, texture.copy(4, 36, 4, 12));
+    paint.drawImage(QRect(4, 22, 4, 12), texture.copy(4 * s, 20 * s, 4 * s, 12 * s));
+    paint.drawImage(QRect(4, 22, 4, 12), texture.copy(4 * s, 36 * s, 4 * s, 12 * s));
     // left leg
-    paint.drawImage(8, 22, texture.copy(20, 52, 4, 12));
-    paint.drawImage(8, 22, texture.copy(4, 52, 4, 12));
+    paint.drawImage(QRect(8, 22, 4, 12), texture.copy(20 * s, 52 * s, 4 * s, 12 * s));
+    paint.drawImage(QRect(8, 22, 4, 12), texture.copy(4 * s, 52 * s, 4 * s, 12 * s));
 
     auto armWidth = slim ? 3 : 4;
     auto armPosX = slim ? 1 : 0;
     // right arm
-    paint.drawImage(armPosX, 10, texture.copy(44, 20, armWidth, 12));
-    paint.drawImage(armPosX, 10, texture.copy(44, 36, armWidth, 12));
+    paint.drawImage(QRect(armPosX, 10, armWidth, 12), texture.copy(44 * s, 20 * s, armWidth * s, 12 * s));
+    paint.drawImage(QRect(armPosX, 10, armWidth, 12), texture.copy(44 * s, 36 * s, armWidth * s, 12 * s));
     // left arm
-    paint.drawImage(12, 10, texture.copy(36, 52, armWidth, 12));
-    paint.drawImage(12, 10, texture.copy(52, 52, armWidth, 12));
+    paint.drawImage(QRect(12, 10, armWidth, 12), texture.copy(36 * s, 52 * s, armWidth * s, 12 * s));
+    paint.drawImage(QRect(12, 10, armWidth, 12), texture.copy(52 * s, 52 * s, armWidth * s, 12 * s));
 
     // back
     // head
-    paint.drawImage(24, 2, texture.copy(24, 8, 8, 8));
-    paint.drawImage(24, 2, texture.copy(56, 8, 8, 8));
+    paint.drawImage(QRect(24, 2, 8, 8), texture.copy(24 * s, 8 * s, 8 * s, 8 * s));
+    paint.drawImage(QRect(24, 2, 8, 8), texture.copy(56 * s, 8 * s, 8 * s, 8 * s));
     // torso
-    paint.drawImage(24, 10, texture.copy(32, 20, 8, 12));
-    paint.drawImage(24, 10, texture.copy(32, 36, 8, 12));
+    paint.drawImage(QRect(24, 10, 8, 12), texture.copy(32 * s, 20 * s, 8 * s, 12 * s));
+    paint.drawImage(QRect(24, 10, 8, 12), texture.copy(32 * s, 36 * s, 8 * s, 12 * s));
     // right leg
-    paint.drawImage(24, 22, texture.copy(12, 20, 4, 12));
-    paint.drawImage(24, 22, texture.copy(12, 36, 4, 12));
+    paint.drawImage(QRect(24, 22, 4, 12), texture.copy(12 * s, 20 * s, 4 * s, 12 * s));
+    paint.drawImage(QRect(24, 22, 4, 12), texture.copy(12 * s, 36 * s, 4 * s, 12 * s));
     // left leg
-    paint.drawImage(28, 22, texture.copy(28, 52, 4, 12));
-    paint.drawImage(28, 22, texture.copy(12, 52, 4, 12));
+    paint.drawImage(QRect(28, 22, 4, 12), texture.copy(28 * s, 52 * s, 4 * s, 12 * s));
+    paint.drawImage(QRect(28, 22, 4, 12), texture.copy(12 * s, 52 * s, 4 * s, 12 * s));
 
     // right arm
-    paint.drawImage(armPosX + 20, 10, texture.copy(48 + armWidth, 20, armWidth, 12));
-    paint.drawImage(armPosX + 20, 10, texture.copy(48 + armWidth, 36, armWidth, 12));
+    paint.drawImage(QRect(armPosX + 20, 10, armWidth, 12), texture.copy((48 + armWidth) * s, 20 * s, armWidth * s, 12 * s));
+    paint.drawImage(QRect(armPosX + 20, 10, armWidth, 12), texture.copy((48 + armWidth) * s, 36 * s, armWidth * s, 12 * s));
     // left arm
-    paint.drawImage(32, 10, texture.copy(40 + armWidth, 52, armWidth, 12));
-    paint.drawImage(32, 10, texture.copy(56 + armWidth, 52, armWidth, 12));
+    paint.drawImage(QRect(32, 10, armWidth, 12), texture.copy((40 + armWidth) * s, 52 * s, armWidth * s, 12 * s));
+    paint.drawImage(QRect(32, 10, armWidth, 12), texture.copy((56 + armWidth) * s, 52 * s, armWidth * s, 12 * s));
 
     return preview;
 }
@@ -219,7 +224,11 @@ QString SkinModel::getModelString() const
 
 bool SkinModel::isValid() const
 {
-    return !m_texture.isNull() && (m_texture.size().height() == 32 || m_texture.size().height() == 64) && m_texture.size().width() == 64;
+    if (m_texture.isNull())
+        return false;
+    int w = m_texture.width();
+    int h = m_texture.height();
+    return w >= 64 && w % 64 == 0 && (h == w || h == w / 2);
 }
 void SkinModel::refresh()
 {
