@@ -122,11 +122,12 @@ QPixmap MinecraftAccount::getFace(int width, int height) const
     if (!skinTexture.loadFromData(data.minecraftProfile.skin.data, "PNG")) {
         return QPixmap();
     }
-    QPixmap skin = QPixmap(8, 8);
+    int s = qMax(1, skinTexture.width() / 64);
+    QPixmap skin(8 * s, 8 * s);
     skin.fill(QColorConstants::Transparent);
     QPainter painter(&skin);
-    painter.drawPixmap(0, 0, skinTexture.copy(8, 8, 8, 8));
-    painter.drawPixmap(0, 0, skinTexture.copy(40, 8, 8, 8));
+    painter.drawPixmap(0, 0, skinTexture.copy(8 * s, 8 * s, 8 * s, 8 * s));
+    painter.drawPixmap(0, 0, skinTexture.copy(40 * s, 8 * s, 8 * s, 8 * s));
     return skin.scaled(width, height, Qt::KeepAspectRatio);
 }
 
