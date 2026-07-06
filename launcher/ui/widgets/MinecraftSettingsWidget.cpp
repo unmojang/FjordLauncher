@@ -79,7 +79,6 @@ MinecraftSettingsWidget::MinecraftSettingsWidget(MinecraftInstance* instance, QW
         m_ui->nativeWorkaroundsGroupBox->setCheckable(true);
         m_ui->perfomanceGroupBox->setCheckable(true);
         m_ui->gameTimeGroupBox->setCheckable(true);
-        m_ui->legacySettingsGroupBox->setCheckable(true);
         m_ui->yggdrasilAgentGroupBox->setCheckable(true);
 
         m_quickPlaySingleplayer = m_instance->traits().contains("feature:is_quick_play_singleplayer");
@@ -196,10 +195,6 @@ void MinecraftSettingsWidget::loadSettings()
     m_ui->environmentVariables->initialize(m_instance != nullptr, m_instance == nullptr || settings->get("OverrideEnv").toBool(),
                                            Json::toMap(settings->get("Env").toString()));
 
-    // Legacy Tweaks
-    m_ui->legacySettingsGroupBox->setChecked(m_instance == nullptr || settings->get("OverrideLegacySettings").toBool());
-    m_ui->onlineFixes->setChecked(settings->get("OnlineFixes").toBool());
-
     // Yggdrasil Agent
     m_ui->yggdrasilAgentGroupBox->setChecked(m_instance == nullptr || settings->get("OverrideYggdrasilAgent").toBool());
     m_ui->yggdrasilAgentAutoUpdateCheck->setChecked(settings->get("YggdrasilAgentAutoUpdate").toBool());
@@ -302,9 +297,6 @@ void MinecraftSettingsWidget::loadSettings()
             c->blockSignals(false);
         }
     }
-
-    m_ui->legacySettingsGroupBox->setChecked(settings->get("OverrideLegacySettings").toBool());
-    m_ui->onlineFixes->setChecked(settings->get("OnlineFixes").toBool());
 
     m_ui->globalDataPacksGroupBox->blockSignals(true);
     m_ui->dataPacksPathEdit->blockSignals(true);
@@ -477,17 +469,6 @@ void MinecraftSettingsWidget::saveSettings()
             } else {
                 settings->reset("InstanceAccountId");
             }
-        }
-
-        bool overrideLegacySettings = m_instance == nullptr || m_ui->legacySettingsGroupBox->isChecked();
-
-        if (m_instance != nullptr)
-            settings->set("OverrideLegacySettings", overrideLegacySettings);
-
-        if (overrideLegacySettings) {
-            settings->set("OnlineFixes", m_ui->onlineFixes->isChecked());
-        } else {
-            settings->reset("OnlineFixes");
         }
 
         // Yggdrasil Agent

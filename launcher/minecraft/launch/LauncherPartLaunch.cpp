@@ -82,7 +82,7 @@ void LauncherPartLaunch::executeTask()
     auto instance = m_parent->instance();
 
     QString legacyJarPath;
-    if (instance->getLauncher() == "legacy" || instance->shouldApplyOnlineFixes()) {
+    if (instance->getLauncher() == "legacy") {
         legacyJarPath = APPLICATION->getJarPath("NewLaunchLegacy.jar");
         if (legacyJarPath.isEmpty()) {
             const char* reason = QT_TR_NOOP("Legacy launcher library could not be found. Please check your installation.");

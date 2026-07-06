@@ -109,8 +109,6 @@ public final class EntryPoint {
         String launcherType = params.getString("launcher");
 
         try {
-            LegacyProxy.applyOnlineFixes(params);
-
             Launcher launcher;
 
             switch (launcherType) {

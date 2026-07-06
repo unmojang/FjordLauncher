@@ -231,10 +231,6 @@ void MinecraftInstance::loadSpecificSettings()
         m_settings->registerOverride(global_settings->getSetting("CloseAfterLaunch"), miscellaneousOverride);
         m_settings->registerOverride(global_settings->getSetting("QuitAfterGameStop"), miscellaneousOverride);
 
-        // Legacy-related options
-        auto legacySettings = m_settings->registerSetting("OverrideLegacySettings", false);
-        m_settings->registerOverride(global_settings->getSetting("OnlineFixes"), legacySettings);
-
         // Yggdrasil agent options
         auto yggdrasilAgentSettings = m_settings->registerSetting("OverrideYggdrasilAgent", false);
         m_settings->registerOverride(global_settings->getSetting("YggdrasilAgentAutoUpdate"), yggdrasilAgentSettings);
@@ -636,10 +632,6 @@ QStringList MinecraftInstance::javaArguments()
         }
     }
 
-    if (javaVersion.isModular() && shouldApplyOnlineFixes())
-        // allow reflective access to java.net - required by the skin fix
-        args << "--add-opens" << "java.base/java.net=ALL-UNNAMED";
-
     return args;
 }
 
@@ -730,11 +722,6 @@ QStringList MinecraftInstance::processAuthArgs(AuthSessionPtr session) const
         args << "-Dminecraft.api.services.host=" + invalid_url;
     }
     return args;
-}
-
-bool MinecraftInstance::shouldApplyOnlineFixes()
-{
-    return traits().contains("legacyServices") && settings()->get("OnlineFixes").toBool();
 }
 
 QMap<QString, QString> MinecraftInstance::getVariables()
@@ -966,9 +953,6 @@ QString MinecraftInstance::createLaunchScript(AuthSessionPtr session, MinecraftT
     for (auto trait : profile->getTraits()) {
         launchScript += "traits " + trait + "\n";
     }
-
-    if (shouldApplyOnlineFixes())
-        launchScript += "onlineFixes true\n";
 
     launchScript += "launcher " + getLauncher() + "\n";
 

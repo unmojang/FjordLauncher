@@ -618,31 +618,6 @@ It is most likely you will need to change the path - please refer to the mod's w
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_7">
            <item>
-            <widget class="QGroupBox" name="legacySettingsGroupBox">
-             <property name="title">
-              <string>&amp;Legacy Tweaks</string>
-             </property>
-             <property name="checkable">
-              <bool>false</bool>
-             </property>
-             <property name="checked">
-              <bool>false</bool>
-             </property>
-             <layout class="QVBoxLayout" name="verticalLayout_17">
-              <item>
-               <widget class="QCheckBox" name="onlineFixes">
-                <property name="toolTip">
-                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Emulates usages of old online services which are no longer operating.&lt;/p&gt;&lt;p&gt;Current fixes include: skin and online mode support.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                </property>
-                <property name="text">
-                 <string>Enable online fixes (experimental)</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-           </item>
-           <item>
             <widget class="QGroupBox" name="nativeWorkaroundsGroupBox">
              <property name="enabled">
               <bool>true</bool>
@@ -966,10 +941,6 @@ It is most likely you will need to change the path - please refer to the mod's w
 
   <tabstop>javaScrollArea</tabstop>
   <tabstop>scrollArea_2</tabstop>
-
-  <!-- legacy tweaks -->
-  <tabstop>legacySettingsGroupBox</tabstop>
-  <tabstop>onlineFixes</tabstop>
 
   <!-- native library workarounds -->
   <tabstop>nativeWorkaroundsGroupBox</tabstop>
