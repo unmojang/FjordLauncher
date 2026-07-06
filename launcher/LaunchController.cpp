@@ -383,7 +383,18 @@ void LaunchController::launchInstance()
 
     auto* inst = dynamic_cast<MinecraftInstance*>(m_instance);
 
-    if (m_accountToUse->usesCustomApiServers() && !inst->shouldApplyOnlineFixes()) {
+    bool authlibSupported = false;
+    {
+        auto mcVersionStr = inst->getPackProfile()->getComponentVersion("net.minecraft");
+        if (!mcVersionStr.isEmpty()) {
+            auto meta = APPLICATION->metadataIndex()->get("net.minecraft", mcVersionStr);
+            if (meta && meta->rawTime() != 0) {
+                authlibSupported = meta->time() >= QDateTime(QDate(2014, 5, 1), QTime(), Qt::UTC);
+            }
+        }
+    }
+
+    if (m_accountToUse->usesCustomApiServers() || !authlibSupported) {
         auto isAgentInstalled = [&](const QString& agentPrefix) -> bool {
             const auto& agents = inst->getPackProfile()->getProfile()->getAgents();
             for (const auto& agent : agents) {
@@ -431,15 +442,6 @@ void LaunchController::launchInstance()
         }
 
         if (!isAgentInstalled("org.unmojang:Loki") && !isAgentInstalled("moe.yushi:authlibinjector")) {
-            bool authlibSupported = false;
-            auto mcVersionStr = inst->getPackProfile()->getComponentVersion("net.minecraft");
-            if (!mcVersionStr.isEmpty()) {
-                auto meta = APPLICATION->metadataIndex()->get("net.minecraft", mcVersionStr);
-                if (meta && meta->rawTime() != 0) {
-                    authlibSupported = meta->time() >= QDateTime(QDate(2014, 5, 1), QTime(), Qt::UTC);
-                }
-            }
-
             int behavior = APPLICATION->settings()->get("MissingYggdrasilAgentBehavior").toInt();
 
             if (behavior == (int)MissingYggdrasilAgentBehavior::InstallAuthlibInjector && !authlibSupported)
@@ -449,12 +451,22 @@ void LaunchController::launchInstance()
                 QMessageBox msgBox{ m_parentWidget };
                 msgBox.setWindowTitle(tr("Missing Yggdrasil agent"));
                 msgBox.setText(tr("No Yggdrasil agent is installed on this instance."));
-                msgBox.setInformativeText(authlibSupported
-                                              ? tr("You are logging in with an account that uses custom API servers, but no Yggdrasil "
-                                                   "agent is installed on this instance.\n\n"
-                                                   "If you are unsure which to choose, authlib-injector is the recommended choice.")
-                                              : tr("You are logging in with an account that uses custom API servers, but no Yggdrasil "
-                                                   "agent is installed on this instance."));
+                QString informativeText;
+                if (!m_accountToUse->usesCustomApiServers()) {
+                    informativeText =
+                        tr("This Minecraft version does not support modern Yggdrasil API routes. "
+                           "Loki is recommended to restore online functionality.");
+                } else if (authlibSupported) {
+                    informativeText =
+                        tr("You are logging in with an account that uses custom API servers, but no Yggdrasil "
+                           "agent is installed on this instance.\n\n"
+                           "If you are unsure which to choose, authlib-injector is the recommended choice.");
+                } else {
+                    informativeText =
+                        tr("You are logging in with an account that uses custom API servers, but no Yggdrasil "
+                           "agent is installed on this instance.");
+                }
+                msgBox.setInformativeText(informativeText);
                 msgBox.setModal(true);
 
                 // Use ActionRole for all buttons so platform style doesn't reorder them by role

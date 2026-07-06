@@ -61,6 +61,4 @@ public final class LegacyProxy {
     public static Launcher createLauncher(Parameters params) {
         throw new AssertionError("NewLaunchLegacy is not loaded");
     }
-
-    public static void applyOnlineFixes(Parameters params) {}
 }
