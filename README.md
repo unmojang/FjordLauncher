@@ -42,10 +42,10 @@ There are builds for macOS in the [releases section](https://github.com/unmojang
 
 ### Flatpak
 
+Flatpaks are available for both x86\_64 and aarch64.
+
 ```Shell
-flatpak remote-add --user --if-not-exists unmojang https://unmojang.github.io/unmojang-flatpak/index.flatpakrepo
-flatpak install org.kde.Platform/x86_64/6.10
-flatpak install org.unmojang.FjordLauncher
+flatpak install --user https://unmojang.github.io/unmojang-flatpak/org.unmojang.FjordLauncher.flatpakref
 ```
 
 ### Arch Linux
