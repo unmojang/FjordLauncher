@@ -25,7 +25,7 @@ Before releasing a new version of Fjord Launcher, the following items should be 
     1. [ ] Launch latest Minecraft with an authlib-injector account. "No Yggdrasil agent is installed on this instance" dialog should show. Click "Install authlib-injector".
     2. [ ] Log in to an authlib-injector multiplayer server
     3. [ ] Edit instance &rarr; Version &rarr; select authlib-injector &rarr; Remove. Click "Add Agents", manually select an authlib-injector JAR, launch the instance, log into an authlib-injector multiplayer server
-    3. [ ] Edit instance &rarr; Version &rarr; select authlib-injector &rarr; Remove.
+    4. [ ] Edit instance &rarr; Version &rarr; select authlib-injector &rarr; Remove.
 
 6. Loki
     1. [ ] Launch latest Minecraft with an authlib-injector account. "No Yggdrasil agent is installed on this instance" dialog should show. Click "Install Loki".
