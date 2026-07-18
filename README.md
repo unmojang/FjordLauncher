@@ -42,7 +42,7 @@ There are builds for macOS in the [releases section](https://github.com/unmojang
 
 ### Flatpak
 
-Flatpaks are available for both x86\_64 and aarch64.
+Flatpaks are available for both x86\_64 and aarch64. Install using [this .flatpakref file](https://unmojang.github.io/unmojang-flatpak/org.unmojang.FjordLauncher.flatpakref) or run the following command:
 
 ```Shell
 flatpak install --user https://unmojang.github.io/unmojang-flatpak/org.unmojang.FjordLauncher.flatpakref
