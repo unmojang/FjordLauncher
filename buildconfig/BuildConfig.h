@@ -179,6 +179,7 @@ class Config {
     QString MOJANG_ACCOUNT_BASE = "https://api.mojang.com";
     QString MOJANG_SESSION_BASE = "https://sessionserver.mojang.com";
     QString MOJANG_SERVICES_BASE = "https://api.minecraftservices.com";
+    QString MOJANG_DISCOVERY_BASE = "https://discovery.minecraftservices.com";
 
     QString DEFAULT_RESOURCE_BASE = "https://resources.download.minecraft.net/";
     QString LIBRARY_BASE = "https://libraries.minecraft.net/";

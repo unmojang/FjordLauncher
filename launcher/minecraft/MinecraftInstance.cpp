@@ -710,6 +710,7 @@ QStringList MinecraftInstance::processAuthArgs(AuthSessionPtr session) const
             args << "-Dminecraft.api.profiles.host=" + session->account_server_url;
             args << "-Dminecraft.api.session.host=" + session->session_server_url;
             args << "-Dminecraft.api.services.host=" + session->services_server_url;
+            args << "-Dminecraft.api.discovery.host=" + session->discovery_server_url + "/minecraft/client";
         }
     }
     // https://github.com/FabricMC/fabric-loom/issues/915#issuecomment-1609154390

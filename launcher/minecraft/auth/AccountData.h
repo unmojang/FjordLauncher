@@ -98,11 +98,11 @@ struct AccountData {
     bool resumeStateFromV3(QJsonObject data);
 
     bool canUploadSkins() const;
-    bool usesCustomApiServers() const;
     QString authServerUrl() const;
     QString accountServerUrl() const;
     QString sessionServerUrl() const;
     QString servicesServerUrl() const;
+    QString discoveryServerUrl() const;
     QString authlibInjectorUrl() const;
 
     //! userName for authlib-injector accounts, gamertag for MSA
@@ -127,11 +127,7 @@ struct AccountData {
 
     AccountType type = AccountType::MSA;
 
-    QString customAuthServerUrl;
-    QString customAccountServerUrl;
-    QString customSessionServerUrl;
-    QString customServicesServerUrl;
-    QString customAuthlibInjectorUrl;
+    QString authlibInjectorUrl_;
     QString authlibInjectorMetadata;
 
     QString msaClientID;

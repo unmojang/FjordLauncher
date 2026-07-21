@@ -117,7 +117,7 @@ class MinecraftAccount : public QObject, public Usable {
 
     QString servicesServerUrl() const { return data.servicesServerUrl(); }
 
-    bool usesCustomApiServers() const { return data.usesCustomApiServers(); }
+    QString discoveryServerUrl() const { return data.discoveryServerUrl(); }
 
     bool canUploadSkins() const { return data.canUploadSkins(); }
 

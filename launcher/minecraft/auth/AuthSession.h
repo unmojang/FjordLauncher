@@ -24,12 +24,13 @@ struct AuthSession {
     } status = Undetermined;
 
     // API URLs
+    bool uses_custom_api_servers = false;
     QString authlib_injector_url;
     QString auth_server_url;
     QString account_server_url;
     QString session_server_url;
     QString services_server_url;
-    bool uses_custom_api_servers = false;
+    QString discovery_server_url;
     QString authlib_injector_metadata;
 
     // account ID

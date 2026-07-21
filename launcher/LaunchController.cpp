@@ -56,6 +56,7 @@
 #include <QPushButton>
 #include <QSet>
 #include <QUrl>
+#include <algorithm>
 #include <utility>
 
 #include "BuildConfig.h"
@@ -394,15 +395,10 @@ void LaunchController::launchInstance()
         }
     }
 
-    if (m_accountToUse->usesCustomApiServers() || !authlibSupported) {
+    if ((m_accountToUse->accountType() == AccountType::AuthlibInjector) || !authlibSupported) {
         auto isAgentInstalled = [&](const QString& agentPrefix) -> bool {
             const auto& agents = inst->getPackProfile()->getProfile()->getAgents();
-            for (const auto& agent : agents) {
-                if (agent.library->artifactPrefix() == agentPrefix) {
-                    return true;
-                }
-            }
-            return false;
+            return std::ranges::any_of(agents, [&](const auto& agent) -> bool { return agent.library->artifactPrefix() == agentPrefix; });
         };
 
         if (inst->settings()->get("YggdrasilAgentAutoUpdate").toBool()) {
@@ -412,30 +408,36 @@ void LaunchController::launchInstance()
             };
             for (const auto& agent : { AgentInfo{ "org.unmojang:Loki", "org.unmojang.loki" },
                                        AgentInfo{ "moe.yushi:authlibinjector", "moe.yushi.authlibinjector" } }) {
-                if (inst->getPackProfile()->getComponentVersion(agent.uid).isNull())
+                if (inst->getPackProfile()->getComponentVersion(agent.uid).isNull()) {
                     continue;
+                }
 
                 try {
                     auto vlist = APPLICATION->metadataIndex()->get(agent.uid);
-                    if (!vlist)
+                    if (!vlist) {
                         break;
+                    }
 
                     ProgressDialog loadDialog(m_parentWidget);
                     loadDialog.setSkipButton(true, tr("Skip"));
                     auto loadTask = vlist->getLoadTask();
                     loadDialog.execWithTask(loadTask.get());
 
-                    if (!loadTask->wasSuccessful())
+                    if (!loadTask->wasSuccessful()) {
                         break;
+                    }
 
                     auto recommended = vlist->getRecommended();
-                    if (!recommended)
+                    if (!recommended) {
                         break;
+                    }
 
                     auto current = inst->getPackProfile()->getComponentVersion(agent.uid);
-                    if (recommended->descriptor() != current)
+                    if (recommended->descriptor() != current) {
                         inst->getPackProfile()->setComponentVersion(agent.uid, recommended->descriptor());
-                } catch (const Exception&) {
+                    }
+                } catch (const Exception& e) {
+                    qWarning() << e.cause();
                 }
                 break;
             }
@@ -444,15 +446,16 @@ void LaunchController::launchInstance()
         if (!isAgentInstalled("org.unmojang:Loki") && !isAgentInstalled("moe.yushi:authlibinjector")) {
             int behavior = APPLICATION->settings()->get("MissingYggdrasilAgentBehavior").toInt();
 
-            if (behavior == (int)MissingYggdrasilAgentBehavior::InstallAuthlibInjector && !authlibSupported)
+            if (behavior == (int)MissingYggdrasilAgentBehavior::InstallAuthlibInjector && !authlibSupported) {
                 behavior = (int)MissingYggdrasilAgentBehavior::Ask;
+            }
 
             if (behavior == (int)MissingYggdrasilAgentBehavior::Ask) {
                 QMessageBox msgBox{ m_parentWidget };
                 msgBox.setWindowTitle(tr("Missing Yggdrasil agent"));
                 msgBox.setText(tr("No Yggdrasil agent is installed on this instance."));
                 QString informativeText;
-                if (!m_accountToUse->usesCustomApiServers()) {
+                if (!(m_accountToUse->accountType() == AccountType::AuthlibInjector)) {
                     informativeText =
                         tr("This Minecraft version does not support modern Yggdrasil API routes. "
                            "Loki is recommended to restore online functionality.");
@@ -591,11 +594,11 @@ void LaunchController::launchInstance()
 
         // Prepend Server Status
         QStringList servers = { "login.live.com", "session.minecraft.net", "textures.minecraft.net", "api.mojang.com" };
-        if (m_accountToUse->usesCustomApiServers()) {
+        if (m_accountToUse->accountType() == AccountType::AuthlibInjector) {
             QSet<QString> hosts;
             for (const auto& urlStr :
                  { m_accountToUse->authServerUrl(), m_accountToUse->accountServerUrl(), m_accountToUse->sessionServerUrl(),
-                   m_accountToUse->servicesServerUrl(), m_accountToUse->authlibInjectorUrl() }) {
+                   m_accountToUse->servicesServerUrl(), m_accountToUse->discoveryServerUrl(), m_accountToUse->authlibInjectorUrl() }) {
                 QUrl url(urlStr);
                 if (url.isValid() && !url.host().isEmpty()) {
                     hosts.insert(url.host());

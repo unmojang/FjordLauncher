@@ -15,12 +15,12 @@ QString AuthlibInjectorMetadataStep::describe()
 
 void AuthlibInjectorMetadataStep::perform()
 {
-    if (m_data->customAuthlibInjectorUrl == "") {
+    if (m_data->authlibInjectorUrl() == "") {
         emit finished(AccountTaskState::STATE_WORKING, tr("Account has no authlib-injector URL."));
         return;
     }
 
-    QUrl url{m_data->customAuthlibInjectorUrl};
+    QUrl url{m_data->authlibInjectorUrl()};
 
     auto [request, response] = Net::Download::makeByteArray(url);
     m_request = request;

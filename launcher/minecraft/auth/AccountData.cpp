@@ -313,18 +313,10 @@ bool AccountData::resumeStateFromV3(QJsonObject data)
 
     if (type == AccountType::AuthlibInjector) {
         if (needsElyByMigration) {
-            customAuthServerUrl = "https://authserver.ely.by/api/authlib-injector/authserver";
-            customAccountServerUrl = "https://authserver.ely.by/api/authlib-injector/api";
-            customSessionServerUrl = "https://authserver.ely.by/api/authlib-injector/sessionserver";
-            customServicesServerUrl = "https://authserver.ely.by/api/authlib-injector/minecraftservices";
-            customAuthlibInjectorUrl = "https://authserver.ely.by/api/authlib-injector";
+            authlibInjectorUrl_ = "https://authserver.ely.by/api/authlib-injector";
             authlibInjectorMetadata = "";
         } else {
-            customAuthServerUrl = data.value("customAuthServerUrl").toString();
-            customAccountServerUrl = data.value("customAccountServerUrl").toString();
-            customSessionServerUrl = data.value("customSessionServerUrl").toString();
-            customServicesServerUrl = data.value("customServicesServerUrl").toString();
-            customAuthlibInjectorUrl = data.value("authlibInjectorUrl").toString();
+            authlibInjectorUrl_ = data.value("authlibInjectorUrl").toString();
             authlibInjectorMetadata = data.value("authlibInjectorMetadata").toString();
         }
     }
@@ -372,11 +364,7 @@ QJsonObject AccountData::saveState() const
         output["type"] = "Offline";
     } else if (type == AccountType::AuthlibInjector) {
         output["type"] = "AuthlibInjector";
-        output["customAuthServerUrl"] = customAuthServerUrl;
-        output["customAccountServerUrl"] = customAccountServerUrl;
-        output["customSessionServerUrl"] = customSessionServerUrl;
-        output["customServicesServerUrl"] = customServicesServerUrl;
-        output["authlibInjectorUrl"] = customAuthlibInjectorUrl;
+        output["authlibInjectorUrl"] = authlibInjectorUrl_;
         output["authlibInjectorMetadata"] = authlibInjectorMetadata;
     }
 
@@ -386,11 +374,6 @@ QJsonObject AccountData::saveState() const
     return output;
 }
 
-bool AccountData::usesCustomApiServers() const
-{
-    return type == AccountType::AuthlibInjector;
-}
-
 bool AccountData::canUploadSkins() const
 {
     return minecraftProfile.canUploadSkins;
@@ -398,42 +381,50 @@ bool AccountData::canUploadSkins() const
 
 QString AccountData::authServerUrl() const
 {
-    if (usesCustomApiServers()) {
-        return customAuthServerUrl;
+    if (type == AccountType::AuthlibInjector) {
+        return authlibInjectorUrl_ + "/authserver";
     }
     return BuildConfig.MOJANG_AUTH_BASE;
 }
 
 QString AccountData::accountServerUrl() const
 {
-    if (usesCustomApiServers()) {
-        return customAccountServerUrl;
+    if (type == AccountType::AuthlibInjector) {
+        return authlibInjectorUrl_ + "/api";
     }
     return BuildConfig.MOJANG_ACCOUNT_BASE;
 }
 
 QString AccountData::sessionServerUrl() const
 {
-    if (usesCustomApiServers()) {
-        return customSessionServerUrl;
+    if (type == AccountType::AuthlibInjector) {
+        return authlibInjectorUrl_ + "/sessionserver";
     }
     return BuildConfig.MOJANG_SESSION_BASE;
 }
 
 QString AccountData::authlibInjectorUrl() const
 {
-    if (usesCustomApiServers()) {
-        return customAuthlibInjectorUrl;
+    if (type == AccountType::AuthlibInjector) {
+        return authlibInjectorUrl_;
     }
-    return QString();
+    return {};
 }
 
 QString AccountData::servicesServerUrl() const
 {
-    if (usesCustomApiServers()) {
-        return customServicesServerUrl;
+    if (type == AccountType::AuthlibInjector) {
+        return authlibInjectorUrl_ + "/minecraftservices";
     }
     return BuildConfig.MOJANG_SERVICES_BASE;
+}
+
+QString AccountData::discoveryServerUrl() const
+{
+    if (type == AccountType::AuthlibInjector) {
+        return authlibInjectorUrl_ + "/discovery";
+    }
+    return BuildConfig.MOJANG_DISCOVERY_BASE;
 }
 
 QString AccountData::userName() const
@@ -457,7 +448,7 @@ QString AccountData::clientToken() const
     return yggdrasilToken.extra["clientToken"].toString();
 }
 
-void AccountData::setClientToken(const QString & clientToken)
+void AccountData::setClientToken(const QString& clientToken)
 {
     if (type != AccountType::AuthlibInjector) {
         return;
