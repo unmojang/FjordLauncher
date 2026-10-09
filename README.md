@@ -80,6 +80,15 @@ echo 'games-action/fjordlauncher' >> /etc/portage/package.accept_keywords
 emerge -av games-action/fjordlauncher
 ```
 
+### Fedora / CentOS Stream / Red Hat Enterprise Linux
+
+Install from [Terra](https://terra.fyralabs.com/):
+
+```Shell
+sudo dnf install --nogpgcheck --repofrompath 'terra,https://repos.fyralabs.com/terra$releasever' terra-release
+sudo dnf install fjordlauncher
+```
+
 ### Other Linux
 
 AppImages are available in the [releases section](https://github.com/unmojang/FjordLauncher/releases/latest).
